@@ -1,10 +1,14 @@
-
 <div align="center">
   <img src="assets/branding/jinsei-icon.png" alt="Jinsei" width="180" />
 
-  <h1>Jinsei</h1>
+  <p>
+    <strong><big><big>人生</big></big></strong>
+  </p>
 
-  <h2>人生</h2>
+  <p>
+    <strong><big>JINSEI</big></strong>
+  </p>
+
   <p><em>Vida · Existência · Jornada</em></p>
 
   <p>Sua jornada pelo entretenimento, organizada em um só lugar.</p>
