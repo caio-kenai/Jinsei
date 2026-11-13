@@ -62,6 +62,15 @@ export class IgdbProvider implements CatalogProvider {
       coverUrl: game.cover?.url.startsWith('//images.igdb.com/')
         ? `https:${game.cover.url.replace('t_thumb', 't_cover_big')}`
         : null,
+      coverAttribution: game.cover?.url.startsWith('//images.igdb.com/')
+        ? {
+            provider: 'IGDB',
+            sourceUrl: `https://www.igdb.com/games/${game.id}`,
+            license: 'Termos de uso IGDB/Twitch',
+            licenseUrl: 'https://www.twitch.tv/p/en/legal/developer-agreement/',
+            artist: null,
+          }
+        : null,
       platforms: game.platforms.map((item) => item.name),
       genres: game.genres.map((item) => item.name),
       developers: [],

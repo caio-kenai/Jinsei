@@ -13,7 +13,18 @@ export const categoryLabels: Record<MediaType, string> = {
   series: 'Séries',
 };
 export const themeSchema = z.enum(['light', 'dark', 'system']);
-export const accentSchema = z.enum(['rose', 'violet', 'blue', 'emerald']);
+export const accentSchema = z.enum([
+  'black',
+  'rose',
+  'violet',
+  'blue',
+  'emerald',
+  'pink',
+  'indigo',
+  'orange',
+  'teal',
+  'bronze',
+]);
 export const densitySchema = z.enum(['compact', 'comfortable']);
 export const emailSchema = z.email('Informe um e-mail válido').max(254).trim().toLowerCase();
 export const passwordSchema = z.string().min(12, 'Use pelo menos 12 caracteres').max(128);
@@ -40,7 +51,7 @@ export const onboardingSchema = z
       .max(5)
       .refine((v) => new Set(v).size === v.length),
     theme: themeSchema,
-    accent: accentSchema.default('rose'),
+    accent: accentSchema.default('black'),
   })
   .strict();
 export type OnboardingInput = z.infer<typeof onboardingSchema>;
@@ -110,6 +121,12 @@ export const manualMediaSchema = z
     mediaType: mediaTypeSchema.default('games'),
     title: z.string().trim().min(1).max(200),
     description: z.string().trim().max(3000).default(''),
+    coverUrl: z
+      .url()
+      .max(2000)
+      .refine((value) => value.startsWith('https://'), 'Use uma imagem HTTPS')
+      .nullable()
+      .default(null),
     releaseYear: z.number().int().min(1900).max(2100).nullable().default(null),
     platforms: z.array(z.string().trim().min(1).max(50)).max(12).default([]),
     genres: z.array(z.string().trim().min(1).max(50)).max(8).default([]),
@@ -118,11 +135,11 @@ export const manualMediaSchema = z
 export type ManualMediaInput = z.infer<typeof manualMediaSchema>;
 export const sourceInputSchema = z
   .object({
-    provider: z.enum(['wikidata', 'igdb']),
+    provider: z.enum(['wikidata', 'igdb', 'tvmaze', 'openlibrary', 'tmdb']),
     externalId: z
       .string()
-      .regex(/^(Q\d+|\d+)$/)
-      .max(30),
+      .regex(/^(Q\d+|\d+|(?:anime|series):\d+|OL\d+W|(?:movie|tv):\d+)$/)
+      .max(40),
   })
   .strict();
 export type SourceInput = z.infer<typeof sourceInputSchema>;
@@ -174,6 +191,15 @@ export const catalogQuerySchema = z
     mediaType: mediaTypeSchema.default('games'),
   })
   .strict();
+export const coverAttributionSchema = z.object({
+  layout: z.enum(['portrait', 'landscape']).optional(),
+  provider: z.string(),
+  sourceUrl: z.url(),
+  license: z.string(),
+  licenseUrl: z.url().nullable(),
+  artist: z.string().nullable(),
+});
+export type CoverAttribution = z.infer<typeof coverAttributionSchema>;
 export const catalogResultSchema = z.object({
   id: z.string().optional(),
   externalId: z.string().optional(),
@@ -183,6 +209,7 @@ export const catalogResultSchema = z.object({
   description: z.string(),
   releaseYear: z.number().nullable(),
   coverUrl: z.string().nullable(),
+  coverAttribution: coverAttributionSchema.nullable().default(null),
   platforms: z.array(z.string()),
   genres: z.array(z.string()),
   developers: z.array(z.string()),
@@ -196,6 +223,7 @@ export const libraryEntrySchema = z.object({
   title: z.string(),
   description: z.string(),
   coverUrl: z.string().nullable(),
+  coverAttribution: catalogResultSchema.shape.coverAttribution,
   releaseYear: z.number().nullable(),
   platforms: z.array(z.string()),
   genres: z.array(z.string()),

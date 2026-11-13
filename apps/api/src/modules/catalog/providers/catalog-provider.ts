@@ -1,11 +1,24 @@
-import type { CatalogResult } from '@jinsei/contracts';
+import type { CatalogResult, MediaType } from '@jinsei/contracts';
 
 export interface CatalogProvider {
-  readonly id: 'wikidata' | 'igdb';
+  readonly id: 'wikidata' | 'igdb' | 'tvmaze' | 'openlibrary' | 'tmdb';
   readonly enabled: boolean;
-  search(query: string): Promise<CatalogResult[]>;
+  search(query: string, mediaType?: MediaType): Promise<CatalogResult[]>;
   details(externalId: string): Promise<CatalogResult>;
 }
+
+// External markup is treated as text; never inject provider HTML into the page.
+export const plainText = (value: string) =>
+  value
+    .replace(/<[^>]*>/g, '')
+    .replace(
+      /&(?:nbsp|amp|lt|gt|quot|#39);/g,
+      (entity) =>
+        ({ '&nbsp;': ' ', '&amp;': '&', '&lt;': '<', '&gt;': '>', '&quot;': '"', '&#39;': "'" })[
+          entity
+        ] ?? '',
+    )
+    .trim();
 
 export class ProviderCache {
   private readonly cache = new Map<string, { expiresAt: number; value: CatalogResult[] }>();

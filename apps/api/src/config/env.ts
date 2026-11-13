@@ -11,6 +11,7 @@ const schema = z.object({
   IGDB_ENABLED: z.enum(['true', 'false']).default('false'),
   IGDB_CLIENT_ID: z.string().default(''),
   IGDB_CLIENT_SECRET: z.string().default(''),
+  TMDB_READ_TOKEN: z.string().default(''),
   DONATION_PIX_PAYLOAD: z.string().default(''),
   DONATION_PIX_KEY: z.string().default(''),
 });

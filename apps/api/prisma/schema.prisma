@@ -41,7 +41,7 @@ model UserPreference {
   userId           String    @id
   user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   theme            String    @default("system")
-  accent           String    @default("rose")
+  accent           String    @default("black")
   density          String    @default("comfortable")
   sidebarCollapsed Boolean   @default(false)
   onboardedAt      DateTime?
@@ -110,6 +110,7 @@ model MediaItem {
   description      String            @default("")
   releaseYear      Int?
   coverUrl         String?
+  coverAttribution Json?
   genres           String[]
   attributionLabel String
   attributionUrl   String?

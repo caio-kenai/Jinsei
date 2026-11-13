@@ -5,11 +5,21 @@ import {
   NotFoundException,
   ServiceUnavailableException,
 } from '@nestjs/common';
-import type { CatalogResult, ManualMediaInput, MediaType, SourceInput } from '@jinsei/contracts';
+import {
+  coverAttributionSchema,
+  type CatalogResult,
+  type ManualMediaInput,
+  type MediaType,
+  type SourceInput,
+} from '@jinsei/contracts';
 import { Prisma } from '../../generated/prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { WikidataProvider } from './providers/wikidata.provider';
 import { IgdbProvider } from './providers/igdb.provider';
+import { TvmazeProvider } from './providers/tvmaze.provider';
+import { OpenlibraryProvider } from './providers/openlibrary.provider';
+import { TmdbProvider } from './providers/tmdb.provider';
+import type { CatalogProvider } from './providers/catalog-provider';
 
 export const catalogInclude = { game: true, externalIds: true } satisfies Prisma.MediaItemInclude;
 export type MediaWithMetadata = Prisma.MediaItemGetPayload<{ include: typeof catalogInclude }>;
@@ -25,6 +35,7 @@ export function catalogResult(item: MediaWithMetadata): CatalogResult {
     description: item.description,
     releaseYear: item.releaseYear,
     coverUrl: item.coverUrl,
+    coverAttribution: coverAttributionSchema.nullable().parse(item.coverAttribution),
     platforms: item.game?.platforms ?? [],
     genres: item.genres,
     developers: item.game?.developers ?? [],
@@ -42,12 +53,40 @@ export class CatalogService {
     @Inject(PrismaService) private readonly db: PrismaService,
     @Inject(WikidataProvider) private readonly wikidata: WikidataProvider,
     @Inject(IgdbProvider) private readonly igdb: IgdbProvider,
+    @Inject(TvmazeProvider) private readonly tvmaze: TvmazeProvider,
+    @Inject(OpenlibraryProvider) private readonly openlibrary: OpenlibraryProvider,
+    @Inject(TmdbProvider) private readonly tmdb: TmdbProvider,
   ) {}
   providers() {
-    return [
-      { id: this.wikidata.id, enabled: true },
-      { id: this.igdb.id, enabled: this.igdb.enabled },
-    ];
+    return [this.wikidata, this.igdb, this.tvmaze, this.openlibrary, this.tmdb].map((provider) => ({
+      id: provider.id,
+      enabled: provider.enabled,
+    }));
+  }
+  async showcase() {
+    // Fixed public works only. Never expose personal library records or manual media.
+    const items = await this.db.mediaItem.findMany({
+      where: {
+        ownerId: null,
+        externalIds: {
+          some: {
+            OR: [
+              {
+                provider: 'wikidata',
+                externalId: {
+                  in: ['Q29300592', 'Q23013817', 'Q28451532', 'Q59756366', 'Q19631660', 'Q151599'],
+                },
+              },
+              { provider: 'tvmaze', externalId: { in: ['anime:69956', 'series:169'] } },
+              { provider: 'openlibrary', externalId: 'OL8988597W' },
+            ],
+          },
+        },
+      },
+      include: catalogInclude,
+      take: 9,
+    });
+    return items.map(catalogResult);
   }
   async search(userId: string, query: string, mediaType: MediaType) {
     const internal = await this.db.mediaItem.findMany({
@@ -62,8 +101,19 @@ export class CatalogService {
     });
     const items = internal.map(catalogResult);
     const warnings: string[] = [];
-    if (mediaType === 'games' && items.length < 10) {
-      const provider = this.igdb.enabled ? this.igdb : this.wikidata;
+    if (items.length < 10) {
+      const provider: CatalogProvider =
+        mediaType === 'games'
+          ? this.igdb.enabled
+            ? this.igdb
+            : this.wikidata
+          : mediaType === 'anime' || mediaType === 'series'
+            ? this.tvmaze
+            : mediaType === 'manga'
+              ? this.openlibrary
+              : this.tmdb.enabled
+                ? this.tmdb
+                : this.wikidata;
       try {
         const seen = new Set(
           items
@@ -71,7 +121,7 @@ export class CatalogService {
             .map((item) => `${item.provider}:${item.externalId}`),
         );
         items.push(
-          ...(await provider.search(query)).filter(
+          ...(await provider.search(query, mediaType)).filter(
             (item) => !seen.has(`${item.provider}:${item.externalId}`),
           ),
         );
@@ -106,6 +156,18 @@ export class CatalogService {
         title: input.title,
         normalizedTitle: normalizeName(input.title),
         description: input.description,
+        coverUrl: input.coverUrl,
+        ...(input.coverUrl
+          ? {
+              coverAttribution: {
+                provider: 'Cadastro pessoal',
+                sourceUrl: input.coverUrl,
+                license: 'Imagem indicada pelo usuário para seu registro privado',
+                licenseUrl: null,
+                artist: null,
+              },
+            }
+          : {}),
         releaseYear: input.releaseYear,
         genres: input.genres,
         attributionLabel: 'Cadastro pessoal',
@@ -126,13 +188,24 @@ export class CatalogService {
       where: unique,
       include: { media: { include: catalogInclude } },
     });
-    if (existing && existing.media.title !== input.externalId) return existing.media;
-    const provider = input.provider === 'wikidata' ? this.wikidata : this.igdb;
+    // Refresh old records without cover/provenance; otherwise retain the cached metadata for a day.
+    if (
+      existing &&
+      existing.media.title !== input.externalId &&
+      existing.media.coverUrl &&
+      existing.media.coverAttribution &&
+      existing.synchronizedAt.getTime() > Date.now() - 86400000
+    )
+      return existing.media;
+    const provider = [this.wikidata, this.igdb, this.tvmaze, this.openlibrary, this.tmdb].find(
+      (candidate) => candidate.id === input.provider,
+    )!;
     if (!provider.enabled) throw new BadRequestException('Provedor não habilitado');
     let item: CatalogResult;
     try {
       item = await provider.details(input.externalId);
     } catch {
+      if (existing) return existing.media;
       throw new ServiceUnavailableException(
         'Não foi possível consultar a obra. Tente novamente ou cadastre manualmente.',
       );
@@ -145,13 +218,29 @@ export class CatalogService {
           normalizedTitle: normalizeName(item.title),
           description: item.description,
           releaseYear: item.releaseYear,
+          coverUrl: item.coverUrl,
+          coverAttribution: item.coverAttribution ?? Prisma.DbNull,
           genres: item.genres,
-          game: {
-            upsert: {
-              create: { platforms: item.platforms, developers: item.developers, publishers: [] },
-              update: { platforms: item.platforms, developers: item.developers },
+          externalIds: {
+            update: {
+              where: { provider_externalId: unique.provider_externalId },
+              data: { synchronizedAt: new Date() },
             },
           },
+          ...(item.mediaType === 'games'
+            ? {
+                game: {
+                  upsert: {
+                    create: {
+                      platforms: item.platforms,
+                      developers: item.developers,
+                      publishers: [],
+                    },
+                    update: { platforms: item.platforms, developers: item.developers },
+                  },
+                },
+              }
+            : {}),
         },
         include: catalogInclude,
       });
@@ -165,21 +254,27 @@ export class CatalogService {
           description: item.description,
           releaseYear: item.releaseYear,
           coverUrl: item.coverUrl,
+          coverAttribution: item.coverAttribution ?? Prisma.DbNull,
           genres: item.genres,
           attributionLabel: item.attribution.label,
           attributionUrl: item.attribution.url,
           dataLicense: item.attribution.license,
-          game: {
-            create: { platforms: item.platforms, developers: item.developers, publishers: [] },
-          },
+          ...(item.mediaType === 'games'
+            ? {
+                game: {
+                  create: {
+                    platforms: item.platforms,
+                    developers: item.developers,
+                    publishers: [],
+                  },
+                },
+              }
+            : {}),
           externalIds: {
             create: {
               provider: input.provider,
               externalId: input.externalId,
-              retentionPolicy:
-                input.provider === 'wikidata'
-                  ? 'CC0 metadata; no external images'
-                  : 'IGDB usage terms',
+              retentionPolicy: item.attribution.license,
             },
           },
         },

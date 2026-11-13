@@ -1,7 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import type { CatalogResult } from '@jinsei/contracts';
+import type { CatalogResult, MediaType } from '@jinsei/contracts';
 import { z } from 'zod';
 import { type CatalogProvider, ProviderCache, providerFetch } from './catalog-provider';
+import { commonsCover } from './commons-cover';
+import { cheapsharkCover } from './cheapshark-cover';
 
 const entitySchema = z.object({
   id: z.string(),
@@ -29,6 +31,17 @@ const ids = (entity: Entity, property: string) =>
   });
 const label = (entity: Entity) =>
   entity.labels.pt?.value ?? entity.labels.en?.value ?? entity.labels.mul?.value ?? entity.id;
+const category = (entity: Entity): MediaType | null => {
+  const types = ids(entity, 'P31');
+  const description = entity.descriptions.en?.value ?? '';
+  if (types.includes('Q7889') || ids(entity, 'P400').length) return 'games';
+  if (/anime.*(?:series|television)|(?:series|television).*anime/i.test(description))
+    return 'anime';
+  if (/manga (?:series|by)|Japanese manga/i.test(description)) return 'manga';
+  if (types.includes('Q11424') || /\bfilm\b/i.test(description)) return 'movies';
+  if (types.includes('Q5398426') || /television series/i.test(description)) return 'series';
+  return null;
+};
 
 @Injectable()
 export class WikidataProvider implements CatalogProvider {
@@ -53,8 +66,8 @@ export class WikidataProvider implements CatalogProvider {
     ).entities;
   }
 
-  async search(query: string) {
-    return this.cache.get(`search:${query.toLowerCase()}`, async () => {
+  async search(query: string, mediaType: MediaType = 'games') {
+    return this.cache.get(`search:${mediaType}:${query.toLowerCase()}`, async () => {
       const search = z
         .object({ search: z.array(z.object({ id: z.string().regex(/^Q\d+$/) })) })
         .parse(
@@ -69,7 +82,7 @@ export class WikidataProvider implements CatalogProvider {
         );
       return this.normalize(
         Object.values(await this.entities(search.search.map((item) => item.id))).filter(
-          (item) => ids(item, 'P31').includes('Q7889') || ids(item, 'P400').length > 0,
+          (item) => category(item) === mediaType,
         ),
       );
     });
@@ -78,8 +91,7 @@ export class WikidataProvider implements CatalogProvider {
     if (!/^Q\d+$/.test(externalId)) throw new Error('Invalid Wikidata identifier');
     const results = await this.cache.get(`details:${externalId}`, async () => {
       const entity = (await this.entities([externalId]))[externalId];
-      if (!entity || (!ids(entity, 'P31').includes('Q7889') && !ids(entity, 'P400').length))
-        throw new Error('Not a video game');
+      if (!entity || !category(entity)) throw new Error('Unsupported media');
       return this.normalize([entity]);
     });
     if (!results[0]) throw new Error('Title unavailable');
@@ -96,26 +108,43 @@ export class WikidataProvider implements CatalogProvider {
     const labels = await this.entities(referenced);
     const named = (entity: Entity, property: string) =>
       ids(entity, property).flatMap((id) => (labels[id] ? [label(labels[id])] : []));
-    return entities.map((entity) => {
-      const date = z.object({ time: z.string() }).safeParse(values(entity, 'P577')[0]);
-      const year = date.success ? Number(date.data.time.match(/^\+(\d{4})/)?.[1]) : null;
-      return {
-        externalId: entity.id,
-        provider: 'wikidata',
-        mediaType: 'games',
-        title: label(entity),
-        description: entity.descriptions.pt?.value ?? entity.descriptions.en?.value ?? '',
-        releaseYear: year && year <= 2100 ? year : null,
-        coverUrl: null,
-        platforms: named(entity, 'P400'),
-        genres: named(entity, 'P136'),
-        developers: named(entity, 'P178'),
-        attribution: {
-          label: 'Wikidata',
-          url: `https://www.wikidata.org/wiki/${entity.id}`,
-          license: 'CC0-1.0 (metadados; imagens excluídas)',
-        },
-      };
-    });
+    return Promise.all(
+      entities.map(async (entity) => {
+        const date = z.object({ time: z.string() }).safeParse(values(entity, 'P577')[0]);
+        const year = date.success ? Number(date.data.time.match(/^\+(\d{4})/)?.[1]) : null;
+        const poster = values(entity, 'P3383').find(
+          (value): value is string => typeof value === 'string',
+        );
+        const filename =
+          poster ??
+          values(entity, 'P18').find((value): value is string => typeof value === 'string');
+        let cover = filename
+          ? await commonsCover(filename, Boolean(poster)).catch(() => null)
+          : null;
+        const steamId = values(entity, 'P1733').find(
+          (value): value is string => typeof value === 'string',
+        );
+        if (!cover && steamId && category(entity) === 'games')
+          cover = await cheapsharkCover(steamId);
+        return {
+          externalId: entity.id,
+          provider: 'wikidata',
+          mediaType: category(entity)!,
+          title: label(entity),
+          description: entity.descriptions.pt?.value ?? entity.descriptions.en?.value ?? '',
+          releaseYear: year && year <= 2100 ? year : null,
+          coverUrl: cover?.url ?? null,
+          coverAttribution: cover?.attribution ?? null,
+          platforms: named(entity, 'P400'),
+          genres: named(entity, 'P136'),
+          developers: named(entity, 'P178'),
+          attribution: {
+            label: 'Wikidata',
+            url: `https://www.wikidata.org/wiki/${entity.id}`,
+            license: 'CC0-1.0 (metadados; imagens excluídas)',
+          },
+        };
+      }),
+    );
   }
 }

@@ -18,6 +18,15 @@ describe('Contratos da biblioteca', () => {
     expect(entryCreateSchema.safeParse({ media: { title: 'Teste' } }).success).toBe(true);
   });
   it('valida meios pontos e limites de progresso', () => {
+    expect(
+      entryCreateSchema.safeParse({ media: { title: 'Teste', coverUrl: 'javascript:alert(1)' } })
+        .success,
+    ).toBe(false);
+    expect(
+      entryCreateSchema.safeParse({
+        media: { title: 'Teste', coverUrl: 'https://example.com/cover.jpg' },
+      }).success,
+    ).toBe(true);
     expect(entryPatchSchema.parse({ rating: 9.5 })).toEqual({ rating: 9.5 });
     expect(preferencesPatchSchema.parse({ theme: 'dark' })).toEqual({ theme: 'dark' });
     expect(entryPatchSchema.safeParse({ rating: 9.5 }).success).toBe(true);

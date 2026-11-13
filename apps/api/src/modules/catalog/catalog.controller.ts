@@ -2,7 +2,7 @@ import { Controller, Get, Inject, Query } from '@nestjs/common';
 import { ApiCookieAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { catalogQuerySchema } from '@jinsei/contracts';
-import { CurrentUserId } from '../auth/session.guard';
+import { CurrentUserId, Public } from '../auth/session.guard';
 import { ZodPipe } from '../../common/zod.pipe';
 import { CatalogService } from './catalog.service';
 
@@ -11,6 +11,11 @@ import { CatalogService } from './catalog.service';
 @Controller('catalog')
 export class CatalogController {
   constructor(@Inject(CatalogService) private readonly catalog: CatalogService) {}
+  @Public()
+  @Get('showcase')
+  showcase() {
+    return this.catalog.showcase();
+  }
   @Get('media')
   @Throttle({ default: { limit: 30, ttl: 60000 } })
   @ApiQuery({ name: 'q', required: true })

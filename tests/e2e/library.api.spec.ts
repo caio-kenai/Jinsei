@@ -90,6 +90,12 @@ test('biblioteca isola usuários e persiste nota, progresso, tags, filtros e vis
     'gallery',
   );
   expect((await (await other.get('/api/saved-views?mediaType=games')).json()).config).toBeNull();
+  await owner.patch('/api/users/me/preferences', { data: { categories: ['movies'] } });
+  expect((await (await owner.get('/api/library/entries')).json()).total).toBe(0);
+  expect((await (await owner.get('/api/library/summary')).json()).total).toBe(0);
+  expect((await owner.get(`/api/library/entries/${entry.id}`)).status()).toBe(200);
+  await owner.patch('/api/users/me/preferences', { data: { categories: ['games'] } });
+  expect((await (await owner.get('/api/library/entries')).json()).total).toBe(1);
   expect((await owner.delete(`/api/library/entries/${entry.id}`)).status()).toBe(200);
   expect((await owner.get(`/api/library/entries/${entry.id}`)).status()).toBe(404);
   await owner.dispose();
@@ -99,6 +105,7 @@ test('biblioteca isola usuários e persiste nota, progresso, tags, filtros e vis
 test('consulta o Wikidata real e importa uma obra sem duplicar o catálogo', async ({
   playwright,
 }) => {
+  test.setTimeout(90000);
   const client = await playwright.request.newContext({
     baseURL: 'http://127.0.0.1:4000',
     extraHTTPHeaders: { Origin: 'http://localhost:3000' },
@@ -118,6 +125,8 @@ test('consulta o Wikidata real e importa uma obra sem duplicar o catálogo', asy
   expect(imported.status()).toBe(201);
   const entry = await imported.json();
   expect(entry.title).toBe('Hollow Knight');
+  expect(entry.coverUrl).toMatch(/^https:\/\//);
+  expect(entry.coverAttribution.provider).toBe('CheapShark');
   expect(
     (
       await client.post('/api/library/entries', {
@@ -126,5 +135,19 @@ test('consulta o Wikidata real e importa uma obra sem duplicar o catálogo', asy
     ).status(),
   ).toBe(409);
   await client.delete(`/api/library/entries/${entry.id}`);
+  for (const source of [
+    { provider: 'tvmaze', externalId: 'anime:69956' },
+    { provider: 'tvmaze', externalId: 'series:169' },
+    { provider: 'openlibrary', externalId: 'OL8988597W' },
+    { provider: 'wikidata', externalId: 'Q151599' },
+  ]) {
+    const importedMedia = await client.post('/api/library/entries', { data: { source } });
+    expect(importedMedia.status()).toBe(201);
+    const media = await importedMedia.json();
+    expect(media.coverUrl, `${source.provider}:${source.externalId}`).toMatch(/^https:\/\//);
+    expect(media.coverAttribution.sourceUrl).toMatch(/^https:\/\//);
+    expect(media.coverAttribution.license).not.toBe('');
+    await client.delete(`/api/library/entries/${media.id}`);
+  }
   await client.dispose();
 });
