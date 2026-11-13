@@ -52,6 +52,7 @@ export class LibraryService {
     const where: Prisma.UserMediaEntryWhereInput = {
       userId,
       media: {
+        mediaType: { users: { some: { userId, enabled: true } } },
         ...(query.mediaType ? { mediaTypeId: query.mediaType } : {}),
         ...(query.q ? { title: { contains: query.q, mode: 'insensitive' } } : {}),
       },
@@ -232,9 +233,13 @@ export class LibraryService {
   }
 
   async summary(userId: string) {
+    const where: Prisma.UserMediaEntryWhereInput = {
+      userId,
+      media: { mediaType: { users: { some: { userId, enabled: true } } } },
+    };
     const entries = await this.db.userMediaEntry.groupBy({
       by: ['statusId'],
-      where: { userId },
+      where,
       _count: true,
     });
     const statuses = await this.db.userStatus.findMany({ where: { userId } });
@@ -245,12 +250,12 @@ export class LibraryService {
     }
     const [stats, hours] = await this.db.$transaction([
       this.db.userMediaEntry.aggregate({
-        where: { userId },
+        where,
         _count: true,
         _avg: { ratingSteps: true },
       }),
       this.db.gameProgress.aggregate({
-        where: { entry: { userId } },
+        where: { entry: where },
         _sum: { minutesPlayed: true },
       }),
     ]);
