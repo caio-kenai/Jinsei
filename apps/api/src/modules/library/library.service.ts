@@ -261,4 +261,13 @@ export class LibraryService {
       hoursPlayed: (hours._sum.minutesPlayed ?? 0) / 60,
     };
   }
+
+  async export(userId: string) {
+    const entries = await this.db.userMediaEntry.findMany({
+      where: { userId },
+      include: entryInclude,
+      orderBy: { createdAt: 'asc' },
+    });
+    return entries.map(entryResult);
+  }
 }

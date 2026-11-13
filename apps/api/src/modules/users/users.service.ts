@@ -1,10 +1,22 @@
-import { ConflictException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Inject,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { verify } from 'argon2';
 import { currentUserSchema, type PreferencesPatch } from '@jinsei/contracts';
 import { PrismaService } from '../../prisma/prisma.service';
+import { hashPassword } from '../auth/auth.service';
+import { LibraryService } from '../library/library.service';
 
 @Injectable()
 export class UsersService {
-  constructor(@Inject(PrismaService) private readonly db: PrismaService) {}
+  constructor(
+    @Inject(PrismaService) private readonly db: PrismaService,
+    @Inject(LibraryService) private readonly library: LibraryService,
+  ) {}
   async me(userId: string) {
     const user = await this.db.user.findUnique({
       where: { id: userId },
@@ -81,5 +93,52 @@ export class UsersService {
       throw error;
     }
     return this.me(userId);
+  }
+
+  private async confirmPassword(userId: string, password: string) {
+    const user = await this.db.user.findUnique({ where: { id: userId } });
+    if (!user || !(await verify(user.passwordHash, password)))
+      throw new UnauthorizedException('A senha atual não confere');
+  }
+  async changePassword(userId: string, currentPassword: string, newPassword: string) {
+    await this.confirmPassword(userId, currentPassword);
+    const passwordHash = await hashPassword(newPassword);
+    await this.db.$transaction([
+      this.db.user.update({ where: { id: userId }, data: { passwordHash } }),
+      this.db.session.deleteMany({ where: { userId } }),
+    ]);
+    return { changed: true };
+  }
+  async export(userId: string) {
+    const [account, entries, tags, views, activity] = await Promise.all([
+      this.me(userId),
+      this.library.export(userId),
+      this.db.tag.findMany({ where: { userId }, select: { name: true, color: true } }),
+      this.db.savedView.findMany({
+        where: { userId },
+        select: { mediaTypeId: true, name: true, config: true },
+      }),
+      this.db.activityLog.findMany({
+        where: { userId },
+        select: { action: true, changes: true, createdAt: true },
+      }),
+    ]);
+    return {
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      account,
+      entries,
+      tags,
+      views,
+      activity,
+    };
+  }
+  async remove(userId: string, password: string) {
+    await this.confirmPassword(userId, password);
+    await this.db.$transaction(async (tx) => {
+      await tx.userMediaEntry.deleteMany({ where: { userId } });
+      await tx.user.delete({ where: { id: userId } });
+    });
+    return { deleted: true };
   }
 }

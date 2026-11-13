@@ -48,7 +48,16 @@ test('cadastro, cookie seguro, onboarding persistente, CSRF e revogação', asyn
   expect(
     (await client.patch('/api/users/me/preferences', { data: { userId: 'other-user' } })).status(),
   ).toBe(400);
-  await client.post('/api/auth/logout');
+  const exported = await (await client.get('/api/users/me/export')).json();
+  expect(exported.account.email).toBe(credentials.email);
+  expect(JSON.stringify(exported)).not.toContain('passwordHash');
+  expect((await client.patch('/api/users/me/password', { data: { currentPassword: 'Senha errada 123', newPassword: 'Nova senha longa 456' } })).status()).toBe(401);
+  expect((await client.patch('/api/users/me/password', { data: { currentPassword: credentials.password, newPassword: 'Nova senha longa 456' } })).status()).toBe(200);
+  expect((await client.get('/api/users/me')).status()).toBe(401);
+  expect((await client.post('/api/auth/login', { data: { ...credentials, password: 'Nova senha longa 456' } })).status()).toBe(200);
+  expect((await client.delete('/api/users/me', { data: { password: 'Senha errada 123' } })).status()).toBe(401);
+  expect((await client.delete('/api/users/me', { data: { password: 'Nova senha longa 456' } })).status()).toBe(200);
+  expect((await client.get('/api/users/me')).status()).toBe(401);
   await client.dispose();
   await anonymous.dispose();
 });
