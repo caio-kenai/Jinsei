@@ -101,7 +101,8 @@ export const statusLabels: Record<StatusKey, string> = {
   completed: 'Concluído',
   dropped: 'Abandonado',
 };
-export const ratingSchema = z.number().min(0).max(10).multipleOf(0.5).nullable();
+export const ratingSchema = z.number().min(0).max(5).multipleOf(0.25).nullable();
+export const ratingValues = Array.from({ length: 20 }, (_, index) => (index + 1) / 4);
 export const progressSchema = z
   .object({
     hoursPlayed: z.number().min(0).max(100000).multipleOf(0.5),

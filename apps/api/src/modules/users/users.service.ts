@@ -125,6 +125,7 @@ export class UsersService {
     ]);
     return {
       version: 1,
+      ratingScale: { maximum: 5, step: 0.25 },
       exportedAt: new Date().toISOString(),
       account,
       entries,

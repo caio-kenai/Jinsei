@@ -11,6 +11,7 @@ import { AddEntryDialog } from '@/features/library/add-entry-dialog';
 import { EntryDetails } from '@/features/library/entry-details';
 import { MediaCover } from '@/features/library/media-cover';
 import { StatusBadge } from '@/features/library/status-badge';
+import { StarRating } from '@/components/shared/star-rating';
 
 type Summary = {
   total: number;
@@ -32,7 +33,7 @@ export function HomeScreen() {
   });
   const recent = useQuery({
     queryKey: ['library', 'home-recent'],
-    queryFn: () => api<LibraryResponse>('/library/entries?limit=5'),
+    queryFn: () => api<LibraryResponse>('/library/entries?limit=5&sort=createdAt'),
   });
   if (summary.isPending)
     return (
@@ -42,10 +43,7 @@ export function HomeScreen() {
     );
   return (
     <div className="home-page">
-      <header
-        className="page-heading"
-        style={{ display: 'flex', justifyContent: 'space-between', gap: 15 }}
-      >
+      <header className="page-heading home-heading">
         <div>
           <span className="eyebrow" style={{ marginBottom: 8 }}>
             SEU ESPAÇO, SUA HISTÓRIA
@@ -53,7 +51,7 @@ export function HomeScreen() {
           <h1>Olá, {user?.profile.displayName.split(' ')[0]}.</h1>
           <p>Um novo dia para descobrir, continuar e guardar boas histórias.</p>
         </div>
-        <Button size="sm" onClick={() => setAdd(true)}>
+        <Button className="home-add" size="sm" onClick={() => setAdd(true)}>
           <Plus size={14} />
           Adicionar título
         </Button>
@@ -80,8 +78,9 @@ export function HomeScreen() {
           <div className="stat">
             <span>Sua nota média</span>
             <strong>
-              {summary.data?.averageRating?.toLocaleString('pt-BR', { maximumFractionDigits: 1 }) ??
+              {summary.data?.averageRating?.toLocaleString('pt-BR', { maximumFractionDigits: 2 }) ??
                 '—'}
+              <small style={{ fontSize: 12, marginLeft: 4 }}> / 5</small>
             </strong>
           </div>
         </div>
@@ -93,7 +92,9 @@ export function HomeScreen() {
           <ArrowRight size={12} />
         </Link>
       </div>
-      {playing.data?.items.length ? (
+      {playing.error ? (
+        <p className="error-banner">Não foi possível carregar os títulos em andamento.</p>
+      ) : playing.data?.items.length ? (
         <div className="continue-list">
           {playing.data.items.map((entry) => (
             <button
@@ -102,14 +103,18 @@ export function HomeScreen() {
               onClick={() => setDetail(entry.id)}
               style={{ textAlign: 'left', background: 'var(--surface)' }}
             >
-              <MediaCover title={entry.title} url={entry.coverUrl} />
+              <MediaCover
+                title={entry.title}
+                url={entry.coverUrl}
+                layout={entry.coverAttribution?.layout}
+              />
               <span className="continue-info">
                 <strong>{entry.title}</strong>
-                <p>
+                <span className="continue-meta">
                   {entry.mediaType === 'games'
                     ? `${entry.progress.hoursPlayed} h · ${entry.progress.completion}% concluído`
                     : 'Em andamento'}
-                </p>
+                </span>
                 <span className="progress-track" style={{ display: 'block' }}>
                   <span
                     className="progress-fill"
@@ -140,7 +145,9 @@ export function HomeScreen() {
           <div className="section-title">
             <h2>Adicionados recentemente</h2>
           </div>
-          {recent.data?.items.length ? (
+          {recent.error ? (
+            <p className="error-banner">Não foi possível carregar os títulos recentes.</p>
+          ) : recent.data?.items.length ? (
             <div className="status-summary">
               {recent.data.items.map((entry) => (
                 <button
@@ -148,12 +155,17 @@ export function HomeScreen() {
                   className="catalog-result w-full"
                   onClick={() => setDetail(entry.id)}
                 >
-                  <MediaCover title={entry.title} url={entry.coverUrl} />
+                  <MediaCover
+                    title={entry.title}
+                    url={entry.coverUrl}
+                    layout={entry.coverAttribution?.layout}
+                  />
                   <span style={{ flex: 1 }}>
                     <strong>{entry.title}</strong>
                     <small>{entry.tags.join(' · ') || 'Minha biblioteca'}</small>
                   </span>
                   <StatusBadge status={entry.status} />
+                  <StarRating value={entry.rating} size={11} />
                 </button>
               ))}
             </div>

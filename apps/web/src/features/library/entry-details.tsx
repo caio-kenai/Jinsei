@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { LoaderCircle, Heart, LockKeyhole, Trash2, Save } from 'lucide-react';
 import {
@@ -18,6 +18,7 @@ import { Input, Select, Textarea } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { MediaCover } from './media-cover';
 import { useEntryMutation } from './use-library';
+import { StarRatingInput } from '@/components/shared/star-rating';
 
 export function EntryDetails({ id, onClose }: { id: string; onClose: () => void }) {
   const result = useQuery({
@@ -61,6 +62,7 @@ function EntryForm({ entry, onClose }: { entry: LibraryEntry; onClose: () => voi
   const update = useEntryMutation();
   const client = useQueryClient();
   const {
+    control,
     register,
     handleSubmit,
     formState: { errors },
@@ -130,22 +132,16 @@ function EntryForm({ entry, onClose }: { entry: LibraryEntry; onClose: () => voi
                   ))}
                 </Select>
               </label>
-              <label className="field">
-                Sua nota
-                <Select
-                  aria-label="Sua nota"
-                  {...register('rating', {
-                    setValueAs: (value) => (value === '' ? null : Number(value)),
-                  })}
-                >
-                  <option value="">Sem nota</option>
-                  {Array.from({ length: 21 }, (_, index) => index / 2).map((rating) => (
-                    <option key={rating} value={rating}>
-                      {rating.toLocaleString('pt-BR')} / 10
-                    </option>
-                  ))}
-                </Select>
-              </label>
+              <div className="field">
+                <span>Sua nota</span>
+                <Controller
+                  name="rating"
+                  control={control}
+                  render={({ field }) => (
+                    <StarRatingInput value={field.value ?? null} onChange={field.onChange} />
+                  )}
+                />
+              </div>
             </div>
             {entry.mediaType === 'games' && (
               <div className="form-grid">

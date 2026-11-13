@@ -19,6 +19,7 @@ import { Input, Select, Textarea } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { CatalogSearch } from '@/features/catalog/catalog-search';
 import { MediaCover } from './media-cover';
+import { StarRatingInput } from '@/components/shared/star-rating';
 
 export function AddEntryDialog({
   open,
@@ -60,6 +61,7 @@ function AddEntryContent({
   const [selected, setSelected] = useState<CatalogResult | undefined>(initialItem);
   const [manual, setManual] = useState(false);
   const [title, setTitle] = useState('');
+  const [rating, setRating] = useState<number | null>(null);
   const [mediaType, setMediaType] = useState(initialType);
   const [error, setError] = useState('');
   const client = useQueryClient();
@@ -97,7 +99,7 @@ function AddEntryContent({
           ? { mediaId: selected.id }
           : { source: { provider: selected?.provider, externalId: selected?.externalId } }),
       status: fields.get('status'),
-      rating: fields.get('rating') ? Number(fields.get('rating')) : null,
+      rating,
     };
     const parsed = entryCreateSchema.safeParse(input);
     if (!parsed.success) {
@@ -225,17 +227,10 @@ function AddEntryContent({
                   ))}
                 </Select>
               </label>
-              <label className="field">
-                Sua nota
-                <Select name="rating" aria-label="Sua nota" defaultValue="">
-                  <option value="">Ainda não avaliei</option>
-                  {Array.from({ length: 21 }, (_, index) => index / 2).map((rating) => (
-                    <option key={rating} value={rating}>
-                      {rating.toLocaleString('pt-BR')} / 10
-                    </option>
-                  ))}
-                </Select>
-              </label>
+              <div className="field">
+                <span>Sua nota</span>
+                <StarRatingInput value={rating} onChange={setRating} />
+              </div>
             </div>
             {error && (
               <div role="alert" className="error-banner">

@@ -17,7 +17,7 @@ describe('Contratos da biblioteca', () => {
     );
     expect(entryCreateSchema.safeParse({ media: { title: 'Teste' } }).success).toBe(true);
   });
-  it('valida meios pontos e limites de progresso', () => {
+  it('valida quartos de estrela e limites de progresso', () => {
     expect(
       entryCreateSchema.safeParse({ media: { title: 'Teste', coverUrl: 'javascript:alert(1)' } })
         .success,
@@ -27,10 +27,10 @@ describe('Contratos da biblioteca', () => {
         media: { title: 'Teste', coverUrl: 'https://example.com/cover.jpg' },
       }).success,
     ).toBe(true);
-    expect(entryPatchSchema.parse({ rating: 9.5 })).toEqual({ rating: 9.5 });
+    expect(entryPatchSchema.parse({ rating: 4.75 })).toEqual({ rating: 4.75 });
     expect(preferencesPatchSchema.parse({ theme: 'dark' })).toEqual({ theme: 'dark' });
-    expect(entryPatchSchema.safeParse({ rating: 9.5 }).success).toBe(true);
-    for (const rating of [-1, 10.5, 9.3])
+    expect(entryPatchSchema.safeParse({ rating: 4.75 }).success).toBe(true);
+    for (const rating of [-1, 5.25, 4.3])
       expect(entryPatchSchema.safeParse({ rating }).success).toBe(false);
     expect(
       entryPatchSchema.safeParse({ progress: { hoursPlayed: 1, completion: 101 } }).success,

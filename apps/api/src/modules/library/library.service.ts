@@ -28,7 +28,7 @@ export function entryResult(entry: Entry) {
     id: entry.id,
     mediaId: entry.mediaId,
     status: entry.status.key,
-    rating: entry.ratingSteps === null ? null : entry.ratingSteps / 2,
+    rating: entry.ratingSteps === null ? null : entry.ratingSteps / 4,
     favorite: entry.favorite,
     notes: entry.notes,
     tags: entry.tags.map(({ tag }) => tag.name),
@@ -137,7 +137,7 @@ export class LibraryService {
             userId,
             mediaId: media.id,
             statusId: status.id,
-            ratingSteps: input.rating === null ? null : input.rating * 2,
+            ratingSteps: input.rating === null ? null : input.rating * 4,
             favorite: input.favorite,
             notes: input.notes,
             ...(media.mediaTypeId === 'games'
@@ -186,7 +186,7 @@ export class LibraryService {
               ? undefined
               : input.rating === null
                 ? null
-                : input.rating * 2,
+                : input.rating * 4,
           favorite: input.favorite,
           notes: input.notes,
           updatedAt: new Date(),
@@ -262,7 +262,7 @@ export class LibraryService {
     return {
       total: stats._count,
       byStatus,
-      averageRating: stats._avg.ratingSteps === null ? null : stats._avg.ratingSteps / 2,
+      averageRating: stats._avg.ratingSteps === null ? null : stats._avg.ratingSteps / 4,
       hoursPlayed: (hours._sum.minutesPlayed ?? 0) / 60,
     };
   }

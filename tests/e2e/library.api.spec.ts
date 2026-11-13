@@ -26,7 +26,7 @@ test('biblioteca isola usuários e persiste nota, progresso, tags, filtros e vis
   const input = {
     media: { title: `Obra privada ${id}`, mediaType: 'games', platforms: ['PC'] },
     status: 'in_progress',
-    rating: 8.5,
+    rating: 4.25,
     progress: { hoursPlayed: 12.5, completion: 42 },
     notes: 'Anotação estritamente privada',
     tags: ['Indie', 'indie'],
@@ -36,7 +36,7 @@ test('biblioteca isola usuários e persiste nota, progresso, tags, filtros e vis
   expect(created.status()).toBe(201);
   const entry = await created.json();
   expect(entry).toMatchObject({
-    rating: 8.5,
+    rating: 4.25,
     progress: input.progress,
     notes: input.notes,
     favorite: true,
@@ -56,7 +56,7 @@ test('biblioteca isola usuários e persiste nota, progresso, tags, filtros e vis
       .items,
   ).toHaveLength(0);
   expect(
-    (await owner.patch(`/api/library/entries/${entry.id}`, { data: { rating: 8.7 } })).status(),
+    (await owner.patch(`/api/library/entries/${entry.id}`, { data: { rating: 4.7 } })).status(),
   ).toBe(400);
   expect(
     (
@@ -68,7 +68,7 @@ test('biblioteca isola usuários e persiste nota, progresso, tags, filtros e vis
   expect(
     (
       await owner.patch(`/api/library/entries/${entry.id}`, {
-        data: { status: 'completed', rating: 9.5 },
+        data: { status: 'completed', rating: 4.75 },
       })
     ).status(),
   ).toBe(200);
@@ -78,7 +78,7 @@ test('biblioteca isola usuários e persiste nota, progresso, tags, filtros e vis
     })
   ).json();
   expect(filtered.total).toBe(1);
-  expect(filtered.items[0].rating).toBe(9.5);
+  expect(filtered.items[0].rating).toBe(4.75);
   expect(
     (
       await owner.put('/api/saved-views', {

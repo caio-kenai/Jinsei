@@ -1,9 +1,14 @@
 'use client';
 import { useState } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import { keepPreviousData, useMutation, useQuery } from '@tanstack/react-query';
 import {
   Gamepad2,
   Library,
+  Tv,
+  BookOpen,
+  Film,
+  Clapperboard,
   Heart,
   Plus,
   List,
@@ -17,7 +22,6 @@ import {
   Save,
   LoaderCircle,
   Layers,
-  Star,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
@@ -48,6 +52,7 @@ import { AddEntryDialog } from './add-entry-dialog';
 import { EntryDetails } from './entry-details';
 import { MediaCover } from './media-cover';
 import { StatusBadge } from './status-badge';
+import { StarRating } from '@/components/shared/star-rating';
 
 type Props = {
   mediaType?: MediaType;
@@ -78,7 +83,7 @@ export function LibraryScreen(props: Props) {
     );
   return (
     <LibraryWorkspace
-      key={`${props.mediaType ?? 'all'}:${props.favorites ?? false}:${props.initialQuery ?? ''}`}
+      key={`${props.mediaType ?? 'all'}:${props.favorites ?? false}:${props.initialQuery ?? ''}:${props.initialEntry ?? ''}`}
       {...props}
       initialConfig={result.data.config ?? defaultViewConfig}
     />
@@ -91,6 +96,8 @@ function LibraryWorkspace({
   initialEntry,
   initialConfig,
 }: Props & { initialConfig: SavedViewConfig }) {
+  const router = useRouter();
+  const pathname = usePathname();
   const [config, setConfig] = useState<SavedViewConfig>({
     ...initialConfig,
     filters: { ...initialConfig.filters, ...(initialQuery ? { q: initialQuery } : {}) },
@@ -131,7 +138,13 @@ function LibraryWorkspace({
     : mediaType
       ? categoryLabels[mediaType]
       : 'Minha biblioteca';
-  const Icon = favorites ? Heart : mediaType === 'games' ? Gamepad2 : Library;
+  const Icon = favorites
+    ? Heart
+    : mediaType
+      ? { games: Gamepad2, anime: Tv, manga: BookOpen, movies: Film, series: Clapperboard }[
+          mediaType
+        ]
+      : Library;
   function filters(next: SavedViewConfig['filters']) {
     setConfig({ ...config, filters: next });
     setPage(1);
@@ -148,11 +161,19 @@ function LibraryWorkspace({
   const selectedIds = Object.entries(selected)
     .filter(([, checked]) => checked)
     .map(([id]) => id);
+  function closeDetails() {
+    setDetailId(null);
+    if (initialEntry) {
+      const parameters = new URLSearchParams(window.location.search);
+      parameters.delete('entry');
+      router.replace(pathname + (parameters.size ? `?${parameters}` : ''), { scroll: false });
+    }
+  }
   return (
     <>
       <header className="context-header">
         <div className="context-title">
-          <span className="context-icon">
+          <span className="context-icon" data-media-type={mediaType}>
             <Icon size={17} />
           </span>
           <div>
@@ -443,12 +464,7 @@ function LibraryWorkspace({
                 <h3>{entry.title}</h3>
                 <div className="gallery-card-footer">
                   <StatusBadge status={entry.status} />
-                  {entry.rating !== null && (
-                    <span className="rating" style={{ fontSize: 10 }}>
-                      <Star size={10} />
-                      {entry.rating.toLocaleString('pt-BR')}
-                    </span>
-                  )}
+                  {entry.rating !== null && <StarRating value={entry.rating} size={11} />}
                 </div>
               </article>
             ))}
@@ -496,7 +512,7 @@ function LibraryWorkspace({
         mediaType={mediaType}
         onAdded={(entry) => setDetailId(entry.id)}
       />
-      {detailId && <EntryDetails id={detailId} onClose={() => setDetailId(null)} />}
+      {detailId && <EntryDetails id={detailId} onClose={closeDetails} />}
     </>
   );
 }

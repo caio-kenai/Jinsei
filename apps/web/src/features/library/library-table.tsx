@@ -7,7 +7,7 @@ import {
   type ColumnDef,
   type RowSelectionState,
 } from '@tanstack/react-table';
-import { ChevronDown, Heart, Star } from 'lucide-react';
+import { ChevronDown, Heart } from 'lucide-react';
 import { formatDistanceToNowStrict } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import {
@@ -20,6 +20,7 @@ import {
 } from '@jinsei/contracts';
 import { MediaCover } from './media-cover';
 import { StatusBadge } from './status-badge';
+import { RatingPicker } from '@/components/shared/star-rating';
 
 export const columnLabels = {
   title: 'Nome',
@@ -71,7 +72,7 @@ export function LibraryTable({
     ...config.columns.map((key): ColumnDef<LibraryEntry> => ({
       id: key,
       header: columnLabels[key],
-      size: key === 'title' ? 300 : key === 'rating' ? 82 : key === 'progress' ? 135 : 125,
+      size: key === 'title' ? 300 : key === 'rating' ? 110 : key === 'progress' ? 135 : 125,
       cell: ({ row }) => {
         const item = row.original;
         if (key === 'title')
@@ -112,26 +113,11 @@ export function LibraryTable({
           );
         if (key === 'rating')
           return (
-            <span className="rating">
-              <Star size={11} />
-              <select
-                className="inline-control"
-                aria-label={`Nota de ${item.title}`}
-                value={item.rating ?? ''}
-                onChange={(event) =>
-                  onPatch(item.id, {
-                    rating: event.target.value === '' ? null : Number(event.target.value),
-                  })
-                }
-              >
-                <option value="">—</option>
-                {Array.from({ length: 21 }, (_, index) => index / 2).map((value) => (
-                  <option key={value} value={value}>
-                    {value.toLocaleString('pt-BR')}
-                  </option>
-                ))}
-              </select>
-            </span>
+            <RatingPicker
+              value={item.rating}
+              label={`Nota de ${item.title}`}
+              onChange={(rating) => onPatch(item.id, { rating })}
+            />
           );
         if (key === 'progress')
           return item.mediaType === 'games' ? (
