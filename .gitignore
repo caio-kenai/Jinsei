@@ -54,6 +54,7 @@ coverage/
 playwright-report/
 test-results/
 apps/api/src/generated/
+/apps/web/public/branding/
 .env.*
 !.env.example
 !.env.*.example
