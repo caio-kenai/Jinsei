@@ -23,10 +23,10 @@ import {
   Sun,
   Moon,
   Monitor,
-  LogOut,
   ArrowUpRight,
   Compass,
   CupSoda,
+  Info,
 } from 'lucide-react';
 import { categoryLabels, mediaTypes, type CurrentUser } from '@jinsei/contracts';
 import { Brand } from '@/components/shared/brand';
@@ -37,14 +37,16 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useCurrentUser } from '@/features/auth/use-current-user';
 import { usePreferences } from '@/features/auth/use-preferences';
 import { api } from '@/lib/api';
-import { cn, initials } from '@/lib/utils';
+import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 import { SupportDialog } from '@/features/support/support-dialog';
+import { UserMenu } from '@/features/profile/user-menu';
+import { AboutDialog } from '@/features/about/about-dialog';
 
 const categoryIcons = {
   games: Gamepad2,
@@ -62,6 +64,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const preferences = usePreferences();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [supportOpen, setSupportOpen] = useState(false);
+  const [aboutOpen, setAboutOpen] = useState(false);
   const [libraryOpen, setLibraryOpen] = useState(true);
   const searchRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
@@ -120,7 +123,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     onClick={close}
                     className={cn('nav-link', pathname === `/library/${type}` && 'active')}
                   >
-                    <Icon size={17} />
+                    <Icon size={16} />
                     {categoryLabels[type]}
                     {pathname === `/library/${type}` && <span className="nav-active-dot" />}
                   </Link>
@@ -150,10 +153,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </Link>
       </nav>
       <div className="sidebar-bottom">
-        <button className="nav-link support-nav" onClick={() => setSupportOpen(true)}>
-          <CupSoda size={17} />
-          Buy Me a Monster
-        </button>
         <Link
           href="/settings"
           onClick={close}
@@ -162,6 +161,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <Settings size={17} />
           Configurações
         </Link>
+        <button className="nav-link support-nav" onClick={() => setSupportOpen(true)}>
+          <CupSoda size={17} />
+          Buy Me a Monster
+        </button>
+        <button className="nav-link support-nav" onClick={() => setAboutOpen(true)}>
+          <Info size={17} />
+          Sobre
+        </button>
         <a
           className="nav-link source-link"
           href="https://github.com/caio-kenai/Jinsei"
@@ -175,9 +182,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     </>
   );
   async function logout() {
-    await api('/auth/logout', { method: 'POST' });
-    queryClient.clear();
-    router.replace('/login');
+    try {
+      await api('/auth/logout', { method: 'POST' });
+      queryClient.clear();
+      router.replace('/login');
+    } catch {
+      toast.error('Não foi possível sair. Tente novamente.');
+    }
   }
   function changeTheme(theme: CurrentUser['preferences']['theme']) {
     setTheme(theme);
@@ -227,7 +238,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <div className="app-workspace">
         <header className="global-header">
           <Link href="/home" className="global-brand" aria-label="Jinsei início">
-            <Brand />
+            <Brand className="global-wordmark" />
+            <Brand compact className="global-app-icon" />
             <ChevronDown size={12} />
           </Link>
           <Button
@@ -279,25 +291,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="avatar profile-trigger" aria-label="Menu da conta">
-                  {initials(user.profile.displayName)}
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuLabel>{user.profile.displayName}</DropdownMenuLabel>
-                <DropdownMenuItem onSelect={() => router.push('/settings')}>
-                  <Settings size={15} />
-                  Minha conta
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onSelect={() => void logout()}>
-                  <LogOut size={15} />
-                  Sair do Jinsei
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <UserMenu user={user} onLogout={logout} />
           </div>
         </header>
         <main id="main-content" className="workspace-content">
@@ -314,6 +308,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </DialogContent>
       </Dialog>
       <SupportDialog open={supportOpen} onOpenChange={setSupportOpen} />
+      <AboutDialog open={aboutOpen} onOpenChange={setAboutOpen} />
     </div>
   );
 }

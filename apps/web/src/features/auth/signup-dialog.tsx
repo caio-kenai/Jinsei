@@ -20,7 +20,7 @@ export function SignupDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="signup-dialog public-surface">
-        <Brand />
+        <Brand compact />
         <DialogTitle className="signup-title">Cadastre-se GRATUITAMENTE!</DialogTitle>
         <DialogDescription className="signup-description">
           Já tem uma conta? <Link href="/login">Entrar</Link>

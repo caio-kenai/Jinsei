@@ -76,7 +76,7 @@ export function OnboardingForm() {
     }
   }
   return (
-    <main className="onboarding-page">
+    <main className="onboarding-page public-surface">
       <Brand />
       <form onSubmit={submit} className="onboarding-card">
         <span className="eyebrow">O PRIMEIRO CAPÍTULO</span>
