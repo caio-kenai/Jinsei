@@ -1,0 +1,92 @@
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id           String          @id @default(cuid())
+  email        String          @unique
+  passwordHash String
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  profile      Profile?
+  preference   UserPreference?
+  sessions     Session[]
+  categories   UserMediaType[]
+  statuses     UserStatus[]
+}
+
+model Profile {
+  userId      String   @id
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  displayName String   @default("Minha jornada")
+  username    String?  @unique
+  bio         String   @default("")
+  isPublic    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model UserPreference {
+  userId           String    @id
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  theme            String    @default("system")
+  accent           String    @default("rose")
+  density          String    @default("comfortable")
+  sidebarCollapsed Boolean   @default(false)
+  onboardedAt      DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  tokenHash String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model MediaType {
+  id        String          @id
+  label     String
+  sortOrder Int
+  users     UserMediaType[]
+  statuses  UserStatus[]
+}
+
+model UserMediaType {
+  userId      String
+  mediaTypeId String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mediaType   MediaType @relation(fields: [mediaTypeId], references: [id])
+  enabled     Boolean   @default(true)
+  sortOrder   Int       @default(0)
+
+  @@id([userId, mediaTypeId])
+  @@index([userId, enabled, sortOrder])
+}
+
+model UserStatus {
+  id          String    @id @default(cuid())
+  userId      String
+  mediaTypeId String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mediaType   MediaType @relation(fields: [mediaTypeId], references: [id])
+  key         String
+  label       String
+  color       String
+  sortOrder   Int
+
+  @@unique([userId, mediaTypeId, key])
+  @@index([userId, mediaTypeId, sortOrder])
+}

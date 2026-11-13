@@ -1,0 +1,26 @@
+import { config } from 'dotenv';
+import { z } from 'zod';
+
+config({ path: '../../.env', quiet: true });
+const schema = z.object({
+  NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
+  PORT: z.coerce.number().int().min(1).max(65535).default(4000),
+  WEB_ORIGIN: z.url().default('http://localhost:3000'),
+  DATABASE_URL: z.string().startsWith('postgresql://'),
+  SESSION_DAYS: z.coerce.number().int().min(1).max(30).default(7),
+  IGDB_ENABLED: z.enum(['true', 'false']).default('false'),
+  IGDB_CLIENT_ID: z.string().default(''),
+  IGDB_CLIENT_SECRET: z.string().default(''),
+  DONATION_PIX_PAYLOAD: z.string().default(''),
+  DONATION_PIX_KEY: z.string().default(''),
+});
+const parsed = schema.safeParse(process.env);
+if (!parsed.success) {
+  throw new Error(
+    `Configuração de ambiente inválida: ${parsed.error.issues.map((issue) => issue.path.join('.')).join(', ')}`,
+  );
+}
+export const env = parsed.data;
+if (env.NODE_ENV === 'production' && !env.WEB_ORIGIN.startsWith('https://')) {
+  throw new Error('WEB_ORIGIN deve usar HTTPS em produção');
+}
