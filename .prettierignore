@@ -1,0 +1,12 @@
+pnpm-lock.yaml
+LICENSE
+.internal/
+CODEX.md
+AGENTS.md
+CLAUDE.md
+node_modules/
+.next/
+dist/
+apps/api/src/generated/
+playwright-report/
+test-results/

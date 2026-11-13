@@ -45,3 +45,15 @@ next-env.d.ts
 /.internal/
 /.local-docs/
 /.private-notes/
+
+# Workspace dependencies and generated outputs
+node_modules/
+.next/
+dist/
+coverage/
+playwright-report/
+test-results/
+apps/api/src/generated/
+.env.*
+!.env.example
+!.env.*.example
