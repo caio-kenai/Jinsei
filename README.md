@@ -1,7 +1,14 @@
+
 <div align="center">
   <img src="assets/branding/jinsei-icon.png" alt="Jinsei" width="180" />
+
   <h1>Jinsei</h1>
+
+  <h2>人生</h2>
+  <p><em>Vida · Existência · Jornada</em></p>
+
   <p>Sua jornada pelo entretenimento, organizada em um só lugar.</p>
+
   <p>
     <img alt="Licença AGPL v3" src="https://img.shields.io/badge/license-AGPL_v3-blue" />
     <img alt="Next.js 16" src="https://img.shields.io/badge/Next.js-16-202020" />
