@@ -1,0 +1,94 @@
+name: Publica containers
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Tag da versão já revisada, por exemplo v0.0.1
+        required: true
+        type: string
+permissions:
+  contents: read
+concurrency:
+  group: containers-${{ github.event.release.tag_name || inputs.tag }}
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      DATABASE_URL: postgresql://jinsei:build@localhost:5432/jinsei
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ github.event.release.tag_name || inputs.tag }}
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: 24
+          package-manager-cache: false
+      - run: npm install --global --allow-scripts=pnpm pnpm@12.14.0
+      - run: pnpm install --frozen-lockfile
+      - name: Confere a versão da release
+        id: version
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name || inputs.tag }}
+        run: |
+          node scripts/version.mjs
+          node --input-type=module -e 'import fs from "node:fs"; const v=JSON.parse(fs.readFileSync("package.json")).version; if(process.env.RELEASE_TAG !== `v${v}`) throw Error("Tag divergente da versão"); fs.appendFileSync(process.env.GITHUB_OUTPUT, `value=${v}\n`);'
+      - run: pnpm db:generate && pnpm typecheck && pnpm lint && pnpm test
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      - name: Constrói a API
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          file: docker/app/Dockerfile
+          target: api
+          platforms: linux/amd64
+          load: true
+          tags: local/jinsei-api:${{ steps.version.outputs.value }}
+          labels: org.opencontainers.image.revision=${{ github.sha }}
+          cache-from: type=gha,scope=jinsei
+          cache-to: type=gha,mode=max,scope=jinsei
+      - name: Constrói o frontend
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          file: docker/app/Dockerfile
+          target: web
+          platforms: linux/amd64
+          load: true
+          tags: local/jinsei-web:${{ steps.version.outputs.value }}
+          labels: org.opencontainers.image.revision=${{ github.sha }}
+          cache-from: type=gha,scope=jinsei
+      - run: pnpm exec playwright install --with-deps chromium
+      - name: Valida a instalação self-host
+        env:
+          SELFHOST_E2E: '1'
+        run: |
+          docker compose --env-file tests/fixtures/selfhost.env.example -f compose.selfhost.yml -p jinsei-selfhost-test up -d --wait --pull never
+          pnpm exec playwright test tests/e2e/selfhost.instance.spec.ts
+      - name: Autentica no GitHub Packages
+        uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Publica as imagens validadas
+        env:
+          VERSION: ${{ steps.version.outputs.value }}
+          OWNER: ${{ github.repository_owner }}
+        run: |
+          owner="${OWNER,,}"
+          for app in api web; do
+            image="ghcr.io/$owner/jinsei-$app:$VERSION"
+            docker tag "local/jinsei-$app:$VERSION" "$image"
+            docker push "$image"
+          done
+      - name: Encerra apenas os containers de teste
+        if: always()
+        run: docker compose --env-file tests/fixtures/selfhost.env.example -f compose.selfhost.yml -p jinsei-selfhost-test down --volumes

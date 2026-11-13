@@ -1,0 +1,16 @@
+name: Relatar um problema
+description: Informe um erro reproduzível sem compartilhar dados pessoais.
+body:
+  - type: textarea
+    id: behavior
+    attributes:
+      label: O que aconteceu e o que era esperado?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Passos para reproduzir
+      description: Inclua navegador e ambiente. Remova e-mails, tokens e anotações privadas de capturas.
+    validations:
+      required: true
