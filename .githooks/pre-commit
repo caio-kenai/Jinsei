@@ -1,0 +1,2 @@
+#!/bin/sh
+git diff --cached --check && node scripts/check-sensitive-files.mjs
