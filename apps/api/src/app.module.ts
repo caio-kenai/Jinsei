@@ -9,6 +9,7 @@ import { CatalogModule } from './modules/catalog/catalog.module';
 import { LibraryModule } from './modules/library/library.module';
 import { ViewsController } from './modules/views/views.controller';
 import { SupportController } from './modules/support/support.controller';
+import { InstanceModule } from './modules/instance/instance.module';
 
 @Controller('health')
 class HealthController {
@@ -23,6 +24,7 @@ class HealthController {
 
 @Module({
   imports: [
+    InstanceModule,
     CatalogModule,
     LibraryModule,
     PrismaModule,

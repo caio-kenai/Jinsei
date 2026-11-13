@@ -7,6 +7,7 @@ import type { NextFunction, Request, Response } from 'express';
 import { AppModule } from './app.module';
 import { env } from './config/env';
 import { HttpErrorFilter } from './common/http-error.filter';
+import { appVersion } from '@jinsei/contracts';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -30,12 +31,12 @@ async function bootstrap() {
     app,
     new DocumentBuilder()
       .setTitle('Jinsei API')
-      .setVersion('0.1.0')
+      .setVersion(appVersion)
       .addCookieAuth('jinsei_session')
       .build(),
   );
   SwaggerModule.setup('api/docs', app, document, { jsonDocumentUrl: '/api/openapi.json' });
-  await app.listen(env.PORT, '127.0.0.1');
+  await app.listen(env.PORT, env.HOST);
 }
 void bootstrap().catch(() => {
   console.error('A API não pôde iniciar. Confira o ambiente e o PostgreSQL.');

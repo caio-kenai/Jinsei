@@ -11,9 +11,11 @@ import { api, jsonBody } from '@/lib/api';
 import { currentUserOptions } from './use-current-user';
 import { useSignupDraft } from './signup-draft';
 import { Brand } from '@/components/shared/brand';
+import { useInstance } from '@/features/instance/use-instance';
 
 export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
   const registering = mode === 'register';
+  const instance = useInstance();
   const draft = useSignupDraft();
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -62,6 +64,11 @@ export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
             {registering ? 'Entrar' : 'Cadastre-se gratuitamente'}
           </Link>
         </p>
+        {registering && instance.data?.registrationsEnabled === false && (
+          <p className="public-field-error" role="alert">
+            Novos cadastros estão desativados nesta instância. Entre com uma conta existente.
+          </p>
+        )}
         <form onSubmit={handleSubmit(submit)}>
           {registering && (
             <div className="public-field">
@@ -132,7 +139,13 @@ export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
               {error}
             </p>
           )}
-          <button className="public-button auth-submit" type="submit" disabled={isSubmitting}>
+          <button
+            className="public-button auth-submit"
+            type="submit"
+            disabled={
+              isSubmitting || (registering && instance.data?.registrationsEnabled === false)
+            }
+          >
             {isSubmitting ? (
               <LoaderCircle size={17} className="spin" />
             ) : registering ? (

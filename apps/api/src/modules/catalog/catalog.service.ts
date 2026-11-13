@@ -20,6 +20,7 @@ import { TvmazeProvider } from './providers/tvmaze.provider';
 import { OpenlibraryProvider } from './providers/openlibrary.provider';
 import { TmdbProvider } from './providers/tmdb.provider';
 import type { CatalogProvider } from './providers/catalog-provider';
+import { InstanceService } from '../instance/instance.module';
 
 export const catalogInclude = { game: true, externalIds: true } satisfies Prisma.MediaItemInclude;
 export type MediaWithMetadata = Prisma.MediaItemGetPayload<{ include: typeof catalogInclude }>;
@@ -56,11 +57,13 @@ export class CatalogService {
     @Inject(TvmazeProvider) private readonly tvmaze: TvmazeProvider,
     @Inject(OpenlibraryProvider) private readonly openlibrary: OpenlibraryProvider,
     @Inject(TmdbProvider) private readonly tmdb: TmdbProvider,
+    @Inject(InstanceService) private readonly instance: InstanceService,
   ) {}
-  providers() {
+  async providers() {
+    const allowed = (await this.instance.settings()).externalCatalogEnabled;
     return [this.wikidata, this.igdb, this.tvmaze, this.openlibrary, this.tmdb].map((provider) => ({
       id: provider.id,
-      enabled: provider.enabled,
+      enabled: provider.enabled && allowed,
     }));
   }
   async showcase() {
@@ -101,7 +104,7 @@ export class CatalogService {
     });
     const items = internal.map(catalogResult);
     const warnings: string[] = [];
-    if (items.length < 10) {
+    if (items.length < 10 && (await this.instance.settings()).externalCatalogEnabled) {
       const provider: CatalogProvider =
         mediaType === 'games'
           ? this.igdb.enabled
@@ -188,6 +191,12 @@ export class CatalogService {
       where: unique,
       include: { media: { include: catalogInclude } },
     });
+    if (!(await this.instance.settings()).externalCatalogEnabled) {
+      if (existing) return existing.media;
+      throw new BadRequestException(
+        'A busca externa está desativada nesta instância. Cadastre a obra manualmente.',
+      );
+    }
     // Refresh old records without cover/provenance; otherwise retain the cached metadata for a day.
     if (
       existing &&

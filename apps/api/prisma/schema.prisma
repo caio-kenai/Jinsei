@@ -12,6 +12,7 @@ model User {
   id           String           @id @default(cuid())
   email        String           @unique
   passwordHash String
+  role         String           @default("user")
   createdAt    DateTime         @default(now())
   updatedAt    DateTime         @updatedAt
   profile      Profile?
@@ -221,4 +222,15 @@ model SavedView {
   updatedAt   DateTime  @updatedAt
 
   @@unique([userId, mediaTypeId])
+}
+
+model InstanceSettings {
+  id                     String   @id @default("instance")
+  name                   String   @default("Jinsei")
+  description            String   @default("Sua biblioteca pessoal de entretenimento")
+  contactEmail           String   @default("")
+  registrationsEnabled   Boolean  @default(true)
+  externalCatalogEnabled Boolean  @default(true)
+  supportEnabled         Boolean  @default(true)
+  updatedAt              DateTime @updatedAt
 }

@@ -1,4 +1,11 @@
-import { ConflictException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  ConflictException,
+  ForbiddenException,
+  Inject,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { InstanceService } from '../instance/instance.module';
 import { argon2id, hash, verify } from 'argon2';
 import { randomBytes } from 'node:crypto';
 import { mediaTypes, type Credentials, type RegistrationInput } from '@jinsei/contracts';
@@ -19,9 +26,14 @@ export const hashPassword = (password: string) =>
 @Injectable()
 export class AuthService {
   private readonly dummyHash = hashPassword(randomBytes(32).toString('hex'));
-  constructor(@Inject(PrismaService) private readonly db: PrismaService) {}
+  constructor(
+    @Inject(PrismaService) private readonly db: PrismaService,
+    @Inject(InstanceService) private readonly instance: InstanceService,
+  ) {}
 
   async register(input: RegistrationInput) {
+    if (!(await this.instance.settings()).registrationsEnabled)
+      throw new ForbiddenException('Novos cadastros estão desativados nesta instância');
     const passwordHash = await hashPassword(input.password);
     try {
       const user = await this.db.user.create({

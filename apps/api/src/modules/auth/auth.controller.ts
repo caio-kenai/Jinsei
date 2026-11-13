@@ -1,7 +1,12 @@
 import { Body, Controller, HttpCode, Inject, Post, Req, Res } from '@nestjs/common';
 import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
-import { credentialsSchema, registrationSchema, type Credentials, type RegistrationInput } from '@jinsei/contracts';
+import {
+  credentialsSchema,
+  registrationSchema,
+  type Credentials,
+  type RegistrationInput,
+} from '@jinsei/contracts';
 import type { Response } from 'express';
 import { AuthService } from './auth.service';
 import { Public, SESSION_COOKIE, type AuthenticatedRequest } from './session.guard';
@@ -11,7 +16,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 
 export const cookieOptions = {
   httpOnly: true,
-  secure: env.NODE_ENV === 'production',
+  secure: env.NODE_ENV === 'production' && env.WEB_ORIGIN.startsWith('https://'),
   sameSite: 'lax' as const,
   path: '/',
 };

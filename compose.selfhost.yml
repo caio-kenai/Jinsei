@@ -1,0 +1,83 @@
+name: jinsei-selfhost
+x-api-environment: &api-environment
+  NODE_ENV: production
+  HOST: 0.0.0.0
+  PORT: 4000
+  WEB_ORIGIN: ${PUBLIC_ORIGIN:-http://localhost:3000}
+  DATABASE_URL: postgresql://jinsei:${POSTGRES_PASSWORD:?Defina POSTGRES_PASSWORD}@postgres:5432/jinsei
+  INSTANCE_NAME: ${INSTANCE_NAME:-Jinsei}
+  IGDB_ENABLED: ${IGDB_ENABLED:-false}
+  IGDB_CLIENT_ID: ${IGDB_CLIENT_ID:-}
+  IGDB_CLIENT_SECRET: ${IGDB_CLIENT_SECRET:-}
+  TMDB_READ_TOKEN: ${TMDB_READ_TOKEN:-}
+  DONATION_PIX_PAYLOAD: ${DONATION_PIX_PAYLOAD:-}
+  DONATION_PIX_KEY: ${DONATION_PIX_KEY:-}
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: jinsei
+      POSTGRES_DB: jinsei
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Defina POSTGRES_PASSWORD}
+    volumes:
+      - database:/var/lib/postgresql/data
+    networks: [database]
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U jinsei -d jinsei']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+  migrate:
+    image: ${JINSEI_REGISTRY:-ghcr.io/caio-kenai}/jinsei-api:${JINSEI_VERSION:-0.0.1}
+    environment: *api-environment
+    command: ['./node_modules/.bin/prisma', 'migrate', 'deploy']
+    networks: [database]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: 'no'
+  api:
+    image: ${JINSEI_REGISTRY:-ghcr.io/caio-kenai}/jinsei-api:${JINSEI_VERSION:-0.0.1}
+    environment: *api-environment
+    restart: unless-stopped
+    networks: [database, application]
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+  web:
+    image: ${JINSEI_REGISTRY:-ghcr.io/caio-kenai}/jinsei-web:${JINSEI_VERSION:-0.0.1}
+    environment:
+      API_URL: http://api:4000
+      HOSTNAME: 0.0.0.0
+      PORT: 3000
+    ports:
+      - '${JINSEI_BIND:-127.0.0.1}:${JINSEI_PORT:-3000}:3000'
+    restart: unless-stopped
+    networks: [application]
+    depends_on:
+      api:
+        condition: service_healthy
+  proxy:
+    image: caddy:2-alpine
+    profiles: [tls]
+    restart: unless-stopped
+    ports: ['80:80', '443:443']
+    environment:
+      JINSEI_DOMAIN: ${JINSEI_DOMAIN:-localhost}
+    volumes:
+      - ./docker/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    networks: [application]
+    depends_on:
+      web:
+        condition: service_healthy
+networks:
+  database:
+    internal: true
+  application:
+volumes:
+  database:
+  caddy-data:
+  caddy-config:

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+export const appVersion = '0.0.1';
 
 export const healthSchema = z.object({ status: z.literal('ok'), service: z.literal('jinsei-api') });
 
@@ -67,6 +68,7 @@ export const preferencesPatchSchema = onboardingSchema
   .strict();
 export type PreferencesPatch = z.infer<typeof preferencesPatchSchema>;
 export const currentUserSchema = z.object({
+  isAdmin: z.boolean().default(false),
   id: z.string(),
   email: z.string(),
   createdAt: z.string(),
@@ -86,6 +88,22 @@ export const currentUserSchema = z.object({
   }),
 });
 export type CurrentUser = z.infer<typeof currentUserSchema>;
+export const instanceSettingsSchema = z
+  .object({
+    name: z.string().trim().min(1).max(80),
+    description: z.string().trim().max(280),
+    contactEmail: z.union([z.email().max(254), z.literal('')]),
+    registrationsEnabled: z.boolean(),
+    externalCatalogEnabled: z.boolean(),
+    supportEnabled: z.boolean(),
+  })
+  .strict();
+export type InstanceSettings = z.infer<typeof instanceSettingsSchema>;
+export const publicInstanceSchema = instanceSettingsSchema.extend({
+  version: z.string(),
+  publicUrl: z.url(),
+});
+export type PublicInstance = z.infer<typeof publicInstanceSchema>;
 export const passwordChangeSchema = z
   .object({ currentPassword: z.string().max(128), newPassword: passwordSchema })
   .strict();
