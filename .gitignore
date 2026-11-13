@@ -34,3 +34,14 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Local agent instructions (not published)
+/CODEX.md
+/AGENTS.md
+/CLAUDE.md
+/CLAUDE.local.md
+
+# Internal development documentation and visual references
+/.internal/
+/.local-docs/
+/.private-notes/
