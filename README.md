@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="assets/branding/jinsei-logo.png" alt="Jinsei" width="280" />
+  <img src="assets/branding/jinsei-icon.png" alt="Jinsei" width="280" />
   <h1>Jinsei</h1>
   <p>Sua jornada pelo entretenimento, organizada em um só lugar.</p>
   <p>
