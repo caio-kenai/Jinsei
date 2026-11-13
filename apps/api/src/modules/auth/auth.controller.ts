@@ -1,7 +1,7 @@
 import { Body, Controller, HttpCode, Inject, Post, Req, Res } from '@nestjs/common';
 import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
-import { credentialsSchema, type Credentials } from '@jinsei/contracts';
+import { credentialsSchema, registrationSchema, type Credentials, type RegistrationInput } from '@jinsei/contracts';
 import type { Response } from 'express';
 import { AuthService } from './auth.service';
 import { Public, SESSION_COOKIE, type AuthenticatedRequest } from './session.guard';
@@ -27,9 +27,9 @@ export class AuthController {
   @Public()
   @Post('register')
   @Throttle({ default: { limit: 5, ttl: 60000 } })
-  @ApiZodBody(credentialsSchema)
+  @ApiZodBody(registrationSchema)
   async register(
-    @Body(new ZodPipe(credentialsSchema)) input: Credentials,
+    @Body(new ZodPipe(registrationSchema)) input: RegistrationInput,
     @Res({ passthrough: true }) response: Response,
   ) {
     const session = await this.auth.register(input);

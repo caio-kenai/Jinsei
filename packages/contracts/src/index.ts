@@ -21,6 +21,10 @@ export const credentialsSchema = z
   .object({ email: emailSchema, password: passwordSchema })
   .strict();
 export type Credentials = z.infer<typeof credentialsSchema>;
+export const registrationSchema = credentialsSchema.extend({
+  displayName: z.string().trim().min(2).max(60).optional(),
+});
+export type RegistrationInput = z.infer<typeof registrationSchema>;
 export const usernameSchema = z
   .string()
   .min(3)

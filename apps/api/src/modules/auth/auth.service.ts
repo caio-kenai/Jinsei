@@ -1,7 +1,7 @@
 import { ConflictException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { argon2id, hash, verify } from 'argon2';
 import { randomBytes } from 'node:crypto';
-import { mediaTypes, type Credentials } from '@jinsei/contracts';
+import { mediaTypes, type Credentials, type RegistrationInput } from '@jinsei/contracts';
 import { PrismaService } from '../../prisma/prisma.service';
 import { env } from '../../config/env';
 import { tokenHash } from './session.guard';
@@ -21,14 +21,14 @@ export class AuthService {
   private readonly dummyHash = hashPassword(randomBytes(32).toString('hex'));
   constructor(@Inject(PrismaService) private readonly db: PrismaService) {}
 
-  async register(input: Credentials) {
+  async register(input: RegistrationInput) {
     const passwordHash = await hashPassword(input.password);
     try {
       const user = await this.db.user.create({
         data: {
           email: input.email,
           passwordHash,
-          profile: { create: {} },
+          profile: { create: { displayName: input.displayName } },
           preference: { create: {} },
           categories: {
             create: mediaTypes.map((mediaTypeId, sortOrder) => ({ mediaTypeId, sortOrder })),
