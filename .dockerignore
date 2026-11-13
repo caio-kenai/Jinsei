@@ -20,3 +20,8 @@ coverage
 apps/web/public/branding
 apps/web/public/showcase
 *.zip
+
+# Local access-token files
+*[Pp]ersonal*[Aa]ccess*[Tt]oken*
+[Pp][Aa][Tt].*
+*.pat
