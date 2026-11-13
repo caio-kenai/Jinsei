@@ -1,10 +1,10 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
-import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import type { CatalogResult } from '@jinsei/contracts';
 import { api } from '@/lib/api';
 import { MediaCover } from '@/features/library/media-cover';
+import { StarRating } from '@/components/shared/star-rating';
 import {
   ArrowRight,
   Check,
@@ -24,13 +24,13 @@ import {
   Star,
   ShieldCheck,
   SlidersHorizontal,
-  Code2,
   LockKeyhole,
 } from 'lucide-react';
-import { Brand } from '@/components/shared/brand';
+import { PublicHeader, PublicFooter } from './public-navigation';
 import { SignupDialog } from '@/features/auth/signup-dialog';
 import { categoryLabels, type MediaType, type StatusKey } from '@jinsei/contracts';
 import { StatusBadge } from '@/features/library/status-badge';
+import { ClosingShowcase } from './closing-showcase';
 
 const categories = [
   { id: 'games', Icon: Gamepad2 },
@@ -41,77 +41,77 @@ const categories = [
 ] as const;
 const examples: Record<
   MediaType,
-  { title: string; status: StatusKey; rating: string; progress: number; tag: string }[]
+  { title: string; status: StatusKey; rating: number | null; progress: number; tag: string }[]
 > = {
   games: [
     {
       title: 'Hollow Knight',
       status: 'in_progress',
-      rating: '9,5',
+      rating: 4.75,
       progress: 64,
       tag: 'Metroidvania',
     },
-    { title: 'Stardew Valley', status: 'in_progress', rating: '9', progress: 42, tag: 'Relaxante' },
-    { title: 'Celeste', status: 'planned', rating: '—', progress: 0, tag: 'Indie' },
-    { title: 'Hades', status: 'completed', rating: '10', progress: 100, tag: 'Roguelike' },
-    { title: 'Outer Wilds', status: 'planned', rating: '—', progress: 0, tag: 'Exploração' },
+    { title: 'Stardew Valley', status: 'in_progress', rating: 4.5, progress: 42, tag: 'Relaxante' },
+    { title: 'Celeste', status: 'planned', rating: null, progress: 0, tag: 'Indie' },
+    { title: 'Hades', status: 'completed', rating: 5, progress: 100, tag: 'Roguelike' },
+    { title: 'Outer Wilds', status: 'planned', rating: null, progress: 0, tag: 'Exploração' },
   ],
   anime: [
     {
       title: 'Frieren: Beyond Journey’s End',
       status: 'in_progress',
-      rating: '9,5',
+      rating: 4.75,
       progress: 60,
       tag: 'Fantasia',
     },
     {
       title: 'Fullmetal Alchemist: Brotherhood',
       status: 'completed',
-      rating: '10',
+      rating: 5,
       progress: 100,
       tag: 'Aventura',
     },
-    { title: 'Cowboy Bebop', status: 'planned', rating: '—', progress: 0, tag: 'Clássico' },
+    { title: 'Cowboy Bebop', status: 'planned', rating: null, progress: 0, tag: 'Clássico' },
   ],
   manga: [
-    { title: 'Berserk', status: 'in_progress', rating: '10', progress: 45, tag: 'Fantasia' },
+    { title: 'Berserk', status: 'in_progress', rating: 5, progress: 45, tag: 'Fantasia' },
     {
       title: 'Fullmetal Alchemist',
       status: 'completed',
-      rating: '9,5',
+      rating: 4.75,
       progress: 100,
       tag: 'Aventura',
     },
-    { title: 'Naruto', status: 'planned', rating: '—', progress: 0, tag: 'Shōnen' },
+    { title: 'Naruto', status: 'planned', rating: null, progress: 0, tag: 'Shōnen' },
   ],
   movies: [
-    { title: 'Metrópolis', status: 'planned', rating: '—', progress: 0, tag: 'Clássico' },
+    { title: 'Metrópolis', status: 'planned', rating: null, progress: 0, tag: 'Clássico' },
     {
       title: 'A viagem de Chihiro',
       status: 'completed',
-      rating: '10',
+      rating: 5,
       progress: 100,
       tag: 'Animação',
     },
     {
       title: 'Interestelar',
       status: 'completed',
-      rating: '9,5',
+      rating: 4.75,
       progress: 100,
       tag: 'Ficção científica',
     },
     {
       title: 'O fabuloso destino de Amélie Poulain',
       status: 'planned',
-      rating: '—',
+      rating: null,
       progress: 0,
       tag: 'Para depois',
     },
   ],
   series: [
-    { title: 'Breaking Bad', status: 'completed', rating: '10', progress: 100, tag: 'Drama' },
-    { title: 'Severance', status: 'in_progress', rating: '9', progress: 50, tag: 'Mistério' },
-    { title: 'Dark', status: 'planned', rating: '—', progress: 0, tag: 'Ficção científica' },
+    { title: 'Breaking Bad', status: 'completed', rating: 5, progress: 100, tag: 'Drama' },
+    { title: 'Severance', status: 'in_progress', rating: 4.5, progress: 50, tag: 'Mistério' },
+    { title: 'Dark', status: 'planned', rating: null, progress: 0, tag: 'Ficção científica' },
   ],
 };
 
@@ -241,10 +241,7 @@ function ProductDemo() {
                       {item.title}
                     </span>
                     <StatusBadge status={item.status} />
-                    <span className="demo-rating">
-                      {item.rating !== '—' && <Star size={10} />}
-                      {item.rating}
-                    </span>
+                    <StarRating value={item.rating} size={10} />
                     <span className="demo-progress">
                       <i>
                         <b style={{ width: `${item.progress}%` }} />
@@ -284,8 +281,7 @@ function ProductDemo() {
                       </small>
                     )}
                     <span className="demo-poster-rating">
-                      <Star size={11} />
-                      {item.rating}
+                      <StarRating value={item.rating} size={10} />
                     </span>
                   </div>
                 ))}
@@ -330,24 +326,7 @@ export function MarketingSite() {
   }, []);
   return (
     <div className="marketing-site public-surface" ref={root}>
-      <header className="marketing-header">
-        <div className="marketing-container marketing-header-inner">
-          <Link href="/" aria-label="Jinsei página inicial">
-            <Brand />
-          </Link>
-          <nav aria-label="Navegação do site">
-            <a className="marketing-about-link" href="#como-funciona">
-              Conheça o Jinsei
-            </a>
-            <Link className="public-button public-button-muted" href="/login">
-              Entrar
-            </Link>
-            <button className="public-button" onClick={() => setSignup(true)}>
-              Cadastre-se
-            </button>
-          </nav>
-        </div>
-      </header>
+      <PublicHeader onSignup={() => setSignup(true)} />
       <main>
         <section className="marketing-hero marketing-container">
           <a
@@ -432,7 +411,7 @@ export function MarketingSite() {
               <div className="experience-field">
                 <span>Sua nota</span>
                 <strong className="experience-stars">
-                  ★★★★★ <span>9,5 / 10</span>
+                  <StarRating value={4.75} size={14} /> <span>4¾ / 5</span>
                 </strong>
               </div>
               <div className="experience-field">
@@ -518,38 +497,9 @@ export function MarketingSite() {
             </div>
           </div>
         </section>
-        <section className="marketing-final marketing-container" data-reveal>
-          <span className="marketing-section-tag">
-            <Code2 size={16} />
-            Gratuito e open source
-          </span>
-          <h2>
-            O próximo capítulo
-            <br />
-            começa com você.
-          </h2>
-          <button className="public-button public-button-large" onClick={() => setSignup(true)}>
-            Comece agora. É GRÁTIS
-            <ArrowRight size={18} />
-          </button>
-          <p>Uma conta. Todas as suas experiências.</p>
-        </section>
+        <ClosingShowcase onSignup={() => setSignup(true)} />
       </main>
-      <footer className="marketing-footer">
-        <div className="marketing-container">
-          <Link href="/" aria-label="Jinsei">
-            <Brand />
-          </Link>
-          <span>© 2026 Jinsei</span>
-          <nav>
-            <a href="https://github.com/caio-kenai/Jinsei" target="_blank" rel="noreferrer">
-              Código aberto
-            </a>
-            <Link href="/privacy">Privacidade</Link>
-            <Link href="/terms">Termos</Link>
-          </nav>
-        </div>
-      </footer>
+      <PublicFooter />
       <SignupDialog open={signup} onOpenChange={setSignup} />
     </div>
   );

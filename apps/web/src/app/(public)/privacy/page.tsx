@@ -1,16 +1,12 @@
 import Link from 'next/link';
-import { Brand } from '@/components/shared/brand';
+import { LegalLayout } from '@/features/legal/legal-layout';
 export default function Page() {
   return (
-    <main className="legal-page">
-      <Link href="/home">
-        <Brand />
-      </Link>
-      <h1>Privacidade no Jinsei</h1>
+    <LegalLayout title="Política de privacidade" active="privacy">
       <p>
-        Atualizado em 13 de novembro de 2026. Este aviso descreve a versão de desenvolvimento local
-        do projeto. Cada responsável por uma instalação deve informar seu contato e suas condições
-        operacionais antes de oferecer acesso público.
+        Atualizado em 13 de novembro de 2026. Este aviso descreve a versão inicial do projeto. Cada
+        responsável por uma instalação deve informar seu contato e suas condições operacionais antes
+        de oferecer acesso público.
       </p>
       <h2>O que fica guardado</h2>
       <p>
@@ -45,10 +41,10 @@ export default function Page() {
       <h2>Retenção e responsáveis pela instalação</h2>
       <p>
         Os registros pessoais permanecem enquanto a conta existir ou até você removê-los. Sessões
-        expiram automaticamente e são limpas em novos acessos. Esta configuração de desenvolvimento
-        não cria backups automáticos nem define retenção de logs de infraestrutura. O operador deve
-        estabelecer e informar essas políticas, o canal de atendimento aos titulares e as bases
-        aplicáveis ao tratamento antes de uma implantação pública.
+        expiram automaticamente e são limpas em novos acessos. A instalação padrão não cria backups
+        automáticos nem define retenção de logs de infraestrutura. O operador deve estabelecer e
+        informar essas políticas, o canal de atendimento aos titulares e as bases aplicáveis ao
+        tratamento antes de uma implantação pública.
       </p>
       <h2 id="contato">Legislação e dúvidas</h2>
       <p>
@@ -67,6 +63,6 @@ export default function Page() {
       <p style={{ marginTop: 25 }}>
         <Link href="/home">Voltar ao Jinsei</Link>
       </p>
-    </main>
+    </LegalLayout>
   );
 }

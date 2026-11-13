@@ -1,16 +1,12 @@
 import Link from 'next/link';
-import { Brand } from '@/components/shared/brand';
+import { LegalLayout } from '@/features/legal/legal-layout';
 export default function Page() {
   return (
-    <main className="legal-page">
-      <Link href="/home">
-        <Brand />
-      </Link>
-      <h1>Termos e licenças</h1>
+    <LegalLayout title="Termos de uso" active="terms">
       <p>
         Atualizado em 13 de novembro de 2026. O Jinsei é um projeto gratuito e open source para
-        organizar experiências culturais. Esta versão está em desenvolvimento e é destinada à
-        avaliação local.
+        organizar experiências culturais. Esta é uma versão inicial, disponível para instalação e
+        administração em servidor próprio.
       </p>
       <h2>Uso e responsabilidade</h2>
       <p>
@@ -55,6 +51,6 @@ export default function Page() {
       <p style={{ marginTop: 25 }}>
         <Link href="/home">Voltar ao Jinsei</Link>
       </p>
-    </main>
+    </LegalLayout>
   );
 }

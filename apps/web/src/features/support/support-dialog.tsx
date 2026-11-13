@@ -12,9 +12,11 @@ type Support = { enabled: false } | { enabled: true; payload: string; key: strin
 export function SupportDialog({
   open,
   onOpenChange,
+  publicView = false,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  publicView?: boolean;
 }) {
   const result = useQuery({
     queryKey: ['support'],
@@ -33,7 +35,7 @@ export function SupportDialog({
   }
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="donation-dialog">
+      <DialogContent className={`donation-dialog ${publicView ? 'public-surface' : ''}`}>
         <Image
           className="donation-logo"
           src="/branding/buy-me-a-monster.png"
