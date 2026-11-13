@@ -55,6 +55,7 @@ playwright-report/
 test-results/
 apps/api/src/generated/
 /apps/web/public/branding/
+/apps/web/public/showcase/
 .env.*
 !.env.example
 !.env.*.example
