@@ -8,6 +8,7 @@ import { Public, SessionGuard } from './modules/auth/session.guard';
 import { CatalogModule } from './modules/catalog/catalog.module';
 import { LibraryModule } from './modules/library/library.module';
 import { ViewsController } from './modules/views/views.controller';
+import { SupportController } from './modules/support/support.controller';
 
 @Controller('health')
 class HealthController {
@@ -29,7 +30,7 @@ class HealthController {
     UsersModule,
     ThrottlerModule.forRoot([{ ttl: 60000, limit: 180 }]),
   ],
-  controllers: [HealthController, ViewsController],
+  controllers: [HealthController, ViewsController, SupportController],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },
     { provide: APP_GUARD, useClass: SessionGuard },
