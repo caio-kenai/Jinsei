@@ -9,16 +9,21 @@ datasource db {
 }
 
 model User {
-  id           String          @id @default(cuid())
-  email        String          @unique
+  id           String           @id @default(cuid())
+  email        String           @unique
   passwordHash String
-  createdAt    DateTime        @default(now())
-  updatedAt    DateTime        @updatedAt
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
   profile      Profile?
   preference   UserPreference?
   sessions     Session[]
   categories   UserMediaType[]
   statuses     UserStatus[]
+  manualMedia  MediaItem[]
+  entries      UserMediaEntry[]
+  tags         Tag[]
+  activities   ActivityLog[]
+  savedViews   SavedView[]
 }
 
 model Profile {
@@ -62,6 +67,8 @@ model MediaType {
   sortOrder Int
   users     UserMediaType[]
   statuses  UserStatus[]
+  items     MediaItem[]
+  views     SavedView[]
 }
 
 model UserMediaType {
@@ -77,16 +84,140 @@ model UserMediaType {
 }
 
 model UserStatus {
-  id          String    @id @default(cuid())
+  id          String           @id @default(cuid())
   userId      String
   mediaTypeId String
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  mediaType   MediaType @relation(fields: [mediaTypeId], references: [id])
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mediaType   MediaType        @relation(fields: [mediaTypeId], references: [id])
   key         String
   label       String
   color       String
   sortOrder   Int
+  entries     UserMediaEntry[]
 
   @@unique([userId, mediaTypeId, key])
   @@index([userId, mediaTypeId, sortOrder])
+}
+
+model MediaItem {
+  id               String            @id @default(cuid())
+  mediaTypeId      String
+  mediaType        MediaType         @relation(fields: [mediaTypeId], references: [id])
+  ownerId          String?
+  owner            User?             @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  title            String
+  normalizedTitle  String
+  description      String            @default("")
+  releaseYear      Int?
+  coverUrl         String?
+  genres           String[]
+  attributionLabel String
+  attributionUrl   String?
+  dataLicense      String
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  game             GameMetadata?
+  externalIds      MediaExternalId[]
+  entries          UserMediaEntry[]
+
+  @@unique([ownerId, mediaTypeId, normalizedTitle])
+  @@index([mediaTypeId, title])
+}
+
+model GameMetadata {
+  mediaId    String    @id
+  media      MediaItem @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  platforms  String[]
+  developers String[]
+  publishers String[]
+}
+
+model MediaExternalId {
+  id              String    @id @default(cuid())
+  mediaId         String
+  media           MediaItem @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  provider        String
+  externalId      String
+  synchronizedAt  DateTime  @default(now())
+  retentionPolicy String
+
+  @@unique([provider, externalId])
+}
+
+model UserMediaEntry {
+  id           String        @id @default(cuid())
+  userId       String
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mediaId      String
+  media        MediaItem     @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  statusId     String
+  status       UserStatus    @relation(fields: [statusId], references: [id])
+  ratingSteps  Int?
+  favorite     Boolean       @default(false)
+  notes        String        @default("")
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  gameProgress GameProgress?
+  tags         EntryTag[]
+  activities   ActivityLog[]
+
+  @@unique([userId, mediaId])
+  @@index([userId, updatedAt])
+  @@index([userId, statusId])
+  @@index([userId, favorite])
+}
+
+model GameProgress {
+  entryId       String         @id
+  entry         UserMediaEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  minutesPlayed Int            @default(0)
+  completion    Int            @default(0)
+}
+
+model Tag {
+  id             String     @id @default(cuid())
+  userId         String
+  user           User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name           String
+  normalizedName String
+  color          String     @default("violet")
+  entries        EntryTag[]
+
+  @@unique([userId, normalizedName])
+}
+
+model EntryTag {
+  entryId String
+  entry   UserMediaEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  tagId   String
+  tag     Tag            @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([entryId, tagId])
+}
+
+model ActivityLog {
+  id        String          @id @default(cuid())
+  userId    String
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  entryId   String?
+  entry     UserMediaEntry? @relation(fields: [entryId], references: [id], onDelete: SetNull)
+  action    String
+  changes   Json
+  createdAt DateTime        @default(now())
+
+  @@index([userId, createdAt])
+}
+
+model SavedView {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mediaTypeId String
+  mediaType   MediaType @relation(fields: [mediaTypeId], references: [id])
+  name        String    @default("Minha visualização")
+  config      Json
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([userId, mediaTypeId])
 }

@@ -3,7 +3,40 @@ import {
   credentialsSchema,
   onboardingSchema,
   preferencesPatchSchema,
+  entryCreateSchema,
+  entryPatchSchema,
+  savedViewConfigSchema,
+  defaultViewConfig,
 } from '../../packages/contracts/src';
+
+describe('Contratos da biblioteca', () => {
+  it('exige uma única origem para a obra', () => {
+    expect(entryCreateSchema.safeParse({}).success).toBe(false);
+    expect(entryCreateSchema.safeParse({ mediaId: '1', media: { title: 'Teste' } }).success).toBe(
+      false,
+    );
+    expect(entryCreateSchema.safeParse({ media: { title: 'Teste' } }).success).toBe(true);
+  });
+  it('valida meios pontos e limites de progresso', () => {
+    expect(entryPatchSchema.parse({ rating: 9.5 })).toEqual({ rating: 9.5 });
+    expect(preferencesPatchSchema.parse({ theme: 'dark' })).toEqual({ theme: 'dark' });
+    expect(entryPatchSchema.safeParse({ rating: 9.5 }).success).toBe(true);
+    for (const rating of [-1, 10.5, 9.3])
+      expect(entryPatchSchema.safeParse({ rating }).success).toBe(false);
+    expect(
+      entryPatchSchema.safeParse({ progress: { hoursPlayed: 1, completion: 101 } }).success,
+    ).toBe(false);
+  });
+  it('versiona as visualizações e preserva a coluna de título', () => {
+    expect(savedViewConfigSchema.safeParse(defaultViewConfig).success).toBe(true);
+    expect(savedViewConfigSchema.safeParse({ ...defaultViewConfig, version: 2 }).success).toBe(
+      false,
+    );
+    expect(
+      savedViewConfigSchema.safeParse({ ...defaultViewConfig, columns: ['rating'] }).success,
+    ).toBe(false);
+  });
+});
 
 describe('Contratos de identidade', () => {
   it('normaliza o e-mail sem alterar a senha', () => {
