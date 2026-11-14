@@ -23,7 +23,7 @@ export class UsersService {
     const user = await this.db.user.findUnique({
       where: { id: userId },
       include: {
-        profile: true,
+        profile: { include: { links: { orderBy: { position: 'asc' } } } },
         preference: true,
         categories: { where: { enabled: true }, orderBy: { sortOrder: 'asc' } },
       },
@@ -41,6 +41,12 @@ export class UsersService {
         isPublic: user.profile.isPublic,
         avatarUrl: mediaUrl(user.profile.avatarId),
         bannerUrl: mediaUrl(user.profile.bannerId),
+        showFavorites: user.profile.showFavorites,
+        showStatistics: user.profile.showStatistics,
+        showReviews: user.profile.showReviews,
+        showHistory: user.profile.showHistory,
+        showGoals: user.profile.showGoals,
+        links: user.profile.links.map(({ label, url }) => ({ label, url })),
       },
       preferences: {
         theme: user.preference.theme,
@@ -68,11 +74,33 @@ export class UsersService {
           density,
           sidebarCollapsed,
           timezone,
+          showFavorites,
+          showStatistics,
+          showReviews,
+          showHistory,
+          showGoals,
+          links,
         } = input;
         await tx.profile.update({
           where: { userId },
-          data: { displayName, username, bio, isPublic },
+          data: {
+            displayName,
+            username,
+            bio,
+            isPublic,
+            showFavorites,
+            showStatistics,
+            showReviews,
+            showHistory,
+            showGoals,
+          },
         });
+        if (links) {
+          await tx.profileLink.deleteMany({ where: { userId } });
+          await tx.profileLink.createMany({
+            data: links.map((link, position) => ({ ...link, userId, position })),
+          });
+        }
         await tx.userPreference.update({
           where: { userId },
           data: {

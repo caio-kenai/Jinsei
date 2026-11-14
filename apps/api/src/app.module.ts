@@ -14,6 +14,7 @@ import { CollectionsModule } from './modules/collections/collections.module';
 import { GoalsModule } from './modules/goals/goals.module';
 import { ProgressionModule } from './modules/progression/progression.module';
 import { UploadsModule } from './modules/uploads/uploads.module';
+import { ProfilesModule } from './modules/profiles/profiles.module';
 
 @Controller('health')
 class HealthController {
@@ -35,6 +36,7 @@ class HealthController {
     GoalsModule,
     ProgressionModule,
     UploadsModule,
+    ProfilesModule,
     PrismaModule,
     AuthModule,
     UsersModule,

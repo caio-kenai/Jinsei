@@ -35,19 +35,25 @@ model User {
 }
 
 model Profile {
-  userId      String      @id
-  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  displayName String      @default("Minha jornada")
-  username    String?     @unique
-  bio         String      @default("")
-  isPublic    Boolean     @default(false)
-  activeTitle String?
-  avatarId    String?
-  avatar      MediaAsset? @relation("ProfileAvatar", fields: [avatarId], references: [id], onDelete: SetNull)
-  bannerId    String?
-  banner      MediaAsset? @relation("ProfileBanner", fields: [bannerId], references: [id], onDelete: SetNull)
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  userId         String        @id
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  displayName    String        @default("Minha jornada")
+  username       String?       @unique
+  bio            String        @default("")
+  isPublic       Boolean       @default(false)
+  activeTitle    String?
+  showFavorites  Boolean       @default(true)
+  showStatistics Boolean       @default(true)
+  showReviews    Boolean       @default(true)
+  showHistory    Boolean       @default(false)
+  showGoals      Boolean       @default(false)
+  links          ProfileLink[]
+  avatarId       String?
+  avatar         MediaAsset?   @relation("ProfileAvatar", fields: [avatarId], references: [id], onDelete: SetNull)
+  bannerId       String?
+  banner         MediaAsset?   @relation("ProfileBanner", fields: [bannerId], references: [id], onDelete: SetNull)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
 }
 
 model UserPreference {
@@ -213,6 +219,8 @@ model UserMediaEntry {
   boardRank       Float            @default(0)
   favorite        Boolean          @default(false)
   notes           String           @default("")
+  review          String           @default("")
+  reviewPublic    Boolean          @default(false)
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
   gameProgress    GameProgress?
@@ -231,6 +239,7 @@ model UserMediaEntry {
   @@index([userId, completedOn])
   @@index([userId, startedOn])
   @@index([userId, statusId, boardRank])
+  @@index([userId, reviewPublic])
 }
 
 model GameProgress {
@@ -442,4 +451,15 @@ model MediaAsset {
   coverOf     Collection[]
 
   @@index([userId, purpose])
+}
+
+model ProfileLink {
+  id       String  @id @default(cuid())
+  userId   String
+  profile  Profile @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  label    String
+  url      String
+  position Int     @default(0)
+
+  @@index([userId, position])
 }
