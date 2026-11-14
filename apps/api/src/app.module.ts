@@ -10,6 +10,7 @@ import { LibraryModule } from './modules/library/library.module';
 import { ViewsController } from './modules/views/views.controller';
 import { SupportController } from './modules/support/support.controller';
 import { InstanceModule } from './modules/instance/instance.module';
+import { CollectionsModule } from './modules/collections/collections.module';
 
 @Controller('health')
 class HealthController {
@@ -27,6 +28,7 @@ class HealthController {
     InstanceModule,
     CatalogModule,
     LibraryModule,
+    CollectionsModule,
     PrismaModule,
     AuthModule,
     UsersModule,

@@ -25,6 +25,7 @@ model User {
   tags         Tag[]
   activities   ActivityLog[]
   savedViews   SavedView[]
+  collections  Collection[]
 }
 
 model Profile {
@@ -206,6 +207,7 @@ model UserMediaEntry {
   episodeProgress EpisodeProgress?
   readingProgress ReadingProgress?
   viewings        EntryViewing[]
+  collectionItems CollectionItem[]
   tags            EntryTag[]
   activities      ActivityLog[]
 
@@ -307,4 +309,37 @@ model InstanceSettings {
   externalCatalogEnabled Boolean  @default(true)
   supportEnabled         Boolean  @default(true)
   updatedAt              DateTime @updatedAt
+}
+
+model Collection {
+  id          String           @id @default(cuid())
+  userId      String
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  slug        String
+  description String           @default("")
+  visibility  String           @default("private")
+  ranked      Boolean          @default(false)
+  coverUrl    String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  items       CollectionItem[]
+
+  @@unique([userId, slug])
+  @@index([userId, updatedAt])
+}
+
+model CollectionItem {
+  id           String         @id @default(cuid())
+  collectionId String
+  collection   Collection     @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  entryId      String
+  entry        UserMediaEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  position     Float          @default(0)
+  note         String         @default("")
+  createdAt    DateTime       @default(now())
+
+  @@unique([collectionId, entryId])
+  @@index([collectionId, position])
+  @@index([entryId])
 }
