@@ -42,6 +42,7 @@ import { useCurrentUser } from '@/features/auth/use-current-user';
 import { usePreferences } from '@/features/auth/use-preferences';
 import { api } from '@/lib/api';
 import { cn } from '@/lib/utils';
+import { transitionTheme } from '@/lib/theme-transition';
 import { toast } from 'sonner';
 import { SupportDialog } from '@/features/support/support-dialog';
 import { UserMenu } from '@/features/profile/user-menu';
@@ -207,7 +208,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     }
   }
   function changeTheme(theme: CurrentUser['preferences']['theme']) {
-    setTheme(theme);
+    transitionTheme(() => setTheme(theme), document.getElementById('theme-toggle'));
     preferences.mutate({ theme }, { onError: () => setTheme(user!.preferences.theme) });
   }
   return (
@@ -298,7 +299,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <div className="header-actions">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" aria-label="Alterar tema">
+                <Button
+                  id="theme-toggle"
+                  variant="ghost"
+                  size="icon"
+                  className="theme-toggle"
+                  aria-label="Alterar tema"
+                >
                   <Sun className="theme-light-icon" size={17} />
                   <Moon className="theme-dark-icon" size={17} />
                 </Button>
