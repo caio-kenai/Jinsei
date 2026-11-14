@@ -7,7 +7,15 @@
 }
 
 /* Shared transitions for anything clickable. */
-:where(a, button, summary, [role='button'], [role='menuitem'], [role='option'], label.checkbox-field) {
+:where(
+  a,
+  button,
+  summary,
+  [role='button'],
+  [role='menuitem'],
+  [role='option'],
+  label.checkbox-field
+) {
   transition:
     color 160ms ease,
     background-color 160ms ease,
