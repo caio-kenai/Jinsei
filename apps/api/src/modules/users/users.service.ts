@@ -117,7 +117,7 @@ export class UsersService {
       this.db.tag.findMany({ where: { userId }, select: { name: true, color: true } }),
       this.db.savedView.findMany({
         where: { userId },
-        select: { mediaTypeId: true, name: true, config: true },
+        select: { scope: true, name: true, position: true, config: true },
       }),
       this.db.activityLog.findMany({
         where: { userId },

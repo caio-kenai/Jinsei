@@ -79,17 +79,34 @@ test('biblioteca isola usuários e persiste nota, progresso, tags, filtros e vis
   ).json();
   expect(filtered.total).toBe(1);
   expect(filtered.items[0].rating).toBe(4.75);
+  const view = {
+    scope: 'games',
+    name: 'Galeria',
+    config: { ...defaultViewConfig, layout: 'gallery' },
+  };
+  const createdView = await owner.post('/api/saved-views', { data: view });
+  expect(createdView.status()).toBe(201);
+  const savedView = await createdView.json();
+  expect((await owner.post('/api/saved-views', { data: view })).status()).toBe(409);
   expect(
     (
-      await owner.put('/api/saved-views', {
-        data: { mediaType: 'games', config: { ...defaultViewConfig, layout: 'gallery' } },
+      await owner.post('/api/saved-views', {
+        data: { ...view, name: 'Quadro', config: { ...defaultViewConfig, layout: 'board' } },
       })
     ).status(),
+  ).toBe(201);
+  const views = (await (await owner.get('/api/saved-views?scope=games')).json()).views;
+  expect(views.map((item: { name: string }) => item.name)).toEqual(['Galeria', 'Quadro']);
+  expect(views[0].config.layout).toBe('gallery');
+  expect((await (await other.get('/api/saved-views?scope=games')).json()).views).toHaveLength(0);
+  expect(
+    (await other.patch(`/api/saved-views/${savedView.id}`, { data: { name: 'Minha' } })).status(),
+  ).toBe(404);
+  expect((await other.delete(`/api/saved-views/${savedView.id}`)).status()).toBe(404);
+  expect(
+    (await owner.patch(`/api/saved-views/${savedView.id}`, { data: { name: 'Capas' } })).status(),
   ).toBe(200);
-  expect((await (await owner.get('/api/saved-views?mediaType=games')).json()).config.layout).toBe(
-    'gallery',
-  );
-  expect((await (await other.get('/api/saved-views?mediaType=games')).json()).config).toBeNull();
+  expect((await owner.delete(`/api/saved-views/${savedView.id}`)).status()).toBe(200);
   await owner.patch('/api/users/me/preferences', { data: { categories: ['movies'] } });
   expect((await (await owner.get('/api/library/entries')).json()).total).toBe(0);
   expect((await (await owner.get('/api/library/summary')).json()).total).toBe(0);
@@ -206,6 +223,61 @@ test('acompanha episódios, páginas e sessões conforme a categoria', async ({ 
   expect(summary).toMatchObject({ episodesWatched: 12, timesWatched: 0 });
   await client.dispose();
   await other.dispose();
+});
+
+test('registra datas, ordena o quadro e monta o calendário', async ({ playwright }) => {
+  const client = await playwright.request.newContext({
+    baseURL: 'http://127.0.0.1:4000',
+    extraHTTPHeaders: { Origin: 'http://localhost:3000' },
+  });
+  const id = randomUUID().slice(0, 8);
+  await register(client, `board-${id}`);
+  const create = async (title: string) =>
+    (await (
+      await client.post('/api/library/entries', {
+        data: { media: { title: `${title} ${id}`, mediaType: 'games' } },
+      })
+    ).json()) as { id: string; startedOn: string | null; completedOn: string | null };
+  const first = await create('Primeiro');
+  const second = await create('Segundo');
+  expect(first).toMatchObject({ startedOn: null, completedOn: null });
+  const started = await (
+    await client.patch(`/api/library/entries/${first.id}`, { data: { status: 'in_progress' } })
+  ).json();
+  expect(started.startedOn).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+  const completed = await (
+    await client.patch(`/api/library/entries/${first.id}`, {
+      data: { status: 'completed', completedOn: '2026-03-10' },
+    })
+  ).json();
+  expect(completed).toMatchObject({ status: 'completed', completedOn: '2026-03-10' });
+  expect(
+    (
+      await client.patch(`/api/library/entries/${second.id}`, {
+        data: { completedOn: '10/03/2026' },
+      })
+    ).status(),
+  ).toBe(400);
+  await client.patch(`/api/library/entries/${first.id}`, { data: { boardRank: 2 } });
+  await client.patch(`/api/library/entries/${second.id}`, { data: { boardRank: 1 } });
+  const ordered = await (
+    await client.get('/api/library/entries', { params: { sort: 'boardRank', order: 'asc' } })
+  ).json();
+  expect(ordered.items.map((item: { id: string }) => item.id)).toEqual([second.id, first.id]);
+  const calendar = await (
+    await client.get('/api/library/calendar', { params: { from: '2026-03-01', to: '2026-03-31' } })
+  ).json();
+  expect(calendar.events).toEqual([
+    expect.objectContaining({ date: '2026-03-10', kind: 'completed', entryId: first.id }),
+  ]);
+  expect(
+    (
+      await client.get('/api/library/calendar', {
+        params: { from: '2026-01-01', to: '2026-06-01' },
+      })
+    ).status(),
+  ).toBe(400);
+  await client.dispose();
 });
 
 test('consulta o Wikidata real e importa uma obra sem duplicar o catálogo', async ({

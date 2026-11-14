@@ -1,5 +1,10 @@
 import { z } from 'zod';
-import { entryProgressSchema, mediaMetadataSchema, progressInputSchema } from './progress';
+import {
+  entryProgressSchema,
+  isoDateSchema,
+  mediaMetadataSchema,
+  progressInputSchema,
+} from './progress';
 export * from './progress';
 export * from './support';
 export const appVersion = '0.0.1';
@@ -131,6 +136,8 @@ export const personalFieldsSchema = z.object({
   notes: z.string().max(10000).default(''),
   tags: z.array(z.string().trim().min(1).max(24)).max(8).default([]),
   progress: progressInputSchema.optional(),
+  startedOn: isoDateSchema.nullable().optional(),
+  completedOn: isoDateSchema.nullable().optional(),
 });
 export const manualMediaSchema = z
   .object({
@@ -186,6 +193,9 @@ export const entryPatchSchema = z
     notes: personalFieldsSchema.shape.notes.removeDefault().optional(),
     tags: personalFieldsSchema.shape.tags.removeDefault().optional(),
     progress: progressInputSchema.optional(),
+    startedOn: isoDateSchema.nullable().optional(),
+    completedOn: isoDateSchema.nullable().optional(),
+    boardRank: z.number().finite().min(-1e9).max(1e9).optional(),
   })
   .strict();
 export type EntryPatchInput = z.infer<typeof entryPatchSchema>;
@@ -196,7 +206,9 @@ export const libraryQuerySchema = z
     status: statusSchema.optional(),
     favorite: z.enum(['true', 'false']).optional(),
     tag: z.string().max(24).optional(),
-    sort: z.enum(['updatedAt', 'title', 'rating', 'createdAt']).default('updatedAt'),
+    sort: z
+      .enum(['updatedAt', 'title', 'rating', 'createdAt', 'completedOn', 'boardRank'])
+      .default('updatedAt'),
     order: z.enum(['asc', 'desc']).default('desc'),
     page: z.coerce.number().int().min(1).max(100000).default(1),
     limit: z.coerce.number().int().min(1).max(100).default(50),
@@ -258,6 +270,9 @@ export const libraryEntrySchema = z.object({
   tags: z.array(z.string()),
   metadata: mediaMetadataSchema,
   progress: entryProgressSchema,
+  startedOn: isoDateSchema.nullable(),
+  completedOn: isoDateSchema.nullable(),
+  boardRank: z.number(),
   updatedAt: z.string(),
   createdAt: z.string(),
   attribution: catalogResultSchema.shape.attribution,
@@ -274,7 +289,7 @@ export type LibraryResponse = z.infer<typeof libraryResponseSchema>;
 export const savedViewConfigSchema = z
   .object({
     version: z.literal(1),
-    layout: z.enum(['list', 'gallery']),
+    layout: z.enum(['list', 'gallery', 'board', 'calendar']),
     groupBy: z.enum(['status', 'none']).default('status'),
     density: densitySchema.default('comfortable'),
     columns: z
@@ -294,9 +309,34 @@ export const savedViewConfigSchema = z
   })
   .strict();
 export type SavedViewConfig = z.infer<typeof savedViewConfigSchema>;
-export const saveViewSchema = z
-  .object({ mediaType: mediaTypeSchema, config: savedViewConfigSchema })
+export const viewScopeSchema = z.union([mediaTypeSchema, z.enum(['library', 'favorites'])]);
+export type ViewScope = z.infer<typeof viewScopeSchema>;
+export const viewNameSchema = z.string().trim().min(1).max(40);
+export const savedViewSchema = z.object({
+  id: z.string(),
+  scope: viewScopeSchema,
+  name: z.string(),
+  position: z.number(),
+  config: savedViewConfigSchema,
+});
+export type SavedView = z.infer<typeof savedViewSchema>;
+export const savedViewCreateSchema = z
+  .object({ scope: viewScopeSchema, name: viewNameSchema, config: savedViewConfigSchema })
   .strict();
+export const savedViewPatchSchema = z
+  .object({
+    name: viewNameSchema.optional(),
+    config: savedViewConfigSchema.optional(),
+    position: z.number().int().min(0).max(1000).optional(),
+  })
+  .strict();
+export type SavedViewPatch = z.infer<typeof savedViewPatchSchema>;
+export const layoutLabels: Record<SavedViewConfig['layout'], string> = {
+  list: 'Lista',
+  gallery: 'Galeria',
+  board: 'Quadro',
+  calendar: 'Calendário',
+};
 export const defaultViewConfig: SavedViewConfig = {
   version: 1,
   layout: 'list',
@@ -307,3 +347,33 @@ export const defaultViewConfig: SavedViewConfig = {
   sort: 'updatedAt',
   order: 'desc',
 };
+
+export const calendarQuerySchema = z
+  .object({
+    from: isoDateSchema,
+    to: isoDateSchema,
+    mediaType: mediaTypeSchema.optional(),
+    favorite: z.enum(['true', 'false']).optional(),
+  })
+  .strict()
+  .refine((query) => {
+    const days = (Date.parse(query.to) - Date.parse(query.from)) / 86400000;
+    return days >= 0 && days <= 62;
+  }, 'Consulte no máximo 62 dias por vez');
+export type CalendarQuery = z.infer<typeof calendarQuerySchema>;
+export const calendarEventKinds = ['started', 'completed', 'viewed'] as const;
+export const calendarEventLabels: Record<(typeof calendarEventKinds)[number], string> = {
+  started: 'Início',
+  completed: 'Conclusão',
+  viewed: 'Sessão',
+};
+export const calendarEventSchema = z.object({
+  date: isoDateSchema,
+  kind: z.enum(calendarEventKinds),
+  entryId: z.string(),
+  title: z.string(),
+  mediaType: mediaTypeSchema,
+  status: statusSchema,
+  coverUrl: z.string().nullable(),
+});
+export type CalendarEvent = z.infer<typeof calendarEventSchema>;

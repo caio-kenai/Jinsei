@@ -10,6 +10,8 @@ import {
   progressKinds,
   progressLimitError,
   statusForProgress,
+  type CalendarEvent,
+  type CalendarQuery,
   type EntryCreateInput,
   type EntryPatchInput,
   type LibraryQuery,
@@ -28,7 +30,13 @@ import {
   normalizeName,
 } from '../catalog/catalog.service';
 import { metadataResult } from '../catalog/metadata';
-import { progressCreate, progressInclude, progressResult, progressUpdate } from './progress';
+import {
+  isoDay,
+  progressCreate,
+  progressInclude,
+  progressResult,
+  progressUpdate,
+} from './progress';
 
 const entryInclude = {
   media: { include: catalogInclude },
@@ -49,9 +57,36 @@ export function entryResult(entry: Entry) {
     notes: entry.notes,
     tags: entry.tags.map(({ tag }) => tag.name),
     progress: progressResult(entry, entry.media.mediaTypeId as MediaType),
+    startedOn: entry.startedOn ? isoDay(entry.startedOn) : null,
+    completedOn: entry.completedOn ? isoDay(entry.completedOn) : null,
+    boardRank: entry.boardRank,
     createdAt: entry.createdAt.toISOString(),
     updatedAt: entry.updatedAt.toISOString(),
   });
+}
+
+const day = (value: string) => new Date(`${value}T00:00:00.000Z`);
+const today = () => day(new Date().toISOString().slice(0, 10));
+
+/**
+ * Start and completion dates follow status transitions unless the person sets them explicitly:
+ * leaving "planned" records the start and entering "completed" records the completion.
+ */
+function entryDates(
+  existing: { startedOn: Date | null; completedOn: Date | null; status: { key: string } } | null,
+  nextStatus: StatusKey | undefined,
+  input: { startedOn?: string | null; completedOn?: string | null },
+  when: Date = today(),
+) {
+  const data: { startedOn?: Date | null; completedOn?: Date | null } = {};
+  const previous = existing?.status.key;
+  if (nextStatus && nextStatus !== 'planned' && !existing?.startedOn) data.startedOn = when;
+  if (nextStatus === 'completed' && previous !== 'completed') data.completedOn = when;
+  if (input.startedOn !== undefined)
+    data.startedOn = input.startedOn === null ? null : day(input.startedOn);
+  if (input.completedOn !== undefined)
+    data.completedOn = input.completedOn === null ? null : day(input.completedOn);
+  return data;
 }
 
 @Injectable()
@@ -80,7 +115,9 @@ export class LibraryService {
         ? { media: { title: query.order } }
         : query.sort === 'rating'
           ? { ratingSteps: { sort: query.order, nulls: 'last' } }
-          : { [query.sort]: query.order },
+          : query.sort === 'completedOn'
+            ? { completedOn: { sort: query.order, nulls: 'last' } }
+            : { [query.sort]: query.order },
       { id: 'asc' },
     ];
     const [entries, total] = await this.db.$transaction([
@@ -163,6 +200,7 @@ export class LibraryService {
             ratingSteps: input.rating === null ? null : input.rating * 4,
             favorite: input.favorite,
             notes: input.notes,
+            ...entryDates(null, input.status, input),
             ...progressCreate(media.mediaTypeId as MediaType, input.progress),
           },
         });
@@ -211,7 +249,9 @@ export class LibraryService {
                 : input.rating * 4,
           favorite: input.favorite,
           notes: input.notes,
+          boardRank: input.boardRank,
           updatedAt: new Date(),
+          ...entryDates(existing, statusKey, input),
           ...(input.progress ? progressUpdate(input.progress) : {}),
         },
       });
@@ -258,7 +298,16 @@ export class LibraryService {
       await tx.entryViewing.create({ data: { entryId: id, watchedOn } });
       await tx.userMediaEntry.update({
         where: { id, userId },
-        data: { statusId: status?.id, updatedAt: new Date() },
+        data: {
+          statusId: status?.id,
+          updatedAt: new Date(),
+          ...entryDates(
+            existing,
+            status ? statusKey : undefined,
+            { completedOn: undefined },
+            watchedOn,
+          ),
+        },
       });
       await tx.activityLog.create({
         data: {
@@ -288,6 +337,62 @@ export class LibraryService {
     await this.get(userId, id);
     await this.db.userMediaEntry.delete({ where: { id, userId } });
     return { deleted: true };
+  }
+
+  async calendar(userId: string, query: CalendarQuery): Promise<{ events: CalendarEvent[] }> {
+    const range = { gte: day(query.from), lte: day(query.to) };
+    const scope: Prisma.UserMediaEntryWhereInput = {
+      userId,
+      media: {
+        mediaType: { users: { some: { userId, enabled: true } } },
+        ...(query.mediaType ? { mediaTypeId: query.mediaType } : {}),
+      },
+      ...(query.favorite ? { favorite: query.favorite === 'true' } : {}),
+    };
+    const select = {
+      id: true,
+      startedOn: true,
+      completedOn: true,
+      status: { select: { key: true } },
+      media: { select: { title: true, mediaTypeId: true, coverUrl: true } },
+    } satisfies Prisma.UserMediaEntrySelect;
+    const [entries, viewings] = await this.db.$transaction([
+      this.db.userMediaEntry.findMany({
+        where: { ...scope, OR: [{ startedOn: range }, { completedOn: range }] },
+        select,
+        take: 1000,
+      }),
+      this.db.entryViewing.findMany({
+        where: { watchedOn: range, entry: scope },
+        select: { watchedOn: true, entry: { select } },
+        take: 1000,
+      }),
+    ]);
+    const event = (
+      entry: Prisma.UserMediaEntryGetPayload<{ select: typeof select }>,
+      kind: CalendarEvent['kind'],
+      date: Date,
+    ): CalendarEvent => ({
+      date: isoDay(date),
+      kind,
+      entryId: entry.id,
+      title: entry.media.title,
+      mediaType: entry.media.mediaTypeId as MediaType,
+      status: entry.status.key as StatusKey,
+      coverUrl: entry.media.coverUrl,
+    });
+    const inRange = (date: Date | null): date is Date =>
+      Boolean(date && date >= range.gte && date <= range.lte);
+    const events = [
+      ...entries.flatMap((entry) => [
+        ...(inRange(entry.startedOn) ? [event(entry, 'started', entry.startedOn)] : []),
+        ...(inRange(entry.completedOn) ? [event(entry, 'completed', entry.completedOn)] : []),
+      ]),
+      ...viewings.map((viewing) => event(viewing.entry, 'viewed', viewing.watchedOn)),
+    ];
+    return {
+      events: events.sort((a, b) => a.date.localeCompare(b.date) || a.title.localeCompare(b.title)),
+    };
   }
 
   async summary(userId: string) {
