@@ -1,0 +1,435 @@
+/*
+ * Motion layer. Durations stay short (120–320 ms) and use the same easing so the
+ * workspace feels responsive rather than decorative. Everything here is disabled
+ * for people who ask the system for reduced motion (see the end of the file).
+ */
+:root {
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.36, 0.64, 1);
+}
+
+/* Route content: wrapper created by the dashboard template. */
+.page-transition {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Animated numbers keep the typography of the value they replace. */
+.stat .number-ticker,
+.stat-tile .number-ticker,
+.number-ticker {
+  display: inline;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  letter-spacing: inherit;
+  text-transform: none;
+}
+.section-title .group-number {
+  white-space: nowrap;
+}
+
+/* Navigation: the selected background glides between links (motion layoutId). */
+.nav-link,
+.rail-button {
+  position: relative;
+  isolation: isolate;
+}
+.nav-link.active {
+  background: transparent;
+}
+.nav-active-bg {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: var(--selected);
+}
+.rail-button.active > svg {
+  background: transparent;
+  transition: color 160ms ease;
+}
+.rail-active-bg {
+  position: absolute;
+  z-index: -1;
+  top: calc(50% - 25.5px);
+  left: calc(50% - 16px);
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 4px 14px #0000002e;
+}
+.rail-button > svg {
+  transition: transform 180ms var(--ease-spring);
+}
+.rail-button:hover > svg {
+  transform: translateY(-1px) scale(1.06);
+}
+
+/* View tabs: underline slides to the active view. */
+.view-tab {
+  position: relative;
+}
+.view-tab.active {
+  border-bottom-color: transparent;
+}
+.view-tab-indicator {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--foreground);
+}
+
+/* Press feedback on every button-like control. */
+.button,
+.toolbar-button,
+.icon-button {
+  transition:
+    background 140ms ease,
+    color 140ms ease,
+    box-shadow 140ms ease,
+    transform 120ms var(--ease-out);
+}
+.button:active:not(:disabled),
+.toolbar-button:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+/* Progress grows from zero the first time it renders. */
+.progress-fill,
+.mission-track > span,
+.badge-track > span,
+.bar-track > span,
+.xp-track > span {
+  transition: width 560ms var(--ease-out);
+}
+.goal-ring-value {
+  transition: stroke-dashoffset 760ms var(--ease-out);
+}
+@starting-style {
+  .progress-fill,
+  .mission-track > span,
+  .badge-track > span,
+  .bar-track > span,
+  .xp-track > span {
+    width: 0 !important;
+  }
+  .goal-ring-value {
+    stroke-dashoffset: var(--circumference);
+  }
+}
+
+/* Lists and grids: rows and cards arrive in a quick cascade. */
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.library-table tbody tr:not(.group-row),
+.gallery-card,
+.board-card,
+.continue-card,
+.collection-card,
+.goal-card,
+.collection-item {
+  animation: rise-in 300ms var(--ease-out) backwards;
+}
+
+.library-table tbody tr:nth-child(2),
+.gallery-card:nth-child(2),
+.board-card:nth-child(2),
+.continue-card:nth-child(2),
+.collection-card:nth-child(2),
+.goal-card:nth-child(2),
+.collection-item:nth-child(2) {
+  animation-delay: 22ms;
+}
+.library-table tbody tr:nth-child(3),
+.gallery-card:nth-child(3),
+.board-card:nth-child(3),
+.continue-card:nth-child(3),
+.collection-card:nth-child(3),
+.goal-card:nth-child(3),
+.collection-item:nth-child(3) {
+  animation-delay: 44ms;
+}
+.library-table tbody tr:nth-child(4),
+.gallery-card:nth-child(4),
+.board-card:nth-child(4),
+.continue-card:nth-child(4),
+.collection-card:nth-child(4),
+.goal-card:nth-child(4),
+.collection-item:nth-child(4) {
+  animation-delay: 66ms;
+}
+.library-table tbody tr:nth-child(5),
+.gallery-card:nth-child(5),
+.board-card:nth-child(5),
+.continue-card:nth-child(5),
+.collection-card:nth-child(5),
+.goal-card:nth-child(5),
+.collection-item:nth-child(5) {
+  animation-delay: 88ms;
+}
+.library-table tbody tr:nth-child(6),
+.gallery-card:nth-child(6),
+.board-card:nth-child(6),
+.continue-card:nth-child(6),
+.collection-card:nth-child(6),
+.goal-card:nth-child(6),
+.collection-item:nth-child(6) {
+  animation-delay: 110ms;
+}
+.library-table tbody tr:nth-child(7),
+.gallery-card:nth-child(7),
+.board-card:nth-child(7),
+.continue-card:nth-child(7),
+.collection-card:nth-child(7),
+.goal-card:nth-child(7),
+.collection-item:nth-child(7) {
+  animation-delay: 132ms;
+}
+.library-table tbody tr:nth-child(8),
+.gallery-card:nth-child(8),
+.board-card:nth-child(8),
+.continue-card:nth-child(8),
+.collection-card:nth-child(8),
+.goal-card:nth-child(8),
+.collection-item:nth-child(8) {
+  animation-delay: 154ms;
+}
+.library-table tbody tr:nth-child(9),
+.gallery-card:nth-child(9),
+.board-card:nth-child(9),
+.continue-card:nth-child(9),
+.collection-card:nth-child(9),
+.goal-card:nth-child(9),
+.collection-item:nth-child(9) {
+  animation-delay: 176ms;
+}
+.library-table tbody tr:nth-child(10),
+.gallery-card:nth-child(10),
+.board-card:nth-child(10),
+.continue-card:nth-child(10),
+.collection-card:nth-child(10),
+.goal-card:nth-child(10),
+.collection-item:nth-child(10) {
+  animation-delay: 198ms;
+}
+.library-table tbody tr:nth-child(11),
+.gallery-card:nth-child(11),
+.board-card:nth-child(11),
+.continue-card:nth-child(11),
+.collection-card:nth-child(11),
+.goal-card:nth-child(11),
+.collection-item:nth-child(11) {
+  animation-delay: 220ms;
+}
+.library-table tbody tr:nth-child(12),
+.gallery-card:nth-child(12),
+.board-card:nth-child(12),
+.continue-card:nth-child(12),
+.collection-card:nth-child(12),
+.goal-card:nth-child(12),
+.collection-item:nth-child(12) {
+  animation-delay: 242ms;
+}
+.library-table tbody tr:nth-child(n + 13),
+.gallery-card:nth-child(n + 13),
+.board-card:nth-child(n + 13),
+.continue-card:nth-child(n + 13),
+.collection-card:nth-child(n + 13),
+.goal-card:nth-child(n + 13),
+.collection-item:nth-child(n + 13) {
+  animation-delay: 264ms;
+}
+
+/* Cards lift slightly under the pointer. */
+.continue-card,
+.collection-card,
+.goal-card,
+.journey-card {
+  transition:
+    background 140ms ease,
+    border-color 140ms ease,
+    box-shadow 200ms ease,
+    transform 200ms var(--ease-out);
+}
+.continue-card:hover,
+.collection-card:hover,
+.goal-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 26px #00000014;
+}
+.gallery-cover-button {
+  transition:
+    transform 220ms var(--ease-out),
+    box-shadow 220ms ease;
+}
+.gallery-cover-button:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 14px 30px #0000002b;
+}
+.board-card:hover {
+  transform: translateY(-1px);
+}
+
+/* Overlays: enter and leave instead of popping. */
+@keyframes dialog-exit {
+  to {
+    opacity: 0;
+    transform: translate(-50%, -48.5%) scale(0.98);
+  }
+}
+@keyframes overlay-exit {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes menu-exit {
+  to {
+    opacity: 0;
+    transform: translateY(-3px) scale(0.985);
+  }
+}
+.dialog-content {
+  animation: dialog-enter 220ms var(--ease-out);
+}
+.dialog-content[data-state='closed'] {
+  animation: dialog-exit 140ms ease-in forwards;
+}
+.dialog-overlay[data-state='closed'] {
+  animation: overlay-exit 140ms ease-in forwards;
+}
+.menu-content {
+  animation: menu-enter 180ms var(--ease-out);
+}
+.menu-content[data-state='closed'] {
+  animation: menu-exit 110ms ease-in forwards;
+}
+
+/* Small celebration: completed mission checks pop in. */
+@keyframes pop {
+  0% {
+    transform: scale(0.6);
+  }
+  60% {
+    transform: scale(1.18);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.mission-check svg {
+  animation: pop 360ms var(--ease-spring);
+}
+
+/* Section cascade on dashboard-style pages. */
+.home-page > *,
+.journey-page > *,
+.statistics-grid > *,
+.stat-tiles > *,
+.badge-grid > *,
+.mission-list > li {
+  animation: rise-in 340ms var(--ease-out) backwards;
+}
+.home-page > :nth-child(2),
+.journey-page > :nth-child(2),
+.statistics-grid > :nth-child(2),
+.stat-tiles > :nth-child(2),
+.badge-grid > :nth-child(2),
+.mission-list > li:nth-child(2) {
+  animation-delay: 40ms;
+}
+.home-page > :nth-child(3),
+.journey-page > :nth-child(3),
+.statistics-grid > :nth-child(3),
+.stat-tiles > :nth-child(3),
+.badge-grid > :nth-child(3),
+.mission-list > li:nth-child(3) {
+  animation-delay: 80ms;
+}
+.home-page > :nth-child(4),
+.journey-page > :nth-child(4),
+.statistics-grid > :nth-child(4),
+.stat-tiles > :nth-child(4),
+.badge-grid > :nth-child(4) {
+  animation-delay: 120ms;
+}
+.home-page > :nth-child(n + 5),
+.journey-page > :nth-child(n + 5),
+.statistics-grid > :nth-child(n + 5),
+.stat-tiles > :nth-child(n + 5),
+.badge-grid > :nth-child(n + 5) {
+  animation-delay: 160ms;
+}
+
+/* Unlocked badges catch the light on hover (Magic UI's shine, kept to one sweep). */
+.badge-card {
+  position: relative;
+  overflow: hidden;
+  transition:
+    transform 200ms var(--ease-out),
+    box-shadow 200ms ease;
+}
+.badge-card.unlocked:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px #f06a1d1f;
+}
+.badge-card.unlocked::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(115deg, transparent 35%, #ffffff40 50%, transparent 65%);
+  transform: translateX(-120%);
+}
+.badge-card.unlocked:hover::after {
+  transform: translateX(120%);
+  transition: transform 800ms var(--ease-out);
+}
+.badge-card.unlocked .badge-icon {
+  transition: transform 260ms var(--ease-spring);
+}
+.badge-card.unlocked:hover .badge-icon {
+  transform: rotate(-8deg) scale(1.08);
+}
+
+/* Level badge breathes gently to draw the eye to progress. */
+@keyframes level-glow {
+  0%,
+  100% {
+    box-shadow:
+      inset 0 -4px 0 #0000002e,
+      0 0 0 0 color-mix(in srgb, var(--primary) 0%, transparent);
+  }
+  50% {
+    box-shadow:
+      inset 0 -4px 0 #0000002e,
+      0 0 0 6px color-mix(in srgb, var(--primary) 14%, transparent);
+  }
+}
+.level-badge {
+  animation: level-glow 3.2s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+    transition-duration: 1ms !important;
+  }
+}

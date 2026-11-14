@@ -15,6 +15,7 @@ import { ActiveGoals } from '@/features/goals/active-goals';
 import { JourneyToday } from '@/features/progression/journey-today';
 import { StatusBadge } from '@/features/library/status-badge';
 import { StarRating } from '@/components/shared/star-rating';
+import { NumberTicker } from '@/components/motion/number-ticker';
 
 type Summary = {
   total: number;
@@ -22,6 +23,14 @@ type Summary = {
   averageRating: number | null;
   hoursPlayed: number;
 };
+function greeting() {
+  const hour = new Date().getHours();
+  if (hour < 5) return 'Boa noite';
+  if (hour < 12) return 'Bom dia';
+  if (hour < 18) return 'Boa tarde';
+  return 'Boa noite';
+}
+
 export function HomeScreen() {
   const { data: user } = useCurrentUser();
   const [add, setAdd] = useState(false);
@@ -51,7 +60,9 @@ export function HomeScreen() {
           <span className="eyebrow" style={{ marginBottom: 8 }}>
             SEU ESPAÇO, SUA HISTÓRIA
           </span>
-          <h1>Olá, {user?.profile.displayName.split(' ')[0]}.</h1>
+          <h1>
+            {greeting()}, {user?.profile.displayName.split(' ')[0]}.
+          </h1>
           <p>Um novo dia para descobrir, continuar e guardar boas histórias.</p>
         </div>
         <Button className="home-add" size="sm" onClick={() => setAdd(true)}>
@@ -65,24 +76,34 @@ export function HomeScreen() {
         <div className="stats-strip">
           <div className="stat">
             <span>Na sua biblioteca</span>
-            <strong>{summary.data?.total ?? 0}</strong>
+            <strong>
+              <NumberTicker value={summary.data?.total ?? 0} />
+            </strong>
           </div>
           <div className="stat">
             <span>Experiências concluídas</span>
-            <strong>{summary.data?.byStatus.completed ?? 0}</strong>
+            <strong>
+              <NumberTicker value={summary.data?.byStatus.completed ?? 0} />
+            </strong>
           </div>
           <div className="stat">
             <span>Horas de jogo registradas</span>
             <strong>
-              {summary.data?.hoursPlayed.toLocaleString('pt-BR') ?? 0}
+              <NumberTicker
+                value={summary.data?.hoursPlayed ?? 0}
+                decimals={Number.isInteger(summary.data?.hoursPlayed ?? 0) ? 0 : 1}
+              />
               <small style={{ fontSize: 12, marginLeft: 4 }}>h</small>
             </strong>
           </div>
           <div className="stat">
             <span>Sua nota média</span>
             <strong>
-              {summary.data?.averageRating?.toLocaleString('pt-BR', { maximumFractionDigits: 2 }) ??
-                '—'}
+              {summary.data?.averageRating == null ? (
+                '—'
+              ) : (
+                <NumberTicker value={summary.data.averageRating} decimals={2} />
+              )}
               <small style={{ fontSize: 12, marginLeft: 4 }}> / 5</small>
             </strong>
           </div>

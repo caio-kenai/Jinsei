@@ -12,6 +12,7 @@ import {
   Trash2,
   type LucideIcon,
 } from 'lucide-react';
+import { motion } from 'motion/react';
 import { layoutLabels, type SavedView, type SavedViewConfig } from '@jinsei/contracts';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -75,6 +76,13 @@ export function ViewTabs({
             >
               <Icon size={14} />
               {view.name}
+              {active && (
+                <motion.span
+                  layoutId="view-tab-indicator"
+                  className="view-tab-indicator"
+                  aria-hidden="true"
+                />
+              )}
             </button>
             {active && (
               <DropdownMenu>

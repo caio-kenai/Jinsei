@@ -4,6 +4,7 @@ import '@fontsource-variable/plus-jakarta-sans';
 import './globals.css';
 import './public.css';
 import './polish.css';
+import './motion.css';
 import { AppProviders } from '@/providers/app-providers';
 
 export const metadata: Metadata = {
