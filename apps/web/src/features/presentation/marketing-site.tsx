@@ -12,6 +12,7 @@ import {
   Gamepad2,
   Tv,
   BookOpen,
+  BookMarked,
   Film,
   Clapperboard,
   Heart,
@@ -38,6 +39,7 @@ const categories = [
   { id: 'manga', Icon: BookOpen },
   { id: 'movies', Icon: Film },
   { id: 'series', Icon: Clapperboard },
+  { id: 'books', Icon: BookMarked },
 ] as const;
 const examples: Record<
   MediaType,
@@ -112,6 +114,17 @@ const examples: Record<
     { title: 'Breaking Bad', status: 'completed', rating: 5, progress: 100, tag: 'Drama' },
     { title: 'Severance', status: 'in_progress', rating: 4.5, progress: 50, tag: 'Mistério' },
     { title: 'Dark', status: 'planned', rating: null, progress: 0, tag: 'Ficção científica' },
+  ],
+  books: [
+    { title: 'Dom Casmurro', status: 'completed', rating: 5, progress: 100, tag: 'Clássico' },
+    {
+      title: 'Grande Sertão: Veredas',
+      status: 'in_progress',
+      rating: 4.5,
+      progress: 38,
+      tag: 'Literatura brasileira',
+    },
+    { title: 'Duna', status: 'planned', rating: null, progress: 0, tag: 'Ficção científica' },
   ],
 };
 

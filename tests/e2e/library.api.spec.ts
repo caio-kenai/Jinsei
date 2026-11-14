@@ -27,7 +27,7 @@ test('biblioteca isola usuários e persiste nota, progresso, tags, filtros e vis
     media: { title: `Obra privada ${id}`, mediaType: 'games', platforms: ['PC'] },
     status: 'in_progress',
     rating: 4.25,
-    progress: { hoursPlayed: 12.5, completion: 42 },
+    progress: { kind: 'game', hoursPlayed: 12.5, completion: 42 },
     notes: 'Anotação estritamente privada',
     tags: ['Indie', 'indie'],
     favorite: true,
@@ -61,7 +61,7 @@ test('biblioteca isola usuários e persiste nota, progresso, tags, filtros e vis
   expect(
     (
       await owner.patch(`/api/library/entries/${entry.id}`, {
-        data: { progress: { hoursPlayed: 0, completion: 101 } },
+        data: { progress: { kind: 'game', hoursPlayed: 0, completion: 101 } },
       })
     ).status(),
   ).toBe(400);
@@ -99,6 +99,112 @@ test('biblioteca isola usuários e persiste nota, progresso, tags, filtros e vis
   expect((await owner.delete(`/api/library/entries/${entry.id}`)).status()).toBe(200);
   expect((await owner.get(`/api/library/entries/${entry.id}`)).status()).toBe(404);
   await owner.dispose();
+  await other.dispose();
+});
+
+test('acompanha episódios, páginas e sessões conforme a categoria', async ({ playwright }) => {
+  const client = await playwright.request.newContext({
+    baseURL: 'http://127.0.0.1:4000',
+    extraHTTPHeaders: { Origin: 'http://localhost:3000' },
+  });
+  const other = await playwright.request.newContext({
+    baseURL: 'http://127.0.0.1:4000',
+    extraHTTPHeaders: { Origin: 'http://localhost:3000' },
+  });
+  const id = randomUUID().slice(0, 8);
+  await register(client, `progress-${id}`);
+  await register(other, `progress-other-${id}`);
+  const created = await client.post('/api/library/entries', {
+    data: {
+      media: { title: `Anime ${id}`, mediaType: 'anime', totalEpisodes: 12, totalSeasons: 1 },
+    },
+  });
+  expect(created.status()).toBe(201);
+  const anime = await created.json();
+  expect(anime.progress).toEqual({ kind: 'episodic', episodesWatched: 0 });
+  expect(anime.metadata).toMatchObject({ kind: 'episodic', totalEpisodes: 12, totalSeasons: 1 });
+  const patch = (entryId: string, data: unknown) =>
+    client.patch(`/api/library/entries/${entryId}`, { data });
+  let response = await patch(anime.id, { progress: { kind: 'episodic', episodesWatched: 3 } });
+  expect(response.status()).toBe(200);
+  expect(await response.json()).toMatchObject({
+    status: 'in_progress',
+    progress: { episodesWatched: 3 },
+  });
+  expect(
+    (await patch(anime.id, { progress: { kind: 'game', hoursPlayed: 1, completion: 1 } })).status(),
+  ).toBe(400);
+  response = await patch(anime.id, { progress: { kind: 'episodic', episodesWatched: 12 } });
+  expect((await response.json()).status).toBe('completed');
+  response = await patch(anime.id, {
+    status: 'paused',
+    progress: { kind: 'episodic', episodesWatched: 12 },
+  });
+  expect((await response.json()).status).toBe('paused');
+
+  const book = await (
+    await client.post('/api/library/entries', {
+      data: {
+        media: { title: `Livro ${id}`, mediaType: 'books', totalPages: 200, creators: ['Autora'] },
+        status: 'in_progress',
+        progress: { kind: 'reading', chaptersRead: 0, volumesRead: 0, pagesRead: 50 },
+      },
+    })
+  ).json();
+  expect(book.progress).toMatchObject({ kind: 'reading', pagesRead: 50 });
+  expect(book.metadata).toMatchObject({ kind: 'reading', authors: ['Autora'], totalPages: 200 });
+
+  const movie = await (
+    await client.post('/api/library/entries', {
+      data: { media: { title: `Filme ${id}`, mediaType: 'movies', runtimeMinutes: 120 } },
+    })
+  ).json();
+  expect(movie.progress).toEqual({
+    kind: 'film',
+    timesWatched: 0,
+    lastWatchedOn: null,
+    viewings: [],
+  });
+  expect(
+    (
+      await other.post(`/api/library/entries/${movie.id}/viewings`, {
+        data: { watchedOn: '2026-01-02' },
+      })
+    ).status(),
+  ).toBe(404);
+  expect(
+    (
+      await client.post(`/api/library/entries/${movie.id}/viewings`, {
+        data: { watchedOn: '2999-01-01' },
+      })
+    ).status(),
+  ).toBe(400);
+  expect(
+    (
+      await client.post(`/api/library/entries/${anime.id}/viewings`, {
+        data: { watchedOn: '2026-01-02' },
+      })
+    ).status(),
+  ).toBe(400);
+  response = await client.post(`/api/library/entries/${movie.id}/viewings`, {
+    data: { watchedOn: '2026-01-02' },
+  });
+  expect(response.status()).toBe(201);
+  const watched = await response.json();
+  expect(watched.status).toBe('completed');
+  expect(watched.progress).toMatchObject({ timesWatched: 1, lastWatchedOn: '2026-01-02' });
+  const viewing = watched.progress.viewings[0].id;
+  expect(
+    (await other.delete(`/api/library/entries/${movie.id}/viewings/${viewing}`)).status(),
+  ).toBe(404);
+  response = await client.delete(`/api/library/entries/${movie.id}/viewings/${viewing}`);
+  expect((await response.json()).progress.timesWatched).toBe(0);
+  expect(
+    (await client.delete(`/api/library/entries/${movie.id}/viewings/${viewing}`)).status(),
+  ).toBe(404);
+  const summary = await (await client.get('/api/library/summary')).json();
+  expect(summary).toMatchObject({ episodesWatched: 12, timesWatched: 0 });
+  await client.dispose();
   await other.dispose();
 });
 

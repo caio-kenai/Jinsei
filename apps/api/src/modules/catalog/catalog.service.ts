@@ -21,8 +21,19 @@ import { OpenlibraryProvider } from './providers/openlibrary.provider';
 import { TmdbProvider } from './providers/tmdb.provider';
 import type { CatalogProvider } from './providers/catalog-provider';
 import { InstanceService } from '../instance/instance.module';
+import {
+  hasMetadata,
+  manualMetadata,
+  metadataCreate,
+  metadataInclude,
+  metadataResult,
+  metadataUpdate,
+} from './metadata';
 
-export const catalogInclude = { game: true, externalIds: true } satisfies Prisma.MediaItemInclude;
+export const catalogInclude = {
+  ...metadataInclude,
+  externalIds: true,
+} satisfies Prisma.MediaItemInclude;
 export type MediaWithMetadata = Prisma.MediaItemGetPayload<{ include: typeof catalogInclude }>;
 export const normalizeName = (name: string) =>
   name.normalize('NFKC').trim().toLowerCase().replace(/\s+/g, ' ');
@@ -40,6 +51,7 @@ export function catalogResult(item: MediaWithMetadata): CatalogResult {
     platforms: item.game?.platforms ?? [],
     genres: item.genres,
     developers: item.game?.developers ?? [],
+    metadata: metadataResult(item),
     attribution: {
       label: item.attributionLabel,
       url: item.attributionUrl,
@@ -112,7 +124,7 @@ export class CatalogService {
             : this.wikidata
           : mediaType === 'anime' || mediaType === 'series'
             ? this.tvmaze
-            : mediaType === 'manga'
+            : mediaType === 'manga' || mediaType === 'books'
               ? this.openlibrary
               : this.tmdb.enabled
                 ? this.tmdb
@@ -175,9 +187,7 @@ export class CatalogService {
         genres: input.genres,
         attributionLabel: 'Cadastro pessoal',
         dataLicense: 'Informações fornecidas pelo usuário; registro privado',
-        ...(input.mediaType === 'games'
-          ? { game: { create: { platforms: input.platforms, developers: [], publishers: [] } } }
-          : {}),
+        ...metadataCreate(manualMetadata(input)),
       },
       update: {},
       include: catalogInclude,
@@ -197,12 +207,14 @@ export class CatalogService {
         'A busca externa está desativada nesta instância. Cadastre a obra manualmente.',
       );
     }
-    // Refresh old records without cover/provenance; otherwise retain the cached metadata for a day.
+    // Refresh old records without cover, provenance or category metadata; otherwise retain the
+    // cached metadata for a day.
     if (
       existing &&
       existing.media.title !== input.externalId &&
       existing.media.coverUrl &&
       existing.media.coverAttribution &&
+      hasMetadata(existing.media) &&
       existing.synchronizedAt.getTime() > Date.now() - 86400000
     )
       return existing.media;
@@ -236,20 +248,7 @@ export class CatalogService {
               data: { synchronizedAt: new Date() },
             },
           },
-          ...(item.mediaType === 'games'
-            ? {
-                game: {
-                  upsert: {
-                    create: {
-                      platforms: item.platforms,
-                      developers: item.developers,
-                      publishers: [],
-                    },
-                    update: { platforms: item.platforms, developers: item.developers },
-                  },
-                },
-              }
-            : {}),
+          ...metadataUpdate(item.metadata),
         },
         include: catalogInclude,
       });
@@ -268,17 +267,7 @@ export class CatalogService {
           attributionLabel: item.attribution.label,
           attributionUrl: item.attribution.url,
           dataLicense: item.attribution.license,
-          ...(item.mediaType === 'games'
-            ? {
-                game: {
-                  create: {
-                    platforms: item.platforms,
-                    developers: item.developers,
-                    publishers: [],
-                  },
-                },
-              }
-            : {}),
+          ...metadataCreate(item.metadata),
           externalIds: {
             create: {
               provider: input.provider,

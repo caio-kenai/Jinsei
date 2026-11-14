@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { z } from 'zod';
-import type { CatalogResult, MediaType } from '@jinsei/contracts';
+import type { CatalogResult, MediaMetadata, MediaType, ReleaseStatus } from '@jinsei/contracts';
 import { env } from '../../../config/env';
 import { type CatalogProvider, ProviderCache, providerFetch } from './catalog-provider';
 
@@ -12,7 +12,46 @@ const titleSchema = z.object({
   release_date: z.string().optional(),
   first_air_date: z.string().optional(),
   poster_path: z.string().nullable().optional(),
+  runtime: z.number().nullable().optional(),
+  status: z.string().optional(),
+  number_of_episodes: z.number().nullable().optional(),
+  number_of_seasons: z.number().nullable().optional(),
+  seasons: z
+    .array(z.object({ season_number: z.number(), episode_count: z.number().nullable() }))
+    .optional(),
+  credits: z
+    .object({ crew: z.array(z.object({ job: z.string(), name: z.string() })).catch([]) })
+    .optional(),
 });
+const releaseStatus = (status?: string): ReleaseStatus =>
+  status === 'Returning Series'
+    ? 'releasing'
+    : status === 'Ended' || status === 'Canceled'
+      ? 'finished'
+      : status === 'In Production' || status === 'Planned'
+        ? 'upcoming'
+        : 'unknown';
+function metadata(item: z.infer<typeof titleSchema>, kind: 'movie' | 'tv'): MediaMetadata {
+  if (kind === 'movie')
+    return {
+      kind: 'film',
+      directors: (item.credits?.crew ?? [])
+        .filter((member) => member.job === 'Director')
+        .map((member) => member.name),
+      runtimeMinutes: item.runtime || null,
+    };
+  return {
+    kind: 'episodic',
+    studios: [],
+    totalEpisodes: item.number_of_episodes || null,
+    totalSeasons: item.number_of_seasons || null,
+    seasons: (item.seasons ?? []).map((season) => ({
+      number: season.season_number,
+      episodes: season.episode_count || null,
+    })),
+    releaseStatus: releaseStatus(item.status),
+  };
+}
 @Injectable()
 export class TmdbProvider implements CatalogProvider {
   readonly id = 'tmdb' as const;
@@ -68,6 +107,7 @@ export class TmdbProvider implements CatalogProvider {
       platforms: [],
       developers: [],
       genres: [],
+      metadata: metadata(item, kind),
       attribution: {
         label: 'TMDB',
         url: sourceUrl,
@@ -90,7 +130,9 @@ export class TmdbProvider implements CatalogProvider {
     if (!match) throw new Error('Invalid TMDB identifier');
     const result = await this.cache.get(`details:${externalId}`, async () => [
       await this.normalize(
-        titleSchema.parse(await this.request(`${match[1]}/${match[2]}`)),
+        titleSchema.parse(
+          await this.request(`${match[1]}/${match[2]}`, { append_to_response: 'credits' }),
+        ),
         match[1] as 'movie' | 'tv',
       ),
     ]);

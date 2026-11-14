@@ -11,6 +11,7 @@ import { LibraryService } from '../src/modules/library/library.service';
 import { UsersService } from '../src/modules/users/users.service';
 import { env } from '../src/config/env';
 import { InstanceService } from '../src/modules/instance/instance.module';
+import { metadataResult } from '../src/modules/catalog/metadata';
 
 async function seed() {
   if (env.NODE_ENV === 'production')
@@ -54,7 +55,7 @@ async function seed() {
       {
         displayName: 'Alex Costa',
         username: 'alex-demo',
-        categories: ['games', 'anime', 'manga', 'movies', 'series'],
+        categories: ['games', 'anime', 'manga', 'movies', 'series', 'books'],
         theme: 'dark',
         accent: 'black',
       },
@@ -170,7 +171,7 @@ async function seed() {
           index === 0
             ? 'Explorar os caminhos que ficaram para trás. Uma jornada para aproveitar sem pressa.'
             : '',
-        progress: { hoursPlayed: game.hours, completion: game.completion },
+        progress: { kind: 'game', hoursPlayed: game.hours, completion: game.completion },
       });
       await db.userMediaEntry.update({
         where: { id: entry.id },
@@ -186,21 +187,52 @@ async function seed() {
       { provider: 'openlibrary', externalId: 'OL8988597W' },
       { provider: 'wikidata', externalId: 'Q151599' },
     ] as const) {
-      // Additional real catalog records exercise the shared cover model across categories.
+      // Additional real catalog records exercise the shared cover and progress models.
       const media = await catalog.importSource(source);
       const existing = await db.userMediaEntry.findUnique({
         where: { userId_mediaId: { userId: user.id, mediaId: media.id } },
       });
-      if (!existing)
+      if (existing) continue;
+      const metadata = metadataResult(media);
+      if (metadata.kind === 'episodic') {
+        // The series is shown as finished only when its real episode count is known.
+        const finished = source.externalId === 'series:169' && metadata.totalEpisodes;
         await library.create(user.id, {
           mediaId: media.id,
-          status: 'planned',
+          status: finished ? 'completed' : 'in_progress',
+          rating: finished ? 5 : 4.5,
+          favorite: Boolean(finished),
+          tags: [],
+          notes: '',
+          progress: {
+            kind: 'episodic',
+            episodesWatched: finished ? metadata.totalEpisodes! : 8,
+          },
+        });
+      } else if (metadata.kind === 'reading') {
+        await library.create(user.id, {
+          mediaId: media.id,
+          status: 'in_progress',
           rating: null,
           favorite: false,
           tags: [],
           notes: '',
-          progress: { hoursPlayed: 0, completion: 0 },
+          progress: { kind: 'reading', chaptersRead: 45, volumesRead: 5, pagesRead: 0 },
         });
+      } else {
+        const entry = await library.create(user.id, {
+          mediaId: media.id,
+          status: 'planned',
+          rating: 4.5,
+          favorite: false,
+          tags: ['Clássico'],
+          notes: '',
+        });
+        if (metadata.kind === 'film') {
+          await library.addViewing(user.id, entry.id, { watchedOn: '2025-08-16' });
+          await library.addViewing(user.id, entry.id, { watchedOn: '2026-10-03' });
+        }
+      }
     }
     console.info(
       'Demonstração pronta: dados pessoais ilustrativos e metadados reais do Wikidata. Credenciais locais descritas no README.',

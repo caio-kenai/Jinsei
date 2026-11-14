@@ -4,9 +4,11 @@ import {
   entryCreateSchema,
   entryPatchSchema,
   libraryQuerySchema,
+  viewingCreateSchema,
   type EntryCreateInput,
   type EntryPatchInput,
   type LibraryQuery,
+  type ViewingCreateInput,
 } from '@jinsei/contracts';
 import { CurrentUserId } from '../auth/session.guard';
 import { ApiZodBody, ZodPipe } from '../../common/zod.pipe';
@@ -45,6 +47,22 @@ export class LibraryController {
     @Body(new ZodPipe(entryPatchSchema)) input: EntryPatchInput,
   ) {
     return this.library.update(userId, id, input);
+  }
+  @Post('entries/:id/viewings')
+  @ApiZodBody(viewingCreateSchema)
+  addViewing(
+    @CurrentUserId() userId: string,
+    @Param('id') id: string,
+    @Body(new ZodPipe(viewingCreateSchema)) input: ViewingCreateInput,
+  ) {
+    return this.library.addViewing(userId, id, input);
+  }
+  @Delete('entries/:id/viewings/:viewingId') removeViewing(
+    @CurrentUserId() userId: string,
+    @Param('id') id: string,
+    @Param('viewingId') viewingId: string,
+  ) {
+    return this.library.removeViewing(userId, id, viewingId);
   }
   @Delete('entries/:id') remove(@CurrentUserId() userId: string, @Param('id') id: string) {
     return this.library.remove(userId, id);

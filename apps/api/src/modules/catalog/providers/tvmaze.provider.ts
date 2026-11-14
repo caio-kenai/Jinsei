@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { z } from 'zod';
-import type { CatalogResult, MediaType } from '@jinsei/contracts';
+import type { CatalogResult, MediaType, ReleaseStatus } from '@jinsei/contracts';
 import { type CatalogProvider, ProviderCache, providerFetch, plainText } from './catalog-provider';
 
 const showSchema = z.object({
@@ -13,8 +13,25 @@ const showSchema = z.object({
   premiered: z.string().nullable(),
   summary: z.string().nullable(),
   image: z.object({ medium: z.url(), original: z.url() }).nullable(),
+  status: z.string().nullable().catch(null),
+  _embedded: z
+    .object({
+      seasons: z
+        .array(z.object({ number: z.number().nullable(), episodeOrder: z.number().nullable() }))
+        .catch([]),
+    })
+    .optional()
+    .catch(undefined),
 });
 type Show = z.infer<typeof showSchema>;
+const releaseStatus = (status: string | null): ReleaseStatus =>
+  status === 'Running'
+    ? 'releasing'
+    : status === 'Ended'
+      ? 'finished'
+      : status === 'In Development'
+        ? 'upcoming'
+        : 'unknown';
 const isAnime = (show: Show) => show.type === 'Animation' && show.language === 'Japanese';
 @Injectable()
 export class TvmazeProvider implements CatalogProvider {
@@ -22,6 +39,10 @@ export class TvmazeProvider implements CatalogProvider {
   readonly enabled = true;
   private readonly cache = new ProviderCache();
   private normalize(show: Show, mediaType: 'anime' | 'series'): CatalogResult {
+    const seasons = (show._embedded?.seasons ?? []).flatMap((season) =>
+      season.number === null ? [] : [{ number: season.number, episodes: season.episodeOrder }],
+    );
+    const known = seasons.filter((season) => season.episodes);
     const image = show.image?.medium;
     const coverUrl = image && new URL(image).hostname === 'static.tvmaze.com' ? image : null;
     return {
@@ -44,6 +65,16 @@ export class TvmazeProvider implements CatalogProvider {
       platforms: [],
       developers: [],
       genres: show.genres,
+      metadata: {
+        kind: 'episodic',
+        studios: [],
+        totalEpisodes: known.length
+          ? known.reduce((sum, season) => sum + (season.episodes ?? 0), 0)
+          : null,
+        totalSeasons: seasons.length || null,
+        seasons,
+        releaseStatus: releaseStatus(show.status),
+      },
       attribution: { label: 'TVmaze', url: show.url, license: 'CC BY-SA 4.0 (metadados)' },
     };
   }
@@ -66,7 +97,7 @@ export class TvmazeProvider implements CatalogProvider {
     if (!match) throw new Error('Invalid TVmaze identifier');
     const result = await this.cache.get(`details:${externalId}`, async () => {
       const show = showSchema.parse(
-        await providerFetch(`https://api.tvmaze.com/shows/${match[2]}`),
+        await providerFetch(`https://api.tvmaze.com/shows/${match[2]}?embed=seasons`),
       );
       if ((match[1] === 'anime') !== isAnime(show)) throw new Error('Invalid category');
       return [this.normalize(show, match[1] as 'anime' | 'series')];

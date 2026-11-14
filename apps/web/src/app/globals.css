@@ -946,6 +946,10 @@ kbd {
   background: #4489dc;
   color: white;
 }
+.context-icon[data-media-type='books'] {
+  background: #c27a2c;
+  color: white;
+}
 .context-title h1 {
   font-size: 14px;
   font-weight: 600;
@@ -1355,6 +1359,108 @@ kbd {
   height: 100%;
   background: var(--primary);
   border-radius: 4px;
+  transition: width 0.3s ease;
+}
+.progress-summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--muted);
+  font-size: 11px;
+  white-space: nowrap;
+}
+.progress-increment {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  opacity: 0;
+  transition:
+    opacity 0.15s ease,
+    background 0.15s ease;
+}
+tr:hover .progress-increment,
+.progress-increment:focus-visible {
+  opacity: 1;
+}
+.progress-increment:hover {
+  background: var(--hover);
+  color: var(--foreground);
+}
+@media (hover: none) {
+  .progress-increment {
+    opacity: 1;
+  }
+}
+.metadata-facts {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 7px 14px;
+  font-size: 12px;
+}
+.metadata-facts dt {
+  color: var(--muted);
+}
+.viewing-history {
+  margin-top: 26px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+.viewing-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+  font-size: 12px;
+}
+.viewing-heading h3 {
+  font-size: 13px;
+  font-weight: 600;
+}
+.viewing-form {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.viewing-form input {
+  max-width: 180px;
+}
+.viewing-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
+}
+.viewing-list li {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 4px 3px 9px;
+  border-radius: 5px;
+  background: var(--hover);
+  font-size: 11px;
+}
+.viewing-remove {
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+.viewing-remove:hover {
+  background: var(--selected);
+  color: var(--foreground);
 }
 .tag {
   display: inline-block;
@@ -1548,7 +1654,7 @@ kbd {
 }
 .category-picker {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 9px;
 }
 .category-choice {

@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { AddEntryDialog } from '@/features/library/add-entry-dialog';
 import { EntryDetails } from '@/features/library/entry-details';
 import { MediaCover } from '@/features/library/media-cover';
+import { progressPercent, progressSummary } from '@/features/library/progress-format';
 import { StatusBadge } from '@/features/library/status-badge';
 import { StarRating } from '@/components/shared/star-rating';
 
@@ -110,17 +111,15 @@ export function HomeScreen() {
               />
               <span className="continue-info">
                 <strong>{entry.title}</strong>
-                <span className="continue-meta">
-                  {entry.mediaType === 'games'
-                    ? `${entry.progress.hoursPlayed} h · ${entry.progress.completion}% concluído`
-                    : 'Em andamento'}
-                </span>
-                <span className="progress-track" style={{ display: 'block' }}>
-                  <span
-                    className="progress-fill"
-                    style={{ display: 'block', width: `${entry.progress.completion}%` }}
-                  />
-                </span>
+                <span className="continue-meta">{progressSummary(entry)}</span>
+                {progressPercent(entry) !== null && (
+                  <span className="progress-track" style={{ display: 'block' }}>
+                    <span
+                      className="progress-fill"
+                      style={{ display: 'block', width: `${progressPercent(entry)}%` }}
+                    />
+                  </span>
+                )}
               </span>
             </button>
           ))}

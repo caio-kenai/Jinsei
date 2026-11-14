@@ -12,7 +12,18 @@ const gameSchema = z.object({
   cover: z.object({ url: z.string() }).optional(),
   platforms: z.array(z.object({ name: z.string() })).default([]),
   genres: z.array(z.object({ name: z.string() })).default([]),
+  involved_companies: z
+    .array(
+      z.object({
+        company: z.object({ name: z.string() }),
+        developer: z.boolean().default(false),
+        publisher: z.boolean().default(false),
+      }),
+    )
+    .default([]),
 });
+const companies = (game: z.infer<typeof gameSchema>, role: 'developer' | 'publisher') =>
+  game.involved_companies.filter((item) => item[role]).map((item) => item.company.name);
 
 @Injectable()
 export class IgdbProvider implements CatalogProvider {
@@ -47,7 +58,7 @@ export class IgdbProvider implements CatalogProvider {
           Authorization: `Bearer ${await this.accessToken()}`,
           'Content-Type': 'text/plain',
         },
-        body: `fields name,summary,first_release_date,cover.url,platforms.name,genres.name; ${body}`,
+        body: `fields name,summary,first_release_date,cover.url,platforms.name,genres.name,involved_companies.company.name,involved_companies.developer,involved_companies.publisher; ${body}`,
       }),
     );
     return games.map((game) => ({
@@ -73,7 +84,13 @@ export class IgdbProvider implements CatalogProvider {
         : null,
       platforms: game.platforms.map((item) => item.name),
       genres: game.genres.map((item) => item.name),
-      developers: [],
+      developers: companies(game, 'developer'),
+      metadata: {
+        kind: 'game',
+        platforms: game.platforms.map((item) => item.name),
+        developers: companies(game, 'developer'),
+        publishers: companies(game, 'publisher'),
+      },
       attribution: {
         label: 'IGDB',
         url: 'https://www.igdb.com',

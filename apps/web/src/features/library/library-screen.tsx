@@ -3,12 +3,7 @@ import { useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { keepPreviousData, useMutation, useQuery } from '@tanstack/react-query';
 import {
-  Gamepad2,
   Library,
-  Tv,
-  BookOpen,
-  Film,
-  Clapperboard,
   Heart,
   Plus,
   List,
@@ -35,6 +30,7 @@ import {
   type SavedViewConfig,
 } from '@jinsei/contracts';
 import { api, jsonBody } from '@/lib/api';
+import { categoryIcons } from '@/components/shared/category-icons';
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/input';
@@ -138,13 +134,7 @@ function LibraryWorkspace({
     : mediaType
       ? categoryLabels[mediaType]
       : 'Minha biblioteca';
-  const Icon = favorites
-    ? Heart
-    : mediaType
-      ? { games: Gamepad2, anime: Tv, manga: BookOpen, movies: Film, series: Clapperboard }[
-          mediaType
-        ]
-      : Library;
+  const Icon = favorites ? Heart : mediaType ? categoryIcons[mediaType] : Library;
   function filters(next: SavedViewConfig['filters']) {
     setConfig({ ...config, filters: next });
     setPage(1);

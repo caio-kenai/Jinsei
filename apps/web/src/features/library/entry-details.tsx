@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -19,6 +19,9 @@ import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/compone
 import { MediaCover } from './media-cover';
 import { useEntryMutation } from './use-library';
 import { StarRatingInput } from '@/components/shared/star-rating';
+import { ProgressFields } from './progress-fields';
+import { creditsLine, metadataFacts } from './progress-format';
+import { ViewingHistory } from './viewing-history';
 
 export function EntryDetails({ id, onClose }: { id: string; onClose: () => void }) {
   const result = useQuery({
@@ -65,6 +68,7 @@ function EntryForm({ entry, onClose }: { entry: LibraryEntry; onClose: () => voi
     control,
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<EntryPatchInput>({
     resolver: zodResolver(entryPatchSchema),
@@ -73,7 +77,7 @@ function EntryForm({ entry, onClose }: { entry: LibraryEntry; onClose: () => voi
       rating: entry.rating,
       favorite: entry.favorite,
       notes: entry.notes,
-      progress: entry.progress,
+      progress: entry.progress.kind === 'film' ? undefined : entry.progress,
     },
   });
   const remove = useMutation({
@@ -97,9 +101,8 @@ function EntryForm({ entry, onClose }: { entry: LibraryEntry; onClose: () => voi
             <div>
               <h2>{entry.title}</h2>
               <p>
-                {[entry.releaseYear, entry.platforms.slice(0, 2).join(', ')]
-                  .filter(Boolean)
-                  .join(' · ') || 'Sua experiência, do seu jeito'}
+                {[entry.releaseYear, creditsLine(entry)].filter(Boolean).join(' · ') ||
+                  'Sua experiência, do seu jeito'}
               </p>
             </div>
           </div>
@@ -143,30 +146,7 @@ function EntryForm({ entry, onClose }: { entry: LibraryEntry; onClose: () => voi
                 />
               </div>
             </div>
-            {entry.mediaType === 'games' && (
-              <div className="form-grid">
-                <label className="field">
-                  Horas jogadas
-                  <Input
-                    type="number"
-                    min={0}
-                    max={100000}
-                    step="0.5"
-                    {...register('progress.hoursPlayed', { valueAsNumber: true })}
-                  />
-                </label>
-                <label className="field">
-                  Conclusão (%)
-                  <Input
-                    type="number"
-                    min={0}
-                    max={100}
-                    step={1}
-                    {...register('progress.completion', { valueAsNumber: true })}
-                  />
-                </label>
-              </div>
-            )}
+            <ProgressFields entry={entry} register={register} />
             <label className="checkbox-field">
               <input type="checkbox" {...register('favorite')} />
               <Heart size={14} />
@@ -205,6 +185,7 @@ function EntryForm({ entry, onClose }: { entry: LibraryEntry; onClose: () => voi
               Salvar alterações
             </Button>
           </form>
+          <ViewingHistory entry={entry} onStatusChange={(status) => setValue('status', status)} />
         </section>
         <aside className="details-metadata">
           <MediaCover
@@ -213,6 +194,19 @@ function EntryForm({ entry, onClose }: { entry: LibraryEntry; onClose: () => voi
             layout={entry.coverAttribution?.layout}
             large
           />
+          {metadataFacts(entry).length > 0 && (
+            <section className="details-section">
+              <h3>FICHA</h3>
+              <dl className="metadata-facts">
+                {metadataFacts(entry).map((fact) => (
+                  <Fragment key={fact.label}>
+                    <dt>{fact.label}</dt>
+                    <dd>{fact.value}</dd>
+                  </Fragment>
+                ))}
+              </dl>
+            </section>
+          )}
           {entry.description && (
             <section className="details-section">
               <h3>SOBRE A OBRA</h3>

@@ -21,6 +21,7 @@ import {
 import { MediaCover } from './media-cover';
 import { StatusBadge } from './status-badge';
 import { RatingPicker } from '@/components/shared/star-rating';
+import { ProgressCell } from './progress-cell';
 
 export const columnLabels = {
   title: 'Nome',
@@ -72,7 +73,7 @@ export function LibraryTable({
     ...config.columns.map((key): ColumnDef<LibraryEntry> => ({
       id: key,
       header: columnLabels[key],
-      size: key === 'title' ? 300 : key === 'rating' ? 110 : key === 'progress' ? 135 : 125,
+      size: key === 'title' ? 300 : key === 'rating' ? 110 : key === 'progress' ? 175 : 125,
       cell: ({ row }) => {
         const item = row.original;
         if (key === 'title')
@@ -120,23 +121,7 @@ export function LibraryTable({
             />
           );
         if (key === 'progress')
-          return item.mediaType === 'games' ? (
-            <button
-              className="inline-control progress-cell"
-              onClick={() => onOpen(item.id)}
-              aria-label={`Progresso de ${item.title}: ${item.progress.completion}%`}
-            >
-              <span className="progress-track">
-                <span
-                  className="progress-fill"
-                  style={{ width: `${item.progress.completion}%`, display: 'block' }}
-                />
-              </span>
-              {item.progress.completion}%
-            </button>
-          ) : (
-            <span className="muted">—</span>
-          );
+          return <ProgressCell entry={item} onOpen={onOpen} onPatch={onPatch} />;
         if (key === 'platforms')
           return (
             <span className="muted" title={item.platforms.join(', ')}>
