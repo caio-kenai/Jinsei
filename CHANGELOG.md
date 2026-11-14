@@ -1,5 +1,12 @@
 # Histórico de versões
 
+## 0.0.3 — 2026-11-14
+
+- Animações fluidas na área de trabalho: destaque deslizante na navegação, nas abas e na paleta de comandos, entrada suave das telas e cascata em listas, cartões e seções.
+- Barras de progresso, anéis de metas e números que crescem ao aparecer, com saída animada para diálogos e menus.
+- Estados vazios, telas de acesso e insígnias com movimento discreto; tudo respeita a preferência de reduzir movimento.
+- Pílulas de status uniformes na lista e saudação conforme o horário.
+
 ## 0.0.2 — 2026-11-14
 
 - Buy Me a Monster obrigatório em qualquer instalação, com o Pix do criador e termos adicionais da licença.
