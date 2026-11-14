@@ -16,6 +16,7 @@ import { Prisma } from '../../generated/prisma/client';
 import { env } from '../../config/env';
 import { Public, CurrentUserId } from '../auth/session.guard';
 import { ApiZodBody, ZodPipe } from '../../common/zod.pipe';
+import { storageEnabled } from '../uploads/storage';
 
 @Injectable()
 export class InstanceService {
@@ -43,7 +44,12 @@ export class InstanceService {
       externalCatalogEnabled: record.externalCatalogEnabled,
       supportEnabled: record.supportEnabled,
     });
-    return { ...settings, version: appVersion, publicUrl: env.WEB_ORIGIN };
+    return {
+      ...settings,
+      version: appVersion,
+      publicUrl: env.WEB_ORIGIN,
+      uploadsEnabled: storageEnabled,
+    };
   }
   async requireAdmin(userId: string) {
     const user = await this.db.user.findUnique({ where: { id: userId }, select: { role: true } });

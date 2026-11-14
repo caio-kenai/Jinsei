@@ -13,6 +13,7 @@ import { InstanceModule } from './modules/instance/instance.module';
 import { CollectionsModule } from './modules/collections/collections.module';
 import { GoalsModule } from './modules/goals/goals.module';
 import { ProgressionModule } from './modules/progression/progression.module';
+import { UploadsModule } from './modules/uploads/uploads.module';
 
 @Controller('health')
 class HealthController {
@@ -33,6 +34,7 @@ class HealthController {
     CollectionsModule,
     GoalsModule,
     ProgressionModule,
+    UploadsModule,
     PrismaModule,
     AuthModule,
     UsersModule,

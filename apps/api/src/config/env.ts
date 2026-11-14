@@ -28,6 +28,12 @@ const schema = z.object({
   IGDB_CLIENT_ID: z.string().default(''),
   IGDB_CLIENT_SECRET: z.string().default(''),
   TMDB_READ_TOKEN: z.string().default(''),
+  S3_ENDPOINT: z.string().default(''),
+  S3_BUCKET: z.string().default(''),
+  S3_REGION: z.string().default('us-east-1'),
+  // Local development falls back to the MinIO root credentials of Docker Compose.
+  S3_ACCESS_KEY: z.string().default(process.env.MINIO_ROOT_USER ?? ''),
+  S3_SECRET_KEY: z.string().default(process.env.MINIO_ROOT_PASSWORD ?? ''),
   DONATION_PIX_PAYLOAD: z.string().default(''),
   DONATION_PIX_KEY: z.string().default(''),
 });

@@ -99,6 +99,8 @@ export const currentUserSchema = z.object({
     username: z.string().nullable(),
     bio: z.string(),
     isPublic: z.boolean(),
+    avatarUrl: z.string().nullable(),
+    bannerUrl: z.string().nullable(),
   }),
   preferences: z.object({
     theme: themeSchema,
@@ -124,6 +126,7 @@ export const instanceSettingsSchema = z
 export type InstanceSettings = z.infer<typeof instanceSettingsSchema>;
 export const publicInstanceSchema = instanceSettingsSchema.extend({
   version: z.string(),
+  uploadsEnabled: z.boolean(),
   publicUrl: z.url(),
 });
 export type PublicInstance = z.infer<typeof publicInstanceSchema>;
@@ -402,9 +405,14 @@ export const collectionVisibilityLabels: Record<CollectionVisibility, string> = 
   public: 'Pública',
 };
 const httpsImageSchema = z
-  .url()
+  .string()
   .max(2000)
-  .refine((value) => value.startsWith('https://'), 'Use uma imagem HTTPS');
+  .refine(
+    (value) =>
+      /^\/api\/media\/[a-z0-9]+$/.test(value) ||
+      (URL.canParse(value) && value.startsWith('https://')),
+    'Use uma imagem HTTPS',
+  );
 const collectionFields = {
   name: z.string().trim().min(1, 'Dê um nome à coleção').max(80),
   description: z.string().trim().max(1000),

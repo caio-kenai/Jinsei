@@ -31,18 +31,23 @@ model User {
   xpAwards     XpAward[]
   achievements UserAchievement[]
   streakDays   StreakDay[]
+  assets       MediaAsset[]
 }
 
 model Profile {
-  userId      String   @id
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  displayName String   @default("Minha jornada")
-  username    String?  @unique
-  bio         String   @default("")
-  isPublic    Boolean  @default(false)
+  userId      String      @id
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  displayName String      @default("Minha jornada")
+  username    String?     @unique
+  bio         String      @default("")
+  isPublic    Boolean     @default(false)
   activeTitle String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  avatarId    String?
+  avatar      MediaAsset? @relation("ProfileAvatar", fields: [avatarId], references: [id], onDelete: SetNull)
+  bannerId    String?
+  banner      MediaAsset? @relation("ProfileBanner", fields: [bannerId], references: [id], onDelete: SetNull)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
 }
 
 model UserPreference {
@@ -329,6 +334,8 @@ model Collection {
   visibility  String           @default("private")
   ranked      Boolean          @default(false)
   coverUrl    String?
+  coverId     String?
+  cover       MediaAsset?      @relation(fields: [coverId], references: [id], onDelete: SetNull)
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
   items       CollectionItem[]
@@ -418,4 +425,21 @@ model StreakDay {
   day    DateTime @db.Date
 
   @@id([userId, day])
+}
+
+/// Images uploaded by a person; binaries live in S3-compatible storage, only references here.
+model MediaAsset {
+  id          String       @id @default(cuid())
+  userId      String
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  key         String       @unique
+  purpose     String
+  contentType String
+  size        Int
+  createdAt   DateTime     @default(now())
+  avatarOf    Profile[]    @relation("ProfileAvatar")
+  bannerOf    Profile[]    @relation("ProfileBanner")
+  coverOf     Collection[]
+
+  @@index([userId, purpose])
 }

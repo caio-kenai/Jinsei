@@ -16,6 +16,7 @@ import type {
 import { Prisma } from '../../generated/prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { entryInclude, entryResult } from '../library/library.service';
+import { UploadsService } from '../uploads/uploads.service';
 
 const MAX_COLLECTIONS = 200;
 const MAX_ITEMS = 500;
@@ -60,7 +61,10 @@ export function summaryResult(row: SummaryRow): CollectionSummary {
 
 @Injectable()
 export class CollectionsService {
-  constructor(@Inject(PrismaService) private readonly db: PrismaService) {}
+  constructor(
+    @Inject(PrismaService) private readonly db: PrismaService,
+    @Inject(UploadsService) private readonly uploads: UploadsService,
+  ) {}
 
   private async owned(userId: string, id: string) {
     const collection = await this.db.collection.findFirst({ where: { id, userId } });
@@ -153,21 +157,27 @@ export class CollectionsService {
 
   async update(userId: string, id: string, input: CollectionPatch) {
     const existing = await this.owned(userId, id);
+    // Replacing the cover with a URL releases a previously uploaded image.
+    const releaseCover =
+      input.coverUrl !== undefined && existing.coverId && input.coverUrl !== existing.coverUrl;
     await this.db.collection.update({
       where: { id },
       data: {
         ...input,
+        ...(releaseCover ? { coverId: null } : {}),
         ...(input.name && input.name !== existing.name
           ? { slug: await this.freeSlug(userId, input.name, id) }
           : {}),
       },
     });
+    if (releaseCover) await this.uploads.remove(existing.coverId);
     return this.get(userId, id);
   }
 
   async remove(userId: string, id: string) {
-    await this.owned(userId, id);
+    const existing = await this.owned(userId, id);
     await this.db.collection.delete({ where: { id } });
+    await this.uploads.remove(existing.coverId);
     return { deleted: true };
   }
 
