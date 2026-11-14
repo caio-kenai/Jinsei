@@ -37,7 +37,8 @@ O projeto está em desenvolvimento inicial. Todas as categorias compartilham cad
 - Metas de títulos, episódios, capítulos, páginas, horas, filmes ou coleções, com progresso calculado automaticamente pela biblioteca.
 - Jornada com níveis, missões diárias, semanais e mensais, sequência de dias, insígnias (inclusive por tempo de conta) e títulos para o perfil.
 - Estatísticas com totais, distribuições, notas, conclusões mensais e mapa de atividade, além da paleta de comandos (Ctrl+K).
-- Perfil público opcional em `/u/<usuário>` com avatar, banner, links, favoritos, resenhas, metas e coleções compartilháveis, com SEO e sitemap.
+- Perfil público opcional em `/u/<usuário>` com avatar, banner, links, abas por categoria, estatísticas, últimas atualizações, favoritos, resenhas, metas e coleções compartilháveis, com SEO e sitemap.
+- Comunidade com pedidos de amizade, atividade recente dos amigos, conversas privadas entre amigos e clubes com publicações e moderação por quem os criou.
 - Imagens enviadas para armazenamento compatível com S3, com validação do formato real.
 - Avaliações em cinco estrelas, com incrementos de ¼ (0,25), favoritos, tags, anotações privadas e edição em lote de status.
 - Progresso por categoria: horas e conclusão em jogos, episódios em animes e séries (com temporada atual), capítulos e volumes em mangás, páginas em livros e histórico de sessões em filmes.
