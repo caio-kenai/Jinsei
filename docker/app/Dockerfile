@@ -21,14 +21,14 @@ ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1
 WORKDIR /app
 LABEL org.opencontainers.image.source="https://github.com/caio-kenai/Jinsei" \
       org.opencontainers.image.licenses="AGPL-3.0-only" \
-      org.opencontainers.image.version="0.0.1"
+      org.opencontainers.image.version="0.0.2"
 
 FROM runtime AS api
 ENV HOST=0.0.0.0 PORT=4000
 COPY --from=build --chown=node:node /out/api ./
 USER node
 EXPOSE 4000
-HEALTHCHECK --interval=15s --timeout=5s --start-period=25s CMD node -e "fetch('http://127.0.0.1:4000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+HEALTHCHECK --interval=15s --timeout=5s --start-period=25s CMD node -e "fetch('http://127.0.0.2:4000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 CMD ["node", "dist/main.js"]
 
 FROM runtime AS web
@@ -39,5 +39,5 @@ COPY --from=build --chown=node:node /workspace/apps/web/public ./apps/web/public
 USER node
 WORKDIR /app/apps/web
 EXPOSE 3000
-HEALTHCHECK --interval=15s --timeout=5s --start-period=25s CMD node -e "fetch('http://127.0.0.1:3000/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+HEALTHCHECK --interval=15s --timeout=5s --start-period=25s CMD node -e "fetch('http://127.0.0.2:3000/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 CMD ["node", "server.js"]

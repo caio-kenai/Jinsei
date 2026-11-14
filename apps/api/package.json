@@ -1,7 +1,7 @@
 {
   "name": "@jinsei/api",
   "private": true,
-  "version": "0.0.1",
+  "version": "0.0.2",
   "files": ["dist", "prisma", "prisma.config.ts"],
   "scripts": {
     "dev": "prisma generate && tsx watch --exclude \"./src/generated/**\" src/main.ts",

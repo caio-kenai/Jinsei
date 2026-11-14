@@ -32,7 +32,7 @@ services:
       timeout: 5s
       retries: 20
   migrate:
-    image: ${JINSEI_REGISTRY:-ghcr.io/caio-kenai}/jinsei-api:${JINSEI_VERSION:-0.0.1}
+    image: ${JINSEI_REGISTRY:-ghcr.io/caio-kenai}/jinsei-api:${JINSEI_VERSION:-0.0.2}
     environment: *api-environment
     command: ['./node_modules/.bin/prisma', 'migrate', 'deploy']
     networks: [database]
@@ -41,7 +41,7 @@ services:
         condition: service_healthy
     restart: 'no'
   api:
-    image: ${JINSEI_REGISTRY:-ghcr.io/caio-kenai}/jinsei-api:${JINSEI_VERSION:-0.0.1}
+    image: ${JINSEI_REGISTRY:-ghcr.io/caio-kenai}/jinsei-api:${JINSEI_VERSION:-0.0.2}
     environment: *api-environment
     restart: unless-stopped
     networks: [database, application]
@@ -49,13 +49,13 @@ services:
       migrate:
         condition: service_completed_successfully
   web:
-    image: ${JINSEI_REGISTRY:-ghcr.io/caio-kenai}/jinsei-web:${JINSEI_VERSION:-0.0.1}
+    image: ${JINSEI_REGISTRY:-ghcr.io/caio-kenai}/jinsei-web:${JINSEI_VERSION:-0.0.2}
     environment:
       API_URL: http://api:4000
       HOSTNAME: 0.0.0.0
       PORT: 3000
     ports:
-      - '${JINSEI_BIND:-127.0.0.1}:${JINSEI_PORT:-3000}:3000'
+      - '${JINSEI_BIND:-127.0.0.2}:${JINSEI_PORT:-3000}:3000'
     restart: unless-stopped
     networks: [application]
     depends_on:

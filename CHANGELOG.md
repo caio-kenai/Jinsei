@@ -1,7 +1,8 @@
 # Histórico de versões
 
-## Em desenvolvimento
+## 0.0.2 — 2026-11-14
 
+- Buy Me a Monster obrigatório em qualquer instalação, com o Pix do criador e termos adicionais da licença.
 - Categoria Livros, com busca no Open Library e acompanhamento por páginas.
 - Progresso por episódios (com temporada atual), capítulos, volumes, páginas e sessões de filmes.
 - Metadados específicos de cada categoria importados dos catálogos e informados no cadastro manual.
@@ -15,6 +16,7 @@
 - Página de estatísticas e paleta de comandos com Ctrl+K.
 - Perfis públicos com seções configuráveis, resenhas públicas, coleções compartilháveis, SEO e sitemap.
 - Envio de avatar, banner e capas de coleção para armazenamento compatível com S3.
+- Arrastar e soltar acessível por teclado no quadro e nas coleções, e gráficos com dicas ao passar o mouse.
 
 ## 0.0.1 — 2026-11-13
 
