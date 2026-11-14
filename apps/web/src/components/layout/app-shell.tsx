@@ -25,6 +25,7 @@ import {
   FolderHeart,
   Target,
   Sparkles,
+  ChartColumn,
 } from 'lucide-react';
 import { categoryLabels, mediaTypes, type CurrentUser } from '@jinsei/contracts';
 import { Brand } from '@/components/shared/brand';
@@ -151,6 +152,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         >
           <FolderHeart size={17} />
           Coleções
+        </Link>
+        <Link
+          href="/statistics"
+          onClick={close}
+          className={cn('nav-link', pathname === '/statistics' && 'active')}
+        >
+          <ChartColumn size={17} />
+          Estatísticas
         </Link>
         <Link
           href="/journey"
