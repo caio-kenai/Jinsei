@@ -9,29 +9,36 @@ datasource db {
 }
 
 model User {
-  id           String            @id @default(cuid())
-  email        String            @unique
-  passwordHash String
-  role         String            @default("user")
-  createdAt    DateTime          @default(now())
-  updatedAt    DateTime          @updatedAt
-  profile      Profile?
-  preference   UserPreference?
-  sessions     Session[]
-  categories   UserMediaType[]
-  statuses     UserStatus[]
-  manualMedia  MediaItem[]
-  entries      UserMediaEntry[]
-  tags         Tag[]
-  activities   ActivityLog[]
-  savedViews   SavedView[]
-  collections  Collection[]
-  goals        Goal[]
-  progressLogs ProgressLog[]
-  xpAwards     XpAward[]
-  achievements UserAchievement[]
-  streakDays   StreakDay[]
-  assets       MediaAsset[]
+  id                     String            @id @default(cuid())
+  email                  String            @unique
+  passwordHash           String
+  role                   String            @default("user")
+  createdAt              DateTime          @default(now())
+  updatedAt              DateTime          @updatedAt
+  profile                Profile?
+  preference             UserPreference?
+  sessions               Session[]
+  categories             UserMediaType[]
+  statuses               UserStatus[]
+  manualMedia            MediaItem[]
+  entries                UserMediaEntry[]
+  tags                   Tag[]
+  activities             ActivityLog[]
+  savedViews             SavedView[]
+  collections            Collection[]
+  goals                  Goal[]
+  progressLogs           ProgressLog[]
+  xpAwards               XpAward[]
+  achievements           UserAchievement[]
+  streakDays             StreakDay[]
+  assets                 MediaAsset[]
+  sentFriendRequests     Friendship[]      @relation("FriendRequester")
+  receivedFriendRequests Friendship[]      @relation("FriendAddressee")
+  sentMessages           DirectMessage[]   @relation("MessageSender")
+  receivedMessages       DirectMessage[]   @relation("MessageRecipient")
+  ownedClubs             Club[]
+  clubMemberships        ClubMember[]
+  clubPosts              ClubPost[]
 }
 
 model Profile {
@@ -475,4 +482,73 @@ model ProfileLink {
   position Int     @default(0)
 
   @@index([userId, position])
+}
+
+/// A friend request; once accepted the pair are friends in both directions.
+model Friendship {
+  id          String    @id @default(cuid())
+  requesterId String
+  requester   User      @relation("FriendRequester", fields: [requesterId], references: [id], onDelete: Cascade)
+  addresseeId String
+  addressee   User      @relation("FriendAddressee", fields: [addresseeId], references: [id], onDelete: Cascade)
+  status      String    @default("pending")
+  createdAt   DateTime  @default(now())
+  acceptedAt  DateTime?
+
+  @@unique([requesterId, addresseeId])
+  @@index([addresseeId, status])
+}
+
+model DirectMessage {
+  id          String    @id @default(cuid())
+  senderId    String
+  sender      User      @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  recipientId String
+  recipient   User      @relation("MessageRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+  body        String
+  createdAt   DateTime  @default(now())
+  readAt      DateTime?
+
+  @@index([senderId, recipientId, createdAt])
+  @@index([recipientId, readAt])
+}
+
+model Club {
+  id             String       @id @default(cuid())
+  slug           String       @unique
+  name           String
+  description    String       @default("")
+  mediaTypeId    String?
+  ownerId        String
+  owner          User         @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  members        ClubMember[]
+  posts          ClubPost[]
+  createdAt      DateTime     @default(now())
+  lastActivityAt DateTime     @default(now())
+
+  @@index([lastActivityAt])
+}
+
+model ClubMember {
+  clubId   String
+  club     Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  userId   String
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role     String   @default("member")
+  joinedAt DateTime @default(now())
+
+  @@id([clubId, userId])
+  @@index([userId])
+}
+
+model ClubPost {
+  id        String   @id @default(cuid())
+  clubId    String
+  club      Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  body      String
+  createdAt DateTime @default(now())
+
+  @@index([clubId, createdAt])
 }

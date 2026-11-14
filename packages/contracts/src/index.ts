@@ -898,3 +898,120 @@ export const rankingResponseSchema = z.object({
   hasMore: z.boolean(),
 });
 export type RankingResponse = z.infer<typeof rankingResponseSchema>;
+
+/* Community: friends, direct messages and clubs. */
+export const communityUserSchema = z.object({
+  id: z.string(),
+  username: z.string().nullable(),
+  displayName: z.string(),
+  avatarUrl: z.string().nullable(),
+  isPublic: z.boolean(),
+});
+export type CommunityUser = z.infer<typeof communityUserSchema>;
+export const relationshipStates = ['self', 'none', 'outgoing', 'incoming', 'friends'] as const;
+export const relationshipSchema = z.object({
+  state: z.enum(relationshipStates),
+  requestId: z.string().nullable(),
+  user: communityUserSchema,
+});
+export type Relationship = z.infer<typeof relationshipSchema>;
+export const friendRequestInputSchema = z
+  .object({ username: z.string().trim().toLowerCase().min(1).max(40) })
+  .strict();
+export type FriendRequestInput = z.infer<typeof friendRequestInputSchema>;
+export const friendSchema = communityUserSchema.extend({ since: z.string() });
+export type Friend = z.infer<typeof friendSchema>;
+export const friendRequestSchema = z.object({
+  id: z.string(),
+  direction: z.enum(['incoming', 'outgoing']),
+  user: communityUserSchema,
+  createdAt: z.string(),
+});
+export type FriendRequest = z.infer<typeof friendRequestSchema>;
+export const friendsOverviewSchema = z.object({
+  friends: z.array(friendSchema),
+  requests: z.array(friendRequestSchema),
+});
+export type FriendsOverview = z.infer<typeof friendsOverviewSchema>;
+export const userSearchQuerySchema = z.object({ q: z.string().trim().min(2).max(40) });
+export const messageInputSchema = z.object({ body: z.string().trim().min(1).max(2000) }).strict();
+export type MessageInput = z.infer<typeof messageInputSchema>;
+export const directMessageSchema = z.object({
+  id: z.string(),
+  body: z.string(),
+  mine: z.boolean(),
+  createdAt: z.string(),
+  readAt: z.string().nullable(),
+});
+export type DirectMessage = z.infer<typeof directMessageSchema>;
+export const conversationSummarySchema = z.object({
+  user: communityUserSchema,
+  lastMessage: directMessageSchema,
+  unread: z.number(),
+});
+export type ConversationSummary = z.infer<typeof conversationSummarySchema>;
+export const conversationSchema = z.object({
+  user: communityUserSchema,
+  canMessage: z.boolean(),
+  messages: z.array(directMessageSchema),
+  hasMore: z.boolean(),
+});
+export type Conversation = z.infer<typeof conversationSchema>;
+export const communitySummarySchema = z.object({
+  pendingRequests: z.number(),
+  unreadMessages: z.number(),
+});
+export type CommunitySummary = z.infer<typeof communitySummarySchema>;
+export const friendActivitySchema = publicWorkSchema.extend({
+  user: communityUserSchema,
+  status: statusSchema,
+  updatedAt: z.string(),
+  progressLabel: z.string().nullable(),
+  progressPercent: z.number().nullable(),
+});
+export type FriendActivity = z.infer<typeof friendActivitySchema>;
+export const clubRoles = ['owner', 'member'] as const;
+export const clubInputSchema = z
+  .object({
+    name: z.string().trim().min(2).max(60),
+    description: z.string().trim().max(500).default(''),
+    mediaType: mediaTypeSchema.nullable().default(null),
+  })
+  .strict();
+export type ClubInput = z.input<typeof clubInputSchema>;
+export const clubPatchSchema = clubInputSchema.partial().strict();
+export type ClubPatch = z.input<typeof clubPatchSchema>;
+export const clubSchema = z.object({
+  id: z.string(),
+  slug: z.string(),
+  name: z.string(),
+  description: z.string(),
+  mediaType: mediaTypeSchema.nullable(),
+  owner: communityUserSchema,
+  memberCount: z.number(),
+  postCount: z.number(),
+  role: z.enum(clubRoles).nullable(),
+  createdAt: z.string(),
+  lastActivityAt: z.string(),
+});
+export type Club = z.infer<typeof clubSchema>;
+export const clubQuerySchema = z
+  .object({
+    q: z.string().trim().max(60).optional(),
+    mine: z.enum(['true', 'false']).optional(),
+  })
+  .strict();
+export const clubPostSchema = z.object({
+  id: z.string(),
+  body: z.string(),
+  author: communityUserSchema,
+  createdAt: z.string(),
+  canDelete: z.boolean(),
+});
+export type ClubPost = z.infer<typeof clubPostSchema>;
+export const clubDetailSchema = clubSchema.extend({
+  members: z.array(communityUserSchema.extend({ role: z.enum(clubRoles) })),
+  posts: z.array(clubPostSchema),
+  hasMore: z.boolean(),
+});
+export type ClubDetail = z.infer<typeof clubDetailSchema>;
