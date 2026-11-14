@@ -10,7 +10,7 @@ import {
 import { randomBytes } from 'node:crypto';
 import type { Response } from 'express';
 import { PrismaService } from '../../prisma/prisma.service';
-import { ensureBucket, imageType, s3, storageEnabled } from './storage';
+import { deleteObject, getObject, imageType, putObject, storageEnabled } from './storage';
 
 export type UploadedImage = { buffer: Buffer; size: number } | undefined;
 export type Purpose = 'avatar' | 'banner' | 'collection';
@@ -40,9 +40,7 @@ export class UploadsService {
     if (!contentType) throw new UnsupportedMediaTypeException('Envie uma imagem JPEG, PNG ou WebP');
     const key = `${purpose}/${userId}/${randomBytes(16).toString('hex')}.${extensions[contentType]}`;
     try {
-      await ensureBucket();
-      const response = await s3('PUT', key, file.buffer, contentType);
-      if (!response.ok) throw new Error(`Storage HTTP ${response.status}`);
+      await putObject(key, file.buffer, contentType);
     } catch {
       throw new ServiceUnavailableException('Não foi possível salvar a imagem. Tente novamente.');
     }
@@ -56,7 +54,7 @@ export class UploadsService {
     if (!assetId) return;
     const asset = await this.db.mediaAsset.findUnique({ where: { id: assetId } });
     if (!asset) return;
-    if (storageEnabled) await s3('DELETE', asset.key).catch(() => undefined);
+    if (storageEnabled) await deleteObject(asset.key).catch(() => undefined);
     await this.db.mediaAsset.delete({ where: { id: assetId } }).catch(() => undefined);
   }
 
@@ -103,12 +101,12 @@ export class UploadsService {
 
   async serve(id: string, response: Response) {
     const asset = await this.db.mediaAsset.findUnique({ where: { id } });
-    const stored = asset && storageEnabled ? await s3('GET', asset.key).catch(() => null) : null;
-    if (!asset || !stored?.ok) throw new NotFoundException('Imagem não encontrada');
+    const stored = asset && storageEnabled ? await getObject(asset.key).catch(() => null) : null;
+    if (!asset || !stored) throw new NotFoundException('Imagem não encontrada');
     response.setHeader('Content-Type', asset.contentType);
     response.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
     response.setHeader('X-Content-Type-Options', 'nosniff');
     response.setHeader('Content-Security-Policy', "default-src 'none'");
-    response.send(Buffer.from(await stored.arrayBuffer()));
+    response.send(stored);
   }
 }

@@ -9,7 +9,7 @@ import { verify } from 'argon2';
 import { currentUserSchema, type AccountSession, type PreferencesPatch } from '@jinsei/contracts';
 import { PrismaService } from '../../prisma/prisma.service';
 import { mediaUrl } from '../uploads/uploads.service';
-import { s3, storageEnabled } from '../uploads/storage';
+import { deleteObject, storageEnabled } from '../uploads/storage';
 import { hashPassword } from '../auth/auth.service';
 import { LibraryService } from '../library/library.service';
 
@@ -352,7 +352,7 @@ export class UsersService {
     });
     // Uploaded images leave the storage together with the account.
     if (storageEnabled)
-      await Promise.all(assets.map((asset) => s3('DELETE', asset.key).catch(() => undefined)));
+      await Promise.all(assets.map((asset) => deleteObject(asset.key).catch(() => undefined)));
     return { deleted: true };
   }
 }

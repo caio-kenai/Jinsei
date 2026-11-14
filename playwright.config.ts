@@ -1,3 +1,5 @@
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { defineConfig } from '@playwright/test';
 
 export default defineConfig({
@@ -17,7 +19,11 @@ export default defineConfig({
       : [
           {
             command: 'pnpm --filter @jinsei/api start',
-            env: { THROTTLE_SCALE: '50' },
+            env: {
+              THROTTLE_SCALE: '50',
+              // Uploads use a temporary folder unless an S3 service is configured.
+              MEDIA_DIR: process.env.MEDIA_DIR ?? join(tmpdir(), 'jinsei-e2e-media'),
+            },
             url: 'http://127.0.0.1:4000/api/health',
             reuseExistingServer: !process.env.CI,
             timeout: 30000,

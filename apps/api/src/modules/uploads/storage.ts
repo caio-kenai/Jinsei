@@ -1,13 +1,60 @@
-import { createHash, createHmac } from 'node:crypto';
+import { createHash, createHmac, randomBytes } from 'node:crypto';
+import { mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
+import { dirname, resolve, sep } from 'node:path';
 import { env } from '../../config/env';
 
 const sha256 = (data: Buffer | string) => createHash('sha256').update(data).digest('hex');
 const hmac = (key: Buffer | string, data: string) =>
   createHmac('sha256', key).update(data).digest();
 
-export const storageEnabled = Boolean(
+const s3Enabled = Boolean(
   env.S3_ENDPOINT && env.S3_BUCKET && env.S3_ACCESS_KEY && env.S3_SECRET_KEY,
 );
+/** S3-compatible storage wins; otherwise images can live in a local folder (a Docker volume). */
+export const storageDriver: 's3' | 'local' | null = s3Enabled
+  ? 's3'
+  : env.MEDIA_DIR
+    ? 'local'
+    : null;
+export const storageEnabled = storageDriver !== null;
+
+/** Resolves a key inside MEDIA_DIR, refusing anything that would escape it. */
+function localPath(key: string) {
+  const root = resolve(env.MEDIA_DIR);
+  const path = resolve(root, key);
+  if (!/^[a-z]+\/[\w-]+\/[a-f0-9]+\.(jpg|png|webp)$/.test(key) || !path.startsWith(root + sep))
+    throw new Error('Invalid media key');
+  return path;
+}
+
+export async function putObject(key: string, data: Buffer, contentType: string) {
+  if (storageDriver === 'local') {
+    const path = localPath(key);
+    await mkdir(dirname(path), { recursive: true });
+    const temporary = `${path}.${randomBytes(6).toString('hex')}.tmp`;
+    await writeFile(temporary, data, { mode: 0o640 });
+    await rename(temporary, path);
+    return;
+  }
+  await ensureBucket();
+  const response = await s3('PUT', key, data, contentType);
+  if (!response.ok) throw new Error(`Storage HTTP ${response.status}`);
+}
+
+export async function getObject(key: string): Promise<Buffer | null> {
+  if (storageDriver === 'local')
+    return readFile(localPath(key)).catch((error: NodeJS.ErrnoException) => {
+      if (error.code === 'ENOENT') return null;
+      throw error;
+    });
+  const response = await s3('GET', key);
+  return response.ok ? Buffer.from(await response.arrayBuffer()) : null;
+}
+
+export async function deleteObject(key: string) {
+  if (storageDriver === 'local') await rm(localPath(key), { force: true });
+  else if (storageDriver === 's3') await s3('DELETE', key);
+}
 
 /**
  * Minimal S3 client (path-style requests signed with AWS Signature V4). It works with MinIO and
