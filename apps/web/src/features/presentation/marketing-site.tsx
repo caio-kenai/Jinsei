@@ -33,7 +33,14 @@ import { SignupDialog } from '@/features/auth/signup-dialog';
 import { categoryLabels, type MediaType, type StatusKey } from '@jinsei/contracts';
 import { StatusBadge } from '@/features/library/status-badge';
 import { ClosingShowcase } from './closing-showcase';
-import { BlurText, GlowButton, RotatingWord, ScrollTilt, SpotlightCard } from './landing-effects';
+import {
+  CategoryMarquee,
+  Faq,
+  FeatureBento,
+  HowItWorks,
+  OpenSourceSection,
+} from './landing-sections';
+import { BlurText, GlowButton, RotatingWord, ScrollLift, SpotlightCard } from './landing-effects';
 
 const categories = [
   { id: 'games', Icon: Gamepad2 },
@@ -386,9 +393,9 @@ export function MarketingSite() {
         </section>
         <section className="marketing-showcase">
           <div className="marketing-container">
-            <ScrollTilt>
+            <ScrollLift>
               <ProductDemo />
-            </ScrollTilt>
+            </ScrollLift>
             <div className="marketing-category-strip">
               <span>PARA TODAS AS SUAS HISTÓRIAS</span>
               {categories.map(({ id, Icon }) => (
@@ -400,6 +407,8 @@ export function MarketingSite() {
             </div>
           </div>
         </section>
+        <CategoryMarquee />
+        <FeatureBento />
         <section className="marketing-section marketing-container" data-reveal>
           <header className="marketing-section-heading">
             <h2>
@@ -473,6 +482,7 @@ export function MarketingSite() {
             </div>
           </div>
         </section>
+        <HowItWorks />
         <section className="marketing-section marketing-personalization" data-reveal>
           <div className="marketing-container">
             <header className="marketing-section-heading">
@@ -531,6 +541,8 @@ export function MarketingSite() {
             </div>
           </div>
         </section>
+        <OpenSourceSection />
+        <Faq />
         <ClosingShowcase onSignup={() => setSignup(true)} />
       </main>
       <PublicFooter />
