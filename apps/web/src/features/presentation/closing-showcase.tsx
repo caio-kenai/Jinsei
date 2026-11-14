@@ -13,9 +13,10 @@ export function ClosingShowcase({ onSignup }: { onSignup: () => void }) {
             <br />
             Em um só lugar.
           </h2>
-          <button className="public-button closing-signup" onClick={onSignup}>
+          <button className="public-button closing-signup cta-light" onClick={onSignup}>
+            <span className="cta-light-shine" aria-hidden="true" />
             Comece gratuitamente
-            <ArrowRight size={17} />
+            <ArrowRight size={17} className="cta-arrow" />
           </button>
         </div>
         <div className="closing-devices" aria-label="Jinsei no computador e no celular">

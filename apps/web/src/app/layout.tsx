@@ -5,6 +5,7 @@ import './globals.css';
 import './public.css';
 import './polish.css';
 import './motion.css';
+import './landing.css';
 import { AppProviders } from '@/providers/app-providers';
 
 export const metadata: Metadata = {

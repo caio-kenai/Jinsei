@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { motion } from 'motion/react';
 import type { CatalogResult } from '@jinsei/contracts';
 import { api } from '@/lib/api';
 import { MediaCover } from '@/features/library/media-cover';
@@ -32,6 +33,7 @@ import { SignupDialog } from '@/features/auth/signup-dialog';
 import { categoryLabels, type MediaType, type StatusKey } from '@jinsei/contracts';
 import { StatusBadge } from '@/features/library/status-badge';
 import { ClosingShowcase } from './closing-showcase';
+import { BlurText, GlowButton, RotatingWord, ScrollTilt, SpotlightCard } from './landing-effects';
 
 const categories = [
   { id: 'games', Icon: Gamepad2 },
@@ -342,6 +344,11 @@ export function MarketingSite() {
       <PublicHeader onSignup={() => setSignup(true)} />
       <main>
         <section className="marketing-hero marketing-container">
+          <div className="hero-backdrop" aria-hidden="true">
+            <span className="hero-blob hero-blob-a" />
+            <span className="hero-blob hero-blob-b" />
+            <span className="hero-blob hero-blob-c" />
+          </div>
           <a
             className="marketing-pill"
             href="https://github.com/caio-kenai/Jinsei"
@@ -349,25 +356,39 @@ export function MarketingSite() {
             rel="noreferrer"
           >
             <span className="pill-color-dot" />
-            Gratuito. Open source. Seu.
+            <span className="shiny-text">Gratuito. Open source. Seu.</span>
             <ChevronRight size={14} />
           </a>
-          <h1>
-            Um lugar para todas
-            <br />
-            as suas histórias
+          <h1 aria-label="Um lugar para todas as suas histórias">
+            <BlurText lines={['Um lugar para todas', 'as suas histórias']} delay={0.1} />
           </h1>
-          <p className="marketing-hero-subtitle">Jogos, filmes, séries e muito mais.</p>
-          <div className="marketing-hero-cta">
-            <button className="public-button public-button-large" onClick={() => setSignup(true)}>
-              Comece agora. É GRÁTIS
-            </button>
+          <motion.p
+            className="marketing-hero-subtitle"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.55, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <span className="sr-only">
+              Jogos, animes, mangás, filmes, séries, livros e muito mais.
+            </span>
+            <RotatingWord words={['Jogos', 'Animes', 'Mangás', 'Filmes', 'Séries', 'Livros']} />
+            <span aria-hidden="true"> e muito mais.</span>
+          </motion.p>
+          <motion.div
+            className="marketing-hero-cta"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.75, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <GlowButton onClick={() => setSignup(true)}>Comece agora. É GRÁTIS</GlowButton>
             <span>Sem assinatura. Sem cartão de crédito.</span>
-          </div>
+          </motion.div>
         </section>
         <section className="marketing-showcase">
           <div className="marketing-container">
-            <ProductDemo />
+            <ScrollTilt>
+              <ProductDemo />
+            </ScrollTilt>
             <div className="marketing-category-strip">
               <span>PARA TODAS AS SUAS HISTÓRIAS</span>
               {categories.map(({ id, Icon }) => (
@@ -466,7 +487,7 @@ export function MarketingSite() {
               </p>
             </header>
             <div className="marketing-feature-grid">
-              <article>
+              <SpotlightCard>
                 <div className="feature-art feature-art-views">
                   <List size={24} />
                   <span />
@@ -477,8 +498,8 @@ export function MarketingSite() {
                   Alterne entre a clareza da lista e o visual da galeria. Seus registros continuam
                   no mesmo lugar.
                 </p>
-              </article>
-              <article>
+              </SpotlightCard>
+              <SpotlightCard>
                 <div className="feature-art feature-art-colors">
                   <i />
                   <i />
@@ -492,8 +513,8 @@ export function MarketingSite() {
                   Temas claro e escuro, cores e categorias configuráveis. Um espaço que combina com
                   você.
                 </p>
-              </article>
-              <article>
+              </SpotlightCard>
+              <SpotlightCard>
                 <div className="feature-art feature-art-privacy">
                   <ShieldCheck size={47} />
                   <span>
@@ -506,7 +527,7 @@ export function MarketingSite() {
                   Biblioteca privada, anotações pessoais e exportação dos seus dados. Você mantém o
                   controle.
                 </p>
-              </article>
+              </SpotlightCard>
             </div>
           </div>
         </section>
