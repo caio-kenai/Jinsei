@@ -1,5 +1,12 @@
 # Histórico de versões
 
+## 0.0.9 — 2026-11-14
+
+- Comunidade: pedidos de amizade, busca de pessoas, atividade recente dos amigos e indicadores coloridos.
+- Conversas privadas entre amigos, com mensagens não lidas na navegação e atualização automática.
+- Clubes por categoria ou tema, com membros, publicações e moderação por quem criou o clube.
+- Botões de adicionar amigo e enviar mensagem no perfil público.
+
 ## 0.0.8 — 2026-11-14
 
 - Perfil público reorganizado: banner, avatar e informações na lateral, com abas Visão geral, Jogos, Animes, Mangás, Filmes, Séries e Livros.
