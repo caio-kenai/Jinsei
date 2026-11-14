@@ -63,11 +63,44 @@ As releases seguem `0.0.1` → `0.0.9` → `0.1.0`. As instruções abaixo são 
 
 ## Capturas de tela
 
-Capturas reais da aplicação local, com dados pessoais ilustrativos da conta de demonstração e metadados de catálogos externos.
+Capturas reais da aplicação local, com dados ilustrativos da conta de demonstração e metadados de catálogos externos. Para gerá-las de novo, rode o seed e `README_SCREENSHOTS=1 pnpm exec playwright test tests/e2e/readme.screenshots.spec.ts`.
 
-![Apresentação do Jinsei](assets/screenshots/presentation.png)
-![Biblioteca em Lista no tema claro](assets/screenshots/library-list-light.png)
-![Biblioteca em Galeria no tema escuro](assets/screenshots/library-gallery-dark.png)
+![Apresentação do Jinsei](assets/screenshots/readme/presentation.png)
+
+<table>
+  <tr>
+    <td width="50%" valign="top"><img src="assets/screenshots/readme/home.png" alt="Início em formato de dashboard" /><br /><sub><b>Início</b>: indicadores, títulos em andamento e a biblioteca em perspectiva</sub></td>
+    <td width="50%" valign="top"><img src="assets/screenshots/readme/library-list.png" alt="Biblioteca em Lista" /><br /><sub><b>Lista</b>: status, notas, progresso, plataformas e tags</sub></td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top"><img src="assets/screenshots/readme/library-board.png" alt="Biblioteca em Quadro" /><br /><sub><b>Quadro</b>: arraste os títulos entre status</sub></td>
+    <td width="50%" valign="top"><img src="assets/screenshots/readme/library-calendar.png" alt="Biblioteca em Calendário" /><br /><sub><b>Calendário</b>: inícios, conclusões e sessões</sub></td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top"><img src="assets/screenshots/readme/library-gallery-dark.png" alt="Galeria no tema escuro" /><br /><sub><b>Galeria</b> no tema escuro, com capas de qualquer formato</sub></td>
+    <td width="50%" valign="top"><img src="assets/screenshots/readme/statistics-dark.png" alt="Estatísticas no tema escuro" /><br /><sub><b>Estatísticas</b>: totais, conclusões, status, categorias e notas</sub></td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top"><img src="assets/screenshots/readme/work.png" alt="Página pública de uma obra" /><br /><sub><b>Página da obra</b>: ficha, nota da comunidade, personagens e reviews</sub></td>
+    <td width="50%" valign="top"><img src="assets/screenshots/readme/rankings.png" alt="Rankings da comunidade" /><br /><sub><b>Rankings</b> por categoria, por nota ponderada ou popularidade</sub></td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top"><img src="assets/screenshots/readme/public-profile.png" alt="Perfil público com abas por categoria" /><br /><sub><b>Perfil público</b> com abas e estatísticas por categoria</sub></td>
+    <td width="50%" valign="top"><img src="assets/screenshots/readme/profile.png" alt="Perfil privado" /><br /><sub><b>Perfil</b> com totais e histórias favoritas</sub></td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top"><img src="assets/screenshots/readme/community.png" alt="Atividade dos amigos" /><br /><sub><b>Comunidade</b>: o que seus amigos estão vendo, lendo e jogando</sub></td>
+    <td width="50%" valign="top"><img src="assets/screenshots/readme/messages.png" alt="Conversa privada" /><br /><sub><b>Mensagens</b> privadas entre amigos</sub></td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top"><img src="assets/screenshots/readme/club.png" alt="Clube da comunidade" /><br /><sub><b>Clubes</b> por categoria ou tema, com publicações</sub></td>
+    <td width="50%" valign="top"><img src="assets/screenshots/readme/journey.png" alt="Jornada com níveis e missões" /><br /><sub><b>Jornada</b>: níveis, missões, sequência e insígnias</sub></td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top"><img src="assets/screenshots/readme/settings.png" alt="Configurações de aparência" /><br /><sub><b>Configurações</b>: modo de cor, destaque, temas visuais e categorias</sub></td>
+    <td width="50%" valign="top"><img src="assets/screenshots/readme/mobile-library.png" alt="Biblioteca no celular" /><br /><sub><b>Celular</b>: a mesma biblioteca em telas pequenas</sub></td>
+  </tr>
+</table>
 
 As imagens das obras pertencem aos respectivos titulares e seguem as condições de suas fontes. Consulte [Integrações e créditos](docs/INTEGRATIONS.md).
 
