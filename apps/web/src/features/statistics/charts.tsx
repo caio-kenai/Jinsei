@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis } from 'recharts';
 
 const number = (value: number) => value.toLocaleString('pt-BR');
 
@@ -27,7 +28,7 @@ export function BarList({
   );
 }
 
-/** Vertical columns with labels under each column, a hover tooltip and an optional table. */
+/** Vertical columns (Recharts) with a hover tooltip and a table view for screen readers. */
 export function ColumnChart({
   rows,
   label,
@@ -38,12 +39,6 @@ export function ColumnChart({
   unit: [string, string];
 }) {
   const [table, setTable] = useState(false);
-  const [hover, setHover] = useState<string | null>(null);
-  const max = Math.max(1, ...rows.map((row) => row.value));
-  const width = 640;
-  const height = 180;
-  const gap = 6;
-  const column = (width - gap * (rows.length - 1)) / rows.length;
   const describe = (value: number) => `${number(value)} ${value === 1 ? unit[0] : unit[1]}`;
   return (
     <figure className="column-chart">
@@ -68,41 +63,46 @@ export function ColumnChart({
           </tbody>
         </table>
       ) : (
-        <svg viewBox={`0 0 ${width} ${height + 22}`} role="img" aria-label={label}>
-          <line className="chart-baseline" x1={0} x2={width} y1={height} y2={height} />
-          {rows.map((row, index) => {
-            const barHeight = row.value ? Math.max(4, (row.value / max) * (height - 18)) : 0;
-            const x = index * (column + gap);
-            return (
-              <g
-                key={row.key}
-                onMouseEnter={() => setHover(row.key)}
-                onMouseLeave={() => setHover(null)}
-              >
-                <rect className="chart-hit" x={x} y={0} width={column} height={height} />
-                {barHeight > 0 && (
-                  <path
-                    className={`chart-column ${hover === row.key ? 'active' : ''}`}
-                    d={`M${x},${height} V${height - barHeight + 4} Q${x},${height - barHeight} ${
-                      x + 4
-                    },${height - barHeight} H${x + column - 4} Q${x + column},${height - barHeight} ${
-                      x + column
-                    },${height - barHeight + 4} V${height} Z`}
-                  />
-                )}
-                {hover === row.key && (
-                  <text className="chart-value" x={x + column / 2} y={height - barHeight - 6}>
-                    {number(row.value)}
-                  </text>
-                )}
-                <text className="chart-axis" x={x + column / 2} y={height + 15}>
-                  {row.label}
-                </text>
-                <title>{`${row.title}: ${describe(row.value)}`}</title>
-              </g>
-            );
-          })}
-        </svg>
+        <div className="column-chart-canvas" role="img" aria-label={label}>
+          <ResponsiveContainer width="100%" height={200}>
+            <BarChart
+              data={rows}
+              margin={{ top: 8, right: 0, bottom: 0, left: 0 }}
+              barCategoryGap={4}
+            >
+              <XAxis
+                dataKey="label"
+                tickLine={false}
+                axisLine={{ className: 'chart-baseline' }}
+                tick={{ className: 'chart-axis' }}
+                interval="preserveStartEnd"
+              />
+              <Tooltip
+                cursor={{ className: 'chart-cursor' }}
+                isAnimationActive={false}
+                content={({ active, payload }) => {
+                  const row = payload?.[0]?.payload as (typeof rows)[number] | undefined;
+                  if (!active || !row) return null;
+                  return (
+                    <div className="chart-tooltip">
+                      <strong>{row.title}</strong>
+                      <span>{describe(row.value)}</span>
+                    </div>
+                  );
+                }}
+              />
+              <Bar
+                dataKey="value"
+                fill="var(--primary)"
+                fillOpacity={0.85}
+                radius={[4, 4, 0, 0]}
+                minPointSize={(value) => (Number(value) > 0 ? 4 : 0)}
+                activeBar={{ fillOpacity: 1 }}
+                isAnimationActive={false}
+              />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
       )}
     </figure>
   );

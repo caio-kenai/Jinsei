@@ -3386,25 +3386,28 @@ tr:hover .progress-increment,
 .chart-baseline {
   stroke: var(--border);
 }
-.chart-hit {
-  fill: transparent;
+.column-chart-canvas {
+  width: 100%;
 }
-.chart-column {
-  fill: var(--primary);
-  opacity: 0.85;
+.chart-cursor {
+  fill: var(--hover);
 }
-.chart-column.active {
-  opacity: 1;
+.chart-tooltip {
+  display: grid;
+  gap: 2px;
+  padding: 6px 9px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  box-shadow: 0 6px 18px #0000001f;
+  font-size: 12px;
 }
-.chart-axis,
-.chart-value {
+.chart-tooltip span {
+  color: var(--muted);
+}
+.chart-axis {
   font-size: 10px;
-  text-anchor: middle;
   fill: var(--muted);
-}
-.chart-value {
-  fill: var(--foreground);
-  font-weight: 600;
 }
 .chart-toggle {
   position: absolute;
