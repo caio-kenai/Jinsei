@@ -1,9 +1,23 @@
-import { ConflictException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import {
   libraryEntrySchema,
+  progressKinds,
+  progressLimitError,
+  statusForProgress,
   type EntryCreateInput,
   type EntryPatchInput,
   type LibraryQuery,
+  type MediaMetadata,
+  type MediaType,
+  type ProgressInput,
+  type StatusKey,
+  type ViewingCreateInput,
 } from '@jinsei/contracts';
 import { Prisma } from '../../generated/prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -13,11 +27,13 @@ import {
   catalogResult,
   normalizeName,
 } from '../catalog/catalog.service';
+import { metadataResult } from '../catalog/metadata';
+import { progressCreate, progressInclude, progressResult, progressUpdate } from './progress';
 
 const entryInclude = {
   media: { include: catalogInclude },
   status: true,
-  gameProgress: true,
+  ...progressInclude,
   tags: { include: { tag: true } },
 } satisfies Prisma.UserMediaEntryInclude;
 type Entry = Prisma.UserMediaEntryGetPayload<{ include: typeof entryInclude }>;
@@ -32,10 +48,7 @@ export function entryResult(entry: Entry) {
     favorite: entry.favorite,
     notes: entry.notes,
     tags: entry.tags.map(({ tag }) => tag.name),
-    progress: {
-      hoursPlayed: (entry.gameProgress?.minutesPlayed ?? 0) / 60,
-      completion: entry.gameProgress?.completion ?? 0,
-    },
+    progress: progressResult(entry, entry.media.mediaTypeId as MediaType),
     createdAt: entry.createdAt.toISOString(),
     updatedAt: entry.updatedAt.toISOString(),
   });
@@ -98,6 +111,15 @@ export class LibraryService {
     return entry;
   }
 
+  /** Progress must belong to the entry category and respect totals of finished works. */
+  private checkProgress(type: string, metadata: MediaMetadata, progress?: ProgressInput) {
+    if (!progress) return;
+    if (progress.kind !== progressKinds[type as MediaType])
+      throw new BadRequestException('O progresso informado não corresponde à categoria do título');
+    const limit = progressLimitError(progress, metadata);
+    if (limit) throw new BadRequestException(limit);
+  }
+
   private async status(userId: string, mediaTypeId: string, key: string) {
     const status = await this.db.userStatus.findUnique({
       where: { userId_mediaTypeId_key: { userId, mediaTypeId, key } },
@@ -129,6 +151,7 @@ export class LibraryService {
       : input.media
         ? await this.catalog.manual(userId, input.media)
         : await this.catalog.importSource(input.source!);
+    this.checkProgress(media.mediaTypeId, metadataResult(media), input.progress);
     const status = await this.status(userId, media.mediaTypeId, input.status);
     try {
       const id = await this.db.$transaction(async (tx) => {
@@ -140,16 +163,7 @@ export class LibraryService {
             ratingSteps: input.rating === null ? null : input.rating * 4,
             favorite: input.favorite,
             notes: input.notes,
-            ...(media.mediaTypeId === 'games'
-              ? {
-                  gameProgress: {
-                    create: {
-                      minutesPlayed: Math.round(input.progress.hoursPlayed * 60),
-                      completion: input.progress.completion,
-                    },
-                  },
-                }
-              : {}),
+            ...progressCreate(media.mediaTypeId as MediaType, input.progress),
           },
         });
         await this.replaceTags(tx, userId, entry.id, input.tags);
@@ -173,8 +187,16 @@ export class LibraryService {
 
   async update(userId: string, id: string, input: EntryPatchInput) {
     const existing = await this.get(userId, id);
-    const status = input.status
-      ? await this.status(userId, existing.media.mediaTypeId, input.status)
+    const metadata = metadataResult(existing.media);
+    this.checkProgress(existing.media.mediaTypeId, metadata, input.progress);
+    // Progress may imply a new status (started or finished) when none was chosen explicitly.
+    const implied: StatusKey | undefined =
+      !input.status && input.progress
+        ? statusForProgress(existing.status.key as StatusKey, input.progress, metadata)
+        : undefined;
+    const statusKey = input.status ?? (implied !== existing.status.key ? implied : undefined);
+    const status = statusKey
+      ? await this.status(userId, existing.media.mediaTypeId, statusKey)
       : undefined;
     await this.db.$transaction(async (tx) => {
       await tx.userMediaEntry.update({
@@ -190,22 +212,7 @@ export class LibraryService {
           favorite: input.favorite,
           notes: input.notes,
           updatedAt: new Date(),
-          ...(input.progress && existing.media.mediaTypeId === 'games'
-            ? {
-                gameProgress: {
-                  upsert: {
-                    create: {
-                      minutesPlayed: Math.round(input.progress.hoursPlayed * 60),
-                      completion: input.progress.completion,
-                    },
-                    update: {
-                      minutesPlayed: Math.round(input.progress.hoursPlayed * 60),
-                      completion: input.progress.completion,
-                    },
-                  },
-                },
-              }
-            : {}),
+          ...(input.progress ? progressUpdate(input.progress) : {}),
         },
       });
       if (input.tags) await this.replaceTags(tx, userId, id, input.tags);
@@ -216,12 +223,63 @@ export class LibraryService {
             entryId: id,
             action: 'entry.updated',
             changes: {
-              ...(input.status ? { status: input.status } : {}),
+              ...(statusKey ? { status: statusKey } : {}),
               ...(input.progress ? { progress: input.progress } : {}),
               ...(input.rating !== undefined ? { rating: input.rating } : {}),
             },
           },
         });
+    });
+    return entryResult(await this.get(userId, id));
+  }
+
+  async addViewing(userId: string, id: string, input: ViewingCreateInput) {
+    const existing = await this.get(userId, id);
+    if (progressKinds[existing.media.mediaTypeId as MediaType] !== 'film')
+      throw new BadRequestException('Sessões podem ser registradas somente para filmes');
+    const watchedOn = new Date(`${input.watchedOn}T00:00:00.000Z`);
+    if (watchedOn.getTime() > Date.now() + 86400000 || watchedOn.getUTCFullYear() < 1900)
+      throw new BadRequestException('Informe uma data entre 1900 e hoje');
+    const statusKey = statusForProgress(
+      existing.status.key as StatusKey,
+      {
+        kind: 'film',
+        timesWatched: existing._count.viewings + 1,
+        lastWatchedOn: null,
+        viewings: [],
+      },
+      metadataResult(existing.media),
+    );
+    const status =
+      statusKey !== existing.status.key
+        ? await this.status(userId, existing.media.mediaTypeId, statusKey)
+        : undefined;
+    await this.db.$transaction(async (tx) => {
+      await tx.entryViewing.create({ data: { entryId: id, watchedOn } });
+      await tx.userMediaEntry.update({
+        where: { id, userId },
+        data: { statusId: status?.id, updatedAt: new Date() },
+      });
+      await tx.activityLog.create({
+        data: {
+          userId,
+          entryId: id,
+          action: 'entry.viewed',
+          changes: { watchedOn: input.watchedOn, ...(status ? { status: statusKey } : {}) },
+        },
+      });
+    });
+    return entryResult(await this.get(userId, id));
+  }
+
+  async removeViewing(userId: string, id: string, viewingId: string) {
+    await this.get(userId, id);
+    await this.db.$transaction(async (tx) => {
+      const removed = await tx.entryViewing.deleteMany({
+        where: { id: viewingId, entryId: id, entry: { userId } },
+      });
+      if (!removed.count) throw new NotFoundException('Sessão não encontrada');
+      await tx.userMediaEntry.update({ where: { id, userId }, data: { updatedAt: new Date() } });
     });
     return entryResult(await this.get(userId, id));
   }
@@ -248,7 +306,7 @@ export class LibraryService {
       const key = statuses.find((status) => status.id === row.statusId)?.key ?? 'planned';
       byStatus[key] = (byStatus[key] ?? 0) + row._count;
     }
-    const [stats, hours] = await this.db.$transaction([
+    const [stats, hours, episodes, chapters, viewings] = await this.db.$transaction([
       this.db.userMediaEntry.aggregate({
         where,
         _count: true,
@@ -258,12 +316,24 @@ export class LibraryService {
         where: { entry: where },
         _sum: { minutesPlayed: true },
       }),
+      this.db.episodeProgress.aggregate({
+        where: { entry: where },
+        _sum: { episodesWatched: true },
+      }),
+      this.db.readingProgress.aggregate({
+        where: { entry: where },
+        _sum: { chaptersRead: true },
+      }),
+      this.db.entryViewing.count({ where: { entry: where } }),
     ]);
     return {
       total: stats._count,
       byStatus,
       averageRating: stats._avg.ratingSteps === null ? null : stats._avg.ratingSteps / 4,
       hoursPlayed: (hours._sum.minutesPlayed ?? 0) / 60,
+      episodesWatched: episodes._sum.episodesWatched ?? 0,
+      chaptersRead: chapters._sum.chaptersRead ?? 0,
+      timesWatched: viewings,
     };
   }
 

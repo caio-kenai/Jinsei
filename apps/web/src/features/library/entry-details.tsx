@@ -73,7 +73,7 @@ function EntryForm({ entry, onClose }: { entry: LibraryEntry; onClose: () => voi
       rating: entry.rating,
       favorite: entry.favorite,
       notes: entry.notes,
-      progress: entry.progress,
+      progress: entry.progress.kind === 'film' ? undefined : entry.progress,
     },
   });
   const remove = useMutation({

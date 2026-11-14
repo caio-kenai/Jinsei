@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { z } from 'zod';
-import type { CatalogResult, MediaType } from '@jinsei/contracts';
+import { emptyMetadata, type CatalogResult, type MediaType } from '@jinsei/contracts';
 import { type CatalogProvider, ProviderCache, providerFetch } from './catalog-provider';
 
 const workSchema = z.object({
@@ -41,6 +41,7 @@ export class OpenlibraryProvider implements CatalogProvider {
       platforms: [],
       developers: [],
       genres: work.subjects.slice(0, 8),
+      metadata: emptyMetadata('manga'),
       attribution: {
         label: 'Open Library',
         url: sourceUrl,

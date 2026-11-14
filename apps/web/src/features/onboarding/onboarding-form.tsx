@@ -4,19 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTheme } from 'next-themes';
-import {
-  Check,
-  ArrowRight,
-  Gamepad2,
-  Tv,
-  BookOpen,
-  Film,
-  Clapperboard,
-  Sun,
-  Moon,
-  Monitor,
-  LoaderCircle,
-} from 'lucide-react';
+import { Check, ArrowRight, Sun, Moon, Monitor, LoaderCircle } from 'lucide-react';
 import {
   onboardingSchema,
   categoryLabels,
@@ -29,8 +17,9 @@ import { api, jsonBody } from '@/lib/api';
 import { Brand } from '@/components/shared/brand';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { categoryIcons } from '@/components/shared/category-icons';
 
-const icons = { games: Gamepad2, anime: Tv, manga: BookOpen, movies: Film, series: Clapperboard };
+const icons = categoryIcons;
 export function OnboardingForm() {
   const { data: user } = useCurrentUser();
   const [displayName, setDisplayName] = useState(

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { z } from 'zod';
-import type { CatalogResult, MediaType } from '@jinsei/contracts';
+import { emptyMetadata, type CatalogResult, type MediaType } from '@jinsei/contracts';
 import { env } from '../../../config/env';
 import { type CatalogProvider, ProviderCache, providerFetch } from './catalog-provider';
 
@@ -68,6 +68,7 @@ export class TmdbProvider implements CatalogProvider {
       platforms: [],
       developers: [],
       genres: [],
+      metadata: emptyMetadata(kind === 'movie' ? 'movies' : 'series'),
       attribution: {
         label: 'TMDB',
         url: sourceUrl,

@@ -170,7 +170,7 @@ async function seed() {
           index === 0
             ? 'Explorar os caminhos que ficaram para trás. Uma jornada para aproveitar sem pressa.'
             : '',
-        progress: { hoursPlayed: game.hours, completion: game.completion },
+        progress: { kind: 'game', hoursPlayed: game.hours, completion: game.completion },
       });
       await db.userMediaEntry.update({
         where: { id: entry.id },
@@ -199,7 +199,6 @@ async function seed() {
           favorite: false,
           tags: [],
           notes: '',
-          progress: { hoursPlayed: 0, completion: 0 },
         });
     }
     console.info(

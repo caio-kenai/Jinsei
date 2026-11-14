@@ -119,6 +119,9 @@ model MediaItem {
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
   game             GameMetadata?
+  series           SeriesMetadata?
+  reading          ReadingMetadata?
+  movie            MovieMetadata?
   externalIds      MediaExternalId[]
   entries          UserMediaEntry[]
 
@@ -134,6 +137,44 @@ model GameMetadata {
   publishers String[]
 }
 
+model SeriesMetadata {
+  mediaId       String         @id
+  media         MediaItem      @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  studios       String[]
+  totalEpisodes Int?
+  totalSeasons  Int?
+  releaseStatus String         @default("unknown")
+  seasons       SeriesSeason[]
+}
+
+model SeriesSeason {
+  id       String         @id @default(cuid())
+  mediaId  String
+  series   SeriesMetadata @relation(fields: [mediaId], references: [mediaId], onDelete: Cascade)
+  number   Int
+  episodes Int?
+
+  @@unique([mediaId, number])
+}
+
+model ReadingMetadata {
+  mediaId       String    @id
+  media         MediaItem @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  authors       String[]
+  publishers    String[]
+  totalChapters Int?
+  totalVolumes  Int?
+  totalPages    Int?
+  releaseStatus String    @default("unknown")
+}
+
+model MovieMetadata {
+  mediaId        String    @id
+  media          MediaItem @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  directors      String[]
+  runtimeMinutes Int?
+}
+
 model MediaExternalId {
   id              String    @id @default(cuid())
   mediaId         String
@@ -147,21 +188,24 @@ model MediaExternalId {
 }
 
 model UserMediaEntry {
-  id           String        @id @default(cuid())
-  userId       String
-  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  mediaId      String
-  media        MediaItem     @relation(fields: [mediaId], references: [id], onDelete: Cascade)
-  statusId     String
-  status       UserStatus    @relation(fields: [statusId], references: [id])
-  ratingSteps  Int?
-  favorite     Boolean       @default(false)
-  notes        String        @default("")
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  gameProgress GameProgress?
-  tags         EntryTag[]
-  activities   ActivityLog[]
+  id              String           @id @default(cuid())
+  userId          String
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mediaId         String
+  media           MediaItem        @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  statusId        String
+  status          UserStatus       @relation(fields: [statusId], references: [id])
+  ratingSteps     Int?
+  favorite        Boolean          @default(false)
+  notes           String           @default("")
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  gameProgress    GameProgress?
+  episodeProgress EpisodeProgress?
+  readingProgress ReadingProgress?
+  viewings        EntryViewing[]
+  tags            EntryTag[]
+  activities      ActivityLog[]
 
   @@unique([userId, mediaId])
   @@index([userId, updatedAt])
@@ -174,6 +218,30 @@ model GameProgress {
   entry         UserMediaEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
   minutesPlayed Int            @default(0)
   completion    Int            @default(0)
+}
+
+model EpisodeProgress {
+  entryId         String         @id
+  entry           UserMediaEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  episodesWatched Int            @default(0)
+}
+
+model ReadingProgress {
+  entryId      String         @id
+  entry        UserMediaEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  chaptersRead Int            @default(0)
+  volumesRead  Int            @default(0)
+  pagesRead    Int            @default(0)
+}
+
+model EntryViewing {
+  id        String         @id @default(cuid())
+  entryId   String
+  entry     UserMediaEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  watchedOn DateTime       @db.Date
+  createdAt DateTime       @default(now())
+
+  @@index([entryId, watchedOn])
 }
 
 model Tag {

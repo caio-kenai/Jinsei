@@ -74,6 +74,12 @@ export class IgdbProvider implements CatalogProvider {
       platforms: game.platforms.map((item) => item.name),
       genres: game.genres.map((item) => item.name),
       developers: [],
+      metadata: {
+        kind: 'game',
+        platforms: game.platforms.map((item) => item.name),
+        developers: [],
+        publishers: [],
+      },
       attribution: {
         label: 'IGDB',
         url: 'https://www.igdb.com',

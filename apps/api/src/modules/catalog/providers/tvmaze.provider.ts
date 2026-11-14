@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { z } from 'zod';
-import type { CatalogResult, MediaType } from '@jinsei/contracts';
+import { emptyMetadata, type CatalogResult, type MediaType } from '@jinsei/contracts';
 import { type CatalogProvider, ProviderCache, providerFetch, plainText } from './catalog-provider';
 
 const showSchema = z.object({
@@ -44,6 +44,7 @@ export class TvmazeProvider implements CatalogProvider {
       platforms: [],
       developers: [],
       genres: show.genres,
+      metadata: emptyMetadata(mediaType),
       attribution: { label: 'TVmaze', url: show.url, license: 'CC BY-SA 4.0 (metadados)' },
     };
   }

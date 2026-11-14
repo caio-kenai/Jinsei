@@ -15,11 +15,6 @@ import {
   PanelLeftOpen,
   ChevronDown,
   ChevronRight,
-  Gamepad2,
-  Tv,
-  BookOpen,
-  Film,
-  Clapperboard,
   Sun,
   Moon,
   Monitor,
@@ -47,14 +42,8 @@ import { toast } from 'sonner';
 import { SupportDialog } from '@/features/support/support-dialog';
 import { UserMenu } from '@/features/profile/user-menu';
 import { AboutDialog } from '@/features/about/about-dialog';
+import { categoryIcons } from '@/components/shared/category-icons';
 
-const categoryIcons = {
-  games: Gamepad2,
-  anime: Tv,
-  manga: BookOpen,
-  movies: Film,
-  series: Clapperboard,
-};
 export function AppShell({ children }: { children: React.ReactNode }) {
   const { data: user } = useCurrentUser();
   const pathname = usePathname();

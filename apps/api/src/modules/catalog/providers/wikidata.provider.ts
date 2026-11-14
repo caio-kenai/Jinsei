@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import type { CatalogResult, MediaType } from '@jinsei/contracts';
+import { emptyMetadata, type CatalogResult, type MediaType } from '@jinsei/contracts';
 import { z } from 'zod';
 import { type CatalogProvider, ProviderCache, providerFetch } from './catalog-provider';
 import { commonsCover } from './commons-cover';
@@ -138,6 +138,15 @@ export class WikidataProvider implements CatalogProvider {
           platforms: named(entity, 'P400'),
           genres: named(entity, 'P136'),
           developers: named(entity, 'P178'),
+          metadata:
+            category(entity) === 'games'
+              ? {
+                  kind: 'game' as const,
+                  platforms: named(entity, 'P400'),
+                  developers: named(entity, 'P178'),
+                  publishers: [],
+                }
+              : emptyMetadata(category(entity)!),
           attribution: {
             label: 'Wikidata',
             url: `https://www.wikidata.org/wiki/${entity.id}`,

@@ -120,7 +120,7 @@ export function LibraryTable({
             />
           );
         if (key === 'progress')
-          return item.mediaType === 'games' ? (
+          return item.progress.kind === 'game' ? (
             <button
               className="inline-control progress-cell"
               onClick={() => onOpen(item.id)}

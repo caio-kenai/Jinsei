@@ -1,9 +1,11 @@
 import { z } from 'zod';
+import { entryProgressSchema, mediaMetadataSchema, progressInputSchema } from './progress';
+export * from './progress';
 export const appVersion = '0.0.1';
 
 export const healthSchema = z.object({ status: z.literal('ok'), service: z.literal('jinsei-api') });
 
-export const mediaTypes = ['games', 'anime', 'manga', 'movies', 'series'] as const;
+export const mediaTypes = ['games', 'anime', 'manga', 'movies', 'series', 'books'] as const;
 export const mediaTypeSchema = z.enum(mediaTypes);
 export type MediaType = z.infer<typeof mediaTypeSchema>;
 export const categoryLabels: Record<MediaType, string> = {
@@ -12,6 +14,7 @@ export const categoryLabels: Record<MediaType, string> = {
   manga: 'Mangás',
   movies: 'Filmes',
   series: 'Séries',
+  books: 'Livros',
 };
 export const themeSchema = z.enum(['light', 'dark', 'system']);
 export const accentSchema = z.enum([
@@ -49,7 +52,7 @@ export const onboardingSchema = z
     categories: z
       .array(mediaTypeSchema)
       .min(1)
-      .max(5)
+      .max(mediaTypes.length)
       .refine((v) => new Set(v).size === v.length),
     theme: themeSchema,
     accent: accentSchema.default('black'),
@@ -121,19 +124,13 @@ export const statusLabels: Record<StatusKey, string> = {
 };
 export const ratingSchema = z.number().min(0).max(5).multipleOf(0.25).nullable();
 export const ratingValues = Array.from({ length: 20 }, (_, index) => (index + 1) / 4);
-export const progressSchema = z
-  .object({
-    hoursPlayed: z.number().min(0).max(100000).multipleOf(0.5),
-    completion: z.number().int().min(0).max(100),
-  })
-  .strict();
 export const personalFieldsSchema = z.object({
   status: statusSchema.default('planned'),
   rating: ratingSchema.default(null),
   favorite: z.boolean().default(false),
   notes: z.string().max(10000).default(''),
   tags: z.array(z.string().trim().min(1).max(24)).max(8).default([]),
-  progress: progressSchema.default({ hoursPlayed: 0, completion: 0 }),
+  progress: progressInputSchema.optional(),
 });
 export const manualMediaSchema = z
   .object({
@@ -149,6 +146,13 @@ export const manualMediaSchema = z
     releaseYear: z.number().int().min(1900).max(2100).nullable().default(null),
     platforms: z.array(z.string().trim().min(1).max(50)).max(12).default([]),
     genres: z.array(z.string().trim().min(1).max(50)).max(8).default([]),
+    creators: z.array(z.string().trim().min(1).max(120)).max(12).default([]),
+    totalEpisodes: z.number().int().min(1).max(100000).nullable().default(null),
+    totalSeasons: z.number().int().min(1).max(1000).nullable().default(null),
+    totalChapters: z.number().int().min(1).max(100000).nullable().default(null),
+    totalVolumes: z.number().int().min(1).max(10000).nullable().default(null),
+    totalPages: z.number().int().min(1).max(100000).nullable().default(null),
+    runtimeMinutes: z.number().int().min(1).max(2000).nullable().default(null),
   })
   .strict();
 export type ManualMediaInput = z.infer<typeof manualMediaSchema>;
@@ -157,7 +161,7 @@ export const sourceInputSchema = z
     provider: z.enum(['wikidata', 'igdb', 'tvmaze', 'openlibrary', 'tmdb']),
     externalId: z
       .string()
-      .regex(/^(Q\d+|\d+|(?:anime|series):\d+|OL\d+W|(?:movie|tv):\d+)$/)
+      .regex(/^(Q\d+|\d+|(?:anime|series):\d+|(?:books:)?OL\d+W|(?:movie|tv):\d+)$/)
       .max(40),
   })
   .strict();
@@ -181,7 +185,7 @@ export const entryPatchSchema = z
     favorite: z.boolean().optional(),
     notes: personalFieldsSchema.shape.notes.removeDefault().optional(),
     tags: personalFieldsSchema.shape.tags.removeDefault().optional(),
-    progress: progressSchema.optional(),
+    progress: progressInputSchema.optional(),
   })
   .strict();
 export type EntryPatchInput = z.infer<typeof entryPatchSchema>;
@@ -232,6 +236,7 @@ export const catalogResultSchema = z.object({
   platforms: z.array(z.string()),
   genres: z.array(z.string()),
   developers: z.array(z.string()),
+  metadata: mediaMetadataSchema,
   attribution: z.object({ label: z.string(), url: z.string().nullable(), license: z.string() }),
 });
 export type CatalogResult = z.infer<typeof catalogResultSchema>;
@@ -251,7 +256,8 @@ export const libraryEntrySchema = z.object({
   favorite: z.boolean(),
   notes: z.string(),
   tags: z.array(z.string()),
-  progress: progressSchema,
+  metadata: mediaMetadataSchema,
+  progress: entryProgressSchema,
   updatedAt: z.string(),
   createdAt: z.string(),
   attribution: catalogResultSchema.shape.attribution,
