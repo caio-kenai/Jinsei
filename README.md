@@ -26,11 +26,12 @@
 
 Jinsei é uma aplicação gratuita e open source para organizar jogos, animes, mangás, filmes, séries e livros em uma biblioteca pessoal. Separe o que quer começar, registre suas avaliações e mantenha suas anotações em um espaço privado.
 
-O projeto está em desenvolvimento inicial. Todas as categorias compartilham cadastro, capas, status, notas, favoritos e acompanhamento de progresso adaptado a cada tipo de obra. Recuperação de acesso por e-mail e MFA ainda não estão disponíveis.
+O projeto está em desenvolvimento ativo (série 0.1). Todas as categorias compartilham cadastro, capas, status, notas, favoritos e acompanhamento de progresso adaptado a cada tipo de obra, e a comunidade permite acompanhar amigos, conversar e participar de clubes. Recuperação de acesso por e-mail e MFA ainda não estão disponíveis.
 
 ## Funcionalidades
 
 - Cadastro com e-mail e senha, sessão por cookie e onboarding com categorias e tema.
+- Início em formato de dashboard, com indicadores, minigráficos, títulos em andamento e distribuição por status.
 - Biblioteca em Lista, Galeria, Quadro e Calendário, com várias visualizações salvas por categoria, agrupamento por status, busca, filtros, ordenação e colunas configuráveis.
 - Quadro com arrastar e soltar entre status e ordem manual; calendário com inícios, conclusões e sessões de filmes.
 - Coleções e rankings pessoais com títulos de qualquer categoria, capa, descrição e visibilidade.
@@ -38,17 +39,19 @@ O projeto está em desenvolvimento inicial. Todas as categorias compartilham cad
 - Jornada com níveis, missões diárias, semanais e mensais, sequência de dias, insígnias (inclusive por tempo de conta) e títulos para o perfil.
 - Estatísticas com totais, distribuições, notas, conclusões mensais e mapa de atividade, além da paleta de comandos (Ctrl+K).
 - Perfil público opcional em `/u/<usuário>` com avatar, banner, links, abas por categoria, estatísticas, últimas atualizações, favoritos, resenhas, metas e coleções compartilháveis, com SEO e sitemap.
+- Páginas públicas das obras em `/obras/<id>` com ficha, sinopse, personagens, equipe, nota e distribuição da comunidade, além de reviews com recomendação e rankings por categoria em `/rankings`.
 - Comunidade com pedidos de amizade, atividade recente dos amigos, conversas privadas entre amigos e clubes com publicações e moderação por quem os criou.
-- Imagens enviadas para armazenamento compatível com S3, com validação do formato real.
+- Avatar, banner e capas de coleção enviados pela aplicação, guardados num volume local ou em armazenamento compatível com S3, com validação do formato real.
 - Avaliações em cinco estrelas, com incrementos de ¼ (0,25), favoritos, tags, anotações privadas e edição em lote de status.
 - Progresso por categoria: horas e conclusão em jogos, episódios em animes e séries (com temporada atual), capítulos e volumes em mangás, páginas em livros e histórico de sessões em filmes.
 - Status atualizado automaticamente ao iniciar ou concluir uma obra pelo progresso, com avanço rápido de um episódio ou capítulo na lista.
 - Ficha da obra com episódios, temporadas, situação de lançamento, autoria, editoras, direção e duração quando disponíveis.
 - Metadados reais e capas com créditos via fontes públicas, além de cadastro pessoal com URL de imagem opcional.
-- Temas claro, escuro e sistema, dez cores de destaque, densidade e barra lateral configuráveis.
-- Menu da conta com quatro favoritos e perfil privado com estatísticas e até oito destaques.
+- Temas claro, escuro e automático com troca animada, sete temas visuais, dez cores de destaque, densidade e barra lateral configuráveis.
+- Configurações em cartões com idioma, fuso horário, formatos de data e hora, celebrações e lista de sessões ativas por dispositivo.
+- Menu da conta com favoritos compactos, atalho para a comunidade e perfil privado com estatísticas e até oito destaques.
 - Preferências e visualizações persistidas no PostgreSQL.
-- Exportação de dados, alteração de senha com revogação de sessões e exclusão de conta.
+- Exportação de dados (incluindo amizades, mensagens e clubes), alteração de senha com revogação de sessões, encerramento de sessões e exclusão de conta.
 - Buy Me a Monster: apoio voluntário por Pix ao criador do Jinsei, presente em todas as instalações.
 - Instalação self-host com Docker e administração da identidade, cadastros e consultas externas da instância.
 
@@ -70,7 +73,7 @@ As imagens das obras pertencem aos respectivos titulares e seguem as condições
 
 ## Tecnologias
 
-Monorepo pnpm com Next.js App Router, React, TypeScript, Tailwind CSS, componentes Radix UI, TanStack Query e Table. API NestJS com validação Zod, Prisma e PostgreSQL. Docker Compose fornece PostgreSQL e um serviço S3 local preparado para futuras funcionalidades.
+Monorepo pnpm com Next.js App Router, React, TypeScript, Tailwind CSS, componentes Radix UI, TanStack Query e Table, Motion, dnd-kit, Recharts e Lucide. API NestJS com validação Zod, Prisma e PostgreSQL. Contratos compartilhados em `packages/contracts`. Docker Compose fornece PostgreSQL e um serviço S3 local para desenvolvimento.
 
 ## Instalação
 
@@ -96,7 +99,7 @@ Abra [localhost:3000](http://localhost:3000). API em [localhost:4000/api](http:/
 
 O seed opcional cria `demo@jinsei.local`, com senha `Jinsei-demo-2026!` (ou `DEMO_PASSWORD` definido antes da primeira execução). Os metadados são consultados em serviços reais; o comando precisa de internet e informa falhas de disponibilidade. Não execute a conta de demonstração em uma instalação pública. O seed recusa `NODE_ENV=production` e não redefine senhas de contas existentes.
 
-O serviço S3 local é compilado de um commit fixo do código oficial do MinIO; a primeira compilação demora mais. Uploads e criação de buckets ainda não fazem parte desta versão.
+O serviço S3 local é compilado de um commit fixo do código oficial do MinIO; a primeira compilação demora mais. O bucket é criado no primeiro envio de imagem. Sem S3, defina `MEDIA_DIR` para guardar as imagens numa pasta local.
 
 ## Configuração
 
@@ -106,9 +109,11 @@ Para uma instalação pública, siga o [guia de self-host](docs/SELFHOST.md) e c
 
 ## Como utilizar
 
-Crie uma conta, escolha suas categorias e abra a biblioteca. Em **Adicionar título**, pesquise no catálogo ou cadastre uma obra pessoal. Abra o título para editar progresso, avaliação, tags e anotações. Troque entre Lista e Galeria; use **Salvar visualização** para guardar filtros, ordenação, agrupamento e colunas. Desabilitar uma categoria a oculta sem apagar seus registros.
+Crie uma conta, escolha suas categorias e abra a biblioteca. Em **Adicionar título**, pesquise no catálogo ou cadastre uma obra pessoal. Abra o título para editar progresso, avaliação, review, tags e anotações. Troque entre Lista, Galeria, Quadro e Calendário; use **Salvar visualização** para guardar filtros, ordenação, agrupamento e colunas. Desabilitar uma categoria a oculta sem apagar seus registros.
 
-Em **Configurações**, personalize seu perfil e a aparência, exporte seus dados ou gerencie sua conta. A biblioteca e as anotações são privadas nesta versão.
+Em **Comunidade**, busque pessoas pelo nome ou pelo usuário, aceite pedidos de amizade, converse com amigos e entre em clubes. Perfis privados só são encontrados pelo usuário exato, e mensagens só existem entre amigos.
+
+Em **Configurações**, personalize perfil, aparência, categorias, região e formatos, escolha o que aparece no perfil público, encerre sessões em outros dispositivos, exporte seus dados ou exclua a conta. A biblioteca e as anotações são privadas; só o que você marcar como público aparece no perfil e nas páginas das obras.
 
 ## Desenvolvimento e validação
 
