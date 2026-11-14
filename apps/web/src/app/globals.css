@@ -946,6 +946,10 @@ kbd {
   background: #4489dc;
   color: white;
 }
+.context-icon[data-media-type='books'] {
+  background: #c27a2c;
+  color: white;
+}
 .context-title h1 {
   font-size: 14px;
   font-weight: 600;
@@ -1355,6 +1359,53 @@ kbd {
   height: 100%;
   background: var(--primary);
   border-radius: 4px;
+  transition: width 0.3s ease;
+}
+.progress-summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--muted);
+  font-size: 11px;
+  white-space: nowrap;
+}
+.progress-increment {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  opacity: 0;
+  transition:
+    opacity 0.15s ease,
+    background 0.15s ease;
+}
+tr:hover .progress-increment,
+.progress-increment:focus-visible {
+  opacity: 1;
+}
+.progress-increment:hover {
+  background: var(--hover);
+  color: var(--foreground);
+}
+@media (hover: none) {
+  .progress-increment {
+    opacity: 1;
+  }
+}
+.metadata-facts {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 7px 14px;
+  font-size: 12px;
+}
+.metadata-facts dt {
+  color: var(--muted);
 }
 .tag {
   display: inline-block;
