@@ -24,6 +24,7 @@ O projeto está em desenvolvimento inicial. Todas as categorias compartilham cad
 - Quadro com arrastar e soltar entre status e ordem manual; calendário com inícios, conclusões e sessões de filmes.
 - Coleções e rankings pessoais com títulos de qualquer categoria, capa, descrição e visibilidade.
 - Metas de títulos, episódios, capítulos, páginas, horas, filmes ou coleções, com progresso calculado automaticamente pela biblioteca.
+- Jornada com níveis, missões diárias, semanais e mensais, sequência de dias, insígnias (inclusive por tempo de conta) e títulos para o perfil.
 - Avaliações em cinco estrelas, com incrementos de ¼ (0,25), favoritos, tags, anotações privadas e edição em lote de status.
 - Progresso por categoria: horas e conclusão em jogos, episódios em animes e séries (com temporada atual), capítulos e volumes em mangás, páginas em livros e histórico de sessões em filmes.
 - Status atualizado automaticamente ao iniciar ou concluir uma obra pelo progresso, com avanço rápido de um episódio ou capítulo na lista.

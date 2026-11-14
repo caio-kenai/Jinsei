@@ -11,6 +11,7 @@
 - Coleções e rankings com reordenação, títulos de várias categorias e visibilidade configurável.
 - Metas com progresso automático por período, categoria ou coleção, exibidas também no início.
 - Exportação de dados com coleções, metas e histórico de progresso.
+- Jornada com níveis, missões, sequência de dias no fuso do usuário, insígnias e títulos, sem prêmios repetidos ao recadastrar títulos.
 
 ## 0.0.1 — 2026-11-13
 
