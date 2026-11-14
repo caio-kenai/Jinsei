@@ -629,3 +629,25 @@ export function levelForXp(xp: number) {
   while (xpForLevel(level + 1) <= xp) level += 1;
   return level;
 }
+
+export const statisticsSchema = z.object({
+  totals: z.object({
+    entries: z.number(),
+    completed: z.number(),
+    favorites: z.number(),
+    averageRating: z.number().nullable(),
+    hoursPlayed: z.number(),
+    episodesWatched: z.number(),
+    chaptersRead: z.number(),
+    pagesRead: z.number(),
+    timesWatched: z.number(),
+  }),
+  byStatus: z.array(z.object({ status: statusSchema, count: z.number() })),
+  byCategory: z.array(
+    z.object({ mediaType: mediaTypeSchema, total: z.number(), completed: z.number() }),
+  ),
+  ratings: z.array(z.object({ rating: z.number(), count: z.number() })),
+  completionsByMonth: z.array(z.object({ month: z.string(), count: z.number() })),
+  activity: z.array(z.object({ day: isoDateSchema, count: z.number() })),
+});
+export type Statistics = z.infer<typeof statisticsSchema>;

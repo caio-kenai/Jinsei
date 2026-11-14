@@ -33,6 +33,9 @@ export class LibraryController {
   ) {
     return this.library.calendar(userId, query);
   }
+  @Get('statistics') statistics(@CurrentUserId() userId: string) {
+    return this.library.statistics(userId);
+  }
   @Get('summary') summary(@CurrentUserId() userId: string) {
     return this.library.summary(userId);
   }
