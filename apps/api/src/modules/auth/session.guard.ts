@@ -19,6 +19,7 @@ export const CurrentUserId = createParamDecorator(
   (_data: unknown, context: ExecutionContext) =>
     context.switchToHttp().getRequest<AuthenticatedRequest>().userId,
 );
+const SEEN_INTERVAL_MS = 5 * 60_000;
 export const tokenHash = (value: string) => createHash('sha256').update(value).digest('hex');
 
 @Injectable()
@@ -41,10 +42,15 @@ export class SessionGuard implements CanActivate {
       throw new UnauthorizedException('Entre na sua conta para continuar');
     const session = await this.db.session.findUnique({
       where: { tokenHash: tokenHash(cookie) },
-      select: { id: true, userId: true, expiresAt: true },
+      select: { id: true, userId: true, expiresAt: true, lastSeenAt: true },
     });
     if (!session || session.expiresAt <= new Date())
       throw new UnauthorizedException('Sua sessão expirou. Entre novamente');
+    // Activity is recorded at most every few minutes to keep requests cheap.
+    if (Date.now() - session.lastSeenAt.getTime() > SEEN_INTERVAL_MS)
+      void this.db.session
+        .update({ where: { id: session.id }, data: { lastSeenAt: new Date() } })
+        .catch(() => undefined);
     request.userId = session.userId;
     request.sessionId = session.id;
     return true;

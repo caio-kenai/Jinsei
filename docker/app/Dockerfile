@@ -21,11 +21,13 @@ ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1
 WORKDIR /app
 LABEL org.opencontainers.image.source="https://github.com/caio-kenai/Jinsei" \
       org.opencontainers.image.licenses="AGPL-3.0-only" \
-      org.opencontainers.image.version="0.0.9"
+      org.opencontainers.image.version="0.1.0"
 
 FROM runtime AS api
 ENV HOST=0.0.0.0 PORT=4000
 COPY --from=build --chown=node:node /out/api ./
+# Uploaded images live here when no S3 service is configured (mounted as a volume).
+RUN mkdir -p /data/media && chown node:node /data/media
 USER node
 EXPOSE 4000
 HEALTHCHECK --interval=15s --timeout=5s --start-period=25s CMD node -e "fetch('http://127.0.0.1:4000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"

@@ -1,6 +1,6 @@
 # Hospedar seu próprio Jinsei
 
-A versão atual é **0.0.9**. Os pacotes oficiais são imagens Linux **amd64** para a API e o frontend, publicadas no [GitHub Packages](https://github.com/caio-kenai?tab=packages&repo_name=Jinsei). Use uma versão fixa ao atualizar. ARM64 ainda não foi validado.
+A versão atual é **0.1.0**. Os pacotes oficiais são imagens Linux **amd64** para a API e o frontend, publicadas no [GitHub Packages](https://github.com/caio-kenai?tab=packages&repo_name=Jinsei). Use uma versão fixa ao atualizar. ARM64 ainda não foi validado.
 
 Cada release também traz `Jinsei-<versão>-selfhost.zip`, com apenas os arquivos necessários para instalar (compose, exemplo de ambiente, Caddy, licença e documentação), e o arquivo `SHA256SUMS` para conferir o download com `sha256sum -c SHA256SUMS`.
 
@@ -15,7 +15,7 @@ Você controla o banco, o domínio e as políticas da sua instalação. A admini
 ## Instalação local com imagens prontas
 
 ```sh
-git clone --branch v0.0.9 https://github.com/caio-kenai/Jinsei.git
+git clone --branch v0.1.0 https://github.com/caio-kenai/Jinsei.git
 cd Jinsei
 cp .env.selfhost.example .env.selfhost
 ```
@@ -24,7 +24,7 @@ No PowerShell, use `Copy-Item .env.selfhost.example .env.selfhost`. Edite esse a
 
 | Variável                      | Configuração                                                                                    |
 | ----------------------------- | ----------------------------------------------------------------------------------------------- |
-| `JINSEI_VERSION`              | `0.0.9`, a versão das duas imagens                                                              |
+| `JINSEI_VERSION`              | `0.1.0`, a versão das duas imagens                                                              |
 | `POSTGRES_PASSWORD`           | Senha aleatória própria; use letras e números para evitar caracteres reservados na URL do banco |
 | `PUBLIC_ORIGIN`               | `http://localhost:3000` para acesso somente local                                               |
 | `JINSEI_BIND` / `JINSEI_PORT` | `127.0.0.1` / `3000` por padrão                                                                 |
@@ -77,7 +77,9 @@ Não execute o seed de demonstração em produção.
 
 ## Imagens enviadas
 
-Avatar, banner e capas de coleção usam um armazenamento compatível com S3 (AWS S3, Cloudflare R2, Backblaze B2, MinIO e similares). Defina `S3_ENDPOINT`, `S3_BUCKET`, `S3_REGION`, `S3_ACCESS_KEY` e `S3_SECRET_KEY` em `.env.selfhost`; o bucket é criado na primeira imagem quando não existir. O bucket não precisa ser público: a API entrega as imagens em `/api/media/<id>`. Sem essas variáveis, o envio de imagens fica indisponível e o restante do Jinsei funciona normalmente. Inclua o bucket na sua rotina de backup.
+Avatar, banner e capas de coleção funcionam sem configuração extra: por padrão as imagens ficam no volume `media` do Docker (`MEDIA_DIR=/data/media` dentro do contêiner da API). A API valida o formato real do arquivo e entrega as imagens em `/api/media/<id>`, então a pasta nunca precisa ser pública.
+
+Para guardar as imagens fora do servidor, use um armazenamento compatível com S3 (AWS S3, Cloudflare R2, Backblaze B2, MinIO e similares): defina `S3_ENDPOINT`, `S3_BUCKET`, `S3_REGION`, `S3_ACCESS_KEY` e `S3_SECRET_KEY` em `.env.selfhost`. Com essas variáveis o S3 passa a ser usado e o bucket é criado na primeira imagem quando não existir. Para desligar o envio de imagens, deixe as variáveis S3 vazias e defina `MEDIA_DIR=` vazio. Inclua o volume `media` ou o bucket na sua rotina de backup.
 
 ## Backup e restauração
 
@@ -95,6 +97,13 @@ docker compose --env-file .env.selfhost -f compose.selfhost.yml cp ./jinsei-back
 docker compose --env-file .env.selfhost -f compose.selfhost.yml exec -T postgres pg_restore -U jinsei -d jinsei --no-owner --exit-on-error /tmp/jinsei-backup.dump
 ```
 
+Para copiar as imagens guardadas no volume `media`:
+
+```sh
+docker compose --env-file .env.selfhost -f compose.selfhost.yml exec -T api tar -C /data/media -czf /tmp/jinsei-media.tar.gz .
+docker compose --env-file .env.selfhost -f compose.selfhost.yml cp api:/tmp/jinsei-media.tar.gz ./jinsei-media.tar.gz
+```
+
 Não restaure sobre um banco com dados sem planejar a substituição. Não use `down --volumes` na sua instalação: isso apaga o banco persistente. A aplicação não agenda backups nem remove cópias antigas; defina retenção e considere pedidos de exclusão ao restaurar.
 
 ## Atualizações
@@ -109,8 +118,8 @@ Reverter apenas a imagem não reverte uma migração. Em caso de incompatibilida
 ## Compilar suas imagens
 
 ```sh
-docker build -f docker/app/Dockerfile --target api -t local/jinsei-api:0.0.9 .
-docker build -f docker/app/Dockerfile --target web -t local/jinsei-web:0.0.9 .
+docker build -f docker/app/Dockerfile --target api -t local/jinsei-api:0.1.0 .
+docker build -f docker/app/Dockerfile --target web -t local/jinsei-web:0.1.0 .
 ```
 
 Defina `JINSEI_REGISTRY=local` na sua configuração e use `up -d --wait --pull never`. Ambas as imagens executam como usuário `node`, sem root. A construção instala dependências e gera o frontend; não requer credenciais dos catálogos.

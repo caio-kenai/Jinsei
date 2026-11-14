@@ -9,6 +9,7 @@ import { ArrowLeft, LoaderCircle, MessagesSquare, Send, UserPlus } from 'lucide-
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
+import { useDateFormat } from '@/lib/date-format';
 import { CommunityEmpty, UserAvatar, UserName, relativeTime } from './community-ui';
 import {
   useCommunityMutations,
@@ -18,6 +19,7 @@ import {
 } from './use-community';
 
 function Thread({ userId }: { userId: string }) {
+  const formatTime = useDateFormat().time;
   const conversation = useConversation(userId);
   const { send } = useCommunityMutations();
   const [draft, setDraft] = useState('');
@@ -80,7 +82,7 @@ function Thread({ userId }: { userId: string }) {
                 <div className={cn('community-message', message.mine && 'mine')}>
                   <p>{message.body}</p>
                   <time dateTime={message.createdAt}>
-                    {format(date, 'HH:mm')}
+                    {formatTime(date)}
                     {message.mine && message.readAt && ' · lida'}
                   </time>
                 </div>

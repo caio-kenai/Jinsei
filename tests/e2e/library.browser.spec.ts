@@ -77,14 +77,13 @@ test('jornada completa no navegador persiste edições, visualização e tema', 
     'aria-selected',
     'true',
   );
-  await page.getByRole('button', { name: 'Alterar tema', exact: true }).click();
   const preferenceSaved = page.waitForResponse(
     (response) =>
       response.url().includes('/api/users/me/preferences') &&
       response.request().method() === 'PATCH' &&
       response.status() === 200,
   );
-  await page.getByRole('menuitem', { name: 'Claro', exact: true }).click();
+  await page.getByRole('button', { name: 'Usar tema claro', exact: true }).click();
   await preferenceSaved;
   await expect(page.locator('html')).toHaveClass(/light/);
   await page.reload();
@@ -187,8 +186,7 @@ test('capturas reais de lista, galeria, temas e mobile com conta de demonstraç�
     )
     .toBe(8);
   await page.screenshot({ path: 'assets/screenshots/library-gallery-dark.png' });
-  await page.getByRole('button', { name: 'Alterar tema' }).click();
-  await page.getByRole('menuitem', { name: 'Claro', exact: true }).click();
+  await page.getByRole('button', { name: 'Usar tema claro', exact: true }).click();
   await expect(page.locator('html')).toHaveClass(/light/);
   await page.getByRole('tab', { name: 'Lista', exact: true }).click();
   await expect(page.locator('.library-table')).toBeVisible();

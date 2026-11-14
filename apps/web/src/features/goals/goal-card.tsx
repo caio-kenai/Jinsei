@@ -1,6 +1,5 @@
 'use client';
-import { format, parseISO } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { useDateFormat } from '@/lib/date-format';
 import { Archive, ArchiveRestore, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 import { categoryLabels, goalStateLabels, goalUnits, type Goal } from '@jinsei/contracts';
 import {
@@ -10,8 +9,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { GoalRing } from './goal-ring';
-
-const date = (value: string) => format(parseISO(value), 'd MMM yyyy', { locale: ptBR });
 
 export function goalAmount(goal: Goal) {
   const [singular, plural] = goalUnits[goal.metric];
@@ -31,6 +28,7 @@ export function GoalCard({
   onArchive?: () => void;
   onDelete?: () => void;
 }) {
+  const date = useDateFormat().date;
   const scope = goal.collectionName ?? (goal.mediaType ? categoryLabels[goal.mediaType] : null);
   return (
     <article className={`goal-card state-${goal.state}`}>

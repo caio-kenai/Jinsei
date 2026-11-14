@@ -31,7 +31,7 @@ export class AuthService {
     @Inject(InstanceService) private readonly instance: InstanceService,
   ) {}
 
-  async register(input: RegistrationInput) {
+  async register(input: RegistrationInput, userAgent = '') {
     if (!(await this.instance.settings()).registrationsEnabled)
       throw new ForbiddenException('Novos cadastros estão desativados nesta instância');
     const passwordHash = await hashPassword(input.password);
@@ -52,7 +52,7 @@ export class AuthService {
           },
         },
       });
-      return this.createSession(user.id);
+      return this.createSession(user.id, userAgent);
     } catch (error) {
       if (error instanceof Error && 'code' in error && error.code === 'P2002')
         throw new ConflictException('Não foi possível criar a conta com os dados informados');
@@ -60,19 +60,26 @@ export class AuthService {
     }
   }
 
-  async login(input: Credentials) {
+  async login(input: Credentials, userAgent = '') {
     const user = await this.db.user.findUnique({ where: { email: input.email } });
     const valid = await verify(user?.passwordHash ?? (await this.dummyHash), input.password);
     if (!user || !valid) throw new UnauthorizedException('E-mail ou senha incorretos');
-    return this.createSession(user.id);
+    return this.createSession(user.id, userAgent);
   }
 
-  async createSession(userId: string) {
+  async createSession(userId: string, userAgent = '') {
     const token = randomBytes(32).toString('hex');
     const expiresAt = new Date(Date.now() + env.SESSION_DAYS * 86400000);
     await this.db.$transaction([
       this.db.session.deleteMany({ where: { userId, expiresAt: { lt: new Date() } } }),
-      this.db.session.create({ data: { userId, tokenHash: tokenHash(token), expiresAt } }),
+      this.db.session.create({
+        data: {
+          userId,
+          tokenHash: tokenHash(token),
+          expiresAt,
+          userAgent: userAgent.slice(0, 300),
+        },
+      }),
     ]);
     return { token, expiresAt, userId };
   }

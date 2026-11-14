@@ -1,4 +1,16 @@
-import { Body, Controller, Delete, Get, Header, Inject, Patch, Post, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Header,
+  Inject,
+  Param,
+  Patch,
+  Post,
+  Req,
+  Res,
+} from '@nestjs/common';
 import type { Response } from 'express';
 import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
 import {
@@ -9,7 +21,7 @@ import {
   type OnboardingInput,
   type PreferencesPatch,
 } from '@jinsei/contracts';
-import { CurrentUserId } from '../auth/session.guard';
+import { CurrentUserId, type AuthenticatedRequest } from '../auth/session.guard';
 import { ApiZodBody, ZodPipe } from '../../common/zod.pipe';
 import { UsersService } from './users.service';
 import { cookieOptions } from '../auth/auth.controller';
@@ -47,6 +59,21 @@ export class UsersController {
   @Header('Content-Disposition', 'attachment; filename="jinsei-data.json"')
   export(@CurrentUserId() userId: string) {
     return this.users.export(userId);
+  }
+
+  @Get('sessions')
+  sessions(@Req() request: AuthenticatedRequest) {
+    return this.users.sessions(request.userId, request.sessionId);
+  }
+
+  @Delete('sessions')
+  endOtherSessions(@Req() request: AuthenticatedRequest) {
+    return this.users.endOtherSessions(request.userId, request.sessionId);
+  }
+
+  @Delete('sessions/:id')
+  endSession(@Req() request: AuthenticatedRequest, @Param('id') id: string) {
+    return this.users.endSession(request.userId, request.sessionId, id);
   }
 
   @Patch('password')

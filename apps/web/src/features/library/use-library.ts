@@ -8,6 +8,8 @@ import {
 } from '@jinsei/contracts';
 import { toast } from 'sonner';
 import { api, jsonBody } from '@/lib/api';
+import { celebrate } from '@/lib/celebrate';
+import { currentUserOptions } from '@/features/auth/use-current-user';
 
 export function useEntryMutation() {
   const client = useQueryClient();
@@ -39,6 +41,12 @@ export function useEntryMutation() {
       // Progress can move the title to another status; say so when it was not chosen explicitly.
       if (changes.progress && !changes.status && context?.previousStatus !== entry.status)
         toast.success(`${entry.title} agora está em ${statusLabels[entry.status]}`);
+      if (
+        entry.status === 'completed' &&
+        context?.previousStatus !== 'completed' &&
+        client.getQueryData(currentUserOptions.queryKey)?.preferences.celebrations !== false
+      )
+        celebrate();
     },
     onSettled: () => {
       void client.invalidateQueries({ queryKey: ['library'] });

@@ -17,8 +17,6 @@ import {
   ChevronRight,
   Sun,
   Moon,
-  Monitor,
-  ArrowUpRight,
   Compass,
   CupSoda,
   Info,
@@ -33,13 +31,6 @@ import { categoryLabels, mediaTypes, type CurrentUser } from '@jinsei/contracts'
 import { Brand } from '@/components/shared/brand';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { useCurrentUser } from '@/features/auth/use-current-user';
 import { useCommunitySummary } from '@/features/community/use-community';
 import { usePreferences } from '@/features/auth/use-preferences';
@@ -75,7 +66,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { setTheme } = useTheme();
+  const { setTheme, resolvedTheme } = useTheme();
   const preferences = usePreferences();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [supportOpen, setSupportOpen] = useState(false);
@@ -109,7 +100,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <>
       <div className="workspace-label">
         <span>Meu espaço</span>
-        <ChevronDown size={14} />
       </div>
       <nav className="sidebar-navigation" aria-label="Navegação principal">
         <NavLink href="/home" onClick={close} active={pathname === '/home'}>
@@ -202,15 +192,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <Info size={17} />
           Sobre
         </button>
-        <a
-          className="nav-link source-link"
-          href="https://github.com/caio-kenai/Jinsei"
-          target="_blank"
-          rel="noreferrer"
-        >
-          Código aberto
-          <ArrowUpRight size={14} />
-        </a>
       </div>
     </>
   );
@@ -223,8 +204,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       toast.error('Não foi possível sair. Tente novamente.');
     }
   }
-  function changeTheme(theme: CurrentUser['preferences']['theme']) {
-    transitionTheme(() => setTheme(theme), document.getElementById('theme-toggle'));
+  function changeTheme(theme: CurrentUser['preferences']['theme'], origin: Element) {
+    transitionTheme(() => setTheme(theme), origin);
     preferences.mutate({ theme }, { onError: () => setTheme(user!.preferences.theme) });
   }
   return (
@@ -314,36 +295,21 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <kbd>Ctrl K</kbd>
           </form>
           <div className="header-actions">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  id="theme-toggle"
-                  variant="ghost"
-                  size="icon"
-                  className="theme-toggle"
-                  aria-label="Alterar tema"
-                >
-                  <Sun className="theme-light-icon" size={17} />
-                  <Moon className="theme-dark-icon" size={17} />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuLabel>Aparência</DropdownMenuLabel>
-                <DropdownMenuItem onSelect={() => changeTheme('light')}>
-                  <Sun size={15} />
-                  Claro
-                </DropdownMenuItem>
-                <DropdownMenuItem onSelect={() => changeTheme('dark')}>
-                  <Moon size={15} />
-                  Escuro
-                </DropdownMenuItem>
-                <DropdownMenuItem onSelect={() => changeTheme('system')}>
-                  <Monitor size={15} />
-                  Sistema
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            <UserMenu user={user} onLogout={logout} />
+            <Button
+              id="theme-toggle"
+              variant="ghost"
+              size="icon"
+              className="theme-toggle"
+              aria-label={resolvedTheme === 'dark' ? 'Usar tema claro' : 'Usar tema escuro'}
+              title={resolvedTheme === 'dark' ? 'Tema claro' : 'Tema escuro'}
+              onClick={(event) =>
+                changeTheme(resolvedTheme === 'dark' ? 'light' : 'dark', event.currentTarget)
+              }
+            >
+              <Sun className="theme-light-icon" size={17} />
+              <Moon className="theme-dark-icon" size={17} />
+            </Button>
+            <UserMenu user={user} onLogout={logout} onSupport={() => setSupportOpen(true)} />
           </div>
         </header>
         <main id="main-content" className="workspace-content">

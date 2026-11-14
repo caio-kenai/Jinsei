@@ -7,7 +7,7 @@ import {
 } from './progress';
 export * from './progress';
 export * from './support';
-export const appVersion = '0.0.9';
+export const appVersion = '0.1.0';
 
 export const healthSchema = z.object({ status: z.literal('ok'), service: z.literal('jinsei-api') });
 
@@ -108,6 +108,10 @@ export const profileLinkSchema = z
   })
   .strict();
 export type ProfileLink = z.infer<typeof profileLinkSchema>;
+export const dateFormats = ['dd/MM/yyyy', 'MM/dd/yyyy', 'yyyy-MM-dd'] as const;
+export const dateFormatSchema = z.enum(dateFormats);
+export const timeFormats = ['24h', '12h'] as const;
+export const timeFormatSchema = z.enum(timeFormats);
 export const preferencesPatchSchema = onboardingSchema
   .partial()
   .extend({
@@ -118,6 +122,9 @@ export const preferencesPatchSchema = onboardingSchema
     sidebarCollapsed: z.boolean().optional(),
     density: densitySchema.optional(),
     timezone: timezoneSchema.optional(),
+    dateFormat: dateFormatSchema.optional(),
+    timeFormat: timeFormatSchema.optional(),
+    celebrations: z.boolean().optional(),
     showFavorites: z.boolean().optional(),
     showStatistics: z.boolean().optional(),
     showReviews: z.boolean().optional(),
@@ -153,6 +160,9 @@ export const currentUserSchema = z.object({
     density: densitySchema,
     sidebarCollapsed: z.boolean(),
     timezone: z.string(),
+    dateFormat: dateFormatSchema.default('dd/MM/yyyy'),
+    timeFormat: timeFormatSchema.default('24h'),
+    celebrations: z.boolean().default(true),
     categories: z.array(mediaTypeSchema),
     onboarded: z.boolean(),
   }),
@@ -1015,3 +1025,16 @@ export const clubDetailSchema = clubSchema.extend({
   hasMore: z.boolean(),
 });
 export type ClubDetail = z.infer<typeof clubDetailSchema>;
+
+/** A signed-in browser or device, listed so the account owner can end it. */
+export const accountSessionSchema = z.object({
+  id: z.string(),
+  device: z.string(),
+  browser: z.string(),
+  system: z.string(),
+  createdAt: z.string(),
+  lastSeenAt: z.string(),
+  expiresAt: z.string(),
+  current: z.boolean(),
+});
+export type AccountSession = z.infer<typeof accountSessionSchema>;

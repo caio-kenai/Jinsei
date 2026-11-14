@@ -34,6 +34,8 @@ const schema = z.object({
   // Local development falls back to the MinIO root credentials of Docker Compose.
   S3_ACCESS_KEY: z.string().default(process.env.MINIO_ROOT_USER ?? ''),
   S3_SECRET_KEY: z.string().default(process.env.MINIO_ROOT_PASSWORD ?? ''),
+  // Folder for uploaded images when no S3-compatible service is configured.
+  MEDIA_DIR: z.string().default(''),
   // Multiplies every rate limit; only raise it for automated test runs.
   THROTTLE_SCALE: z.coerce.number().int().min(1).max(1000).default(1),
 });

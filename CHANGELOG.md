@@ -1,5 +1,16 @@
 # Histórico de versões
 
+## 0.1.0 — 2026-11-14
+
+- Botão de tema alterna claro e escuro com um clique, com a revelação partindo do próprio botão.
+- Menu da conta reorganizado, com avatar, favoritos compactos, Comunidade e Buy Me a Monster.
+- Configurações em cartões: miniaturas de modo de cor, destaque, temas, densidade, categorias com interruptores, idioma, fuso, formatos de data e hora, celebrações, sessões ativas e zona de perigo.
+- Sessões listadas por navegador e sistema, com opção de encerrar uma ou todas as outras.
+- Confetes ao concluir títulos, subir de nível e ganhar insígnias, desativáveis nas configurações.
+- Ícones coloridos nas abas de visualização e capas centralizadas sobre fundo desfocado.
+- Exportação de dados inclui amizades, mensagens e clubes.
+- Fotos de avatar, banner e capas funcionam sem S3: as imagens ficam num volume do Docker, com S3 opcional.
+
 ## 0.0.9 — 2026-11-14
 
 - Comunidade: pedidos de amizade, busca de pessoas, atividade recente dos amigos e indicadores coloridos.
