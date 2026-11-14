@@ -61,6 +61,7 @@ model UserPreference {
   user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   theme            String    @default("system")
   accent           String    @default("black")
+  visualTheme      String    @default("classic")
   density          String    @default("comfortable")
   sidebarCollapsed Boolean   @default(false)
   timezone         String    @default("America/Sao_Paulo")

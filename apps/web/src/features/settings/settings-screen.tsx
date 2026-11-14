@@ -10,6 +10,8 @@ import {
   categoryLabels,
   mediaTypes,
   preferencesPatchSchema,
+  visualThemeLabels,
+  visualThemeSchema,
   type CurrentUser,
   type MediaType,
 } from '@jinsei/contracts';
@@ -28,6 +30,7 @@ export function SettingsScreen() {
 function SettingsForm({ user }: { user: CurrentUser }) {
   const [categories, setCategories] = useState<MediaType[]>(user.preferences.categories);
   const [accent, setAccent] = useState(user.preferences.accent);
+  const [visualTheme, setVisualTheme] = useState(user.preferences.visualTheme);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [deleting, setDeleting] = useState(false);
@@ -46,6 +49,7 @@ function SettingsForm({ user }: { user: CurrentUser }) {
       theme: values.get('theme'),
       density: values.get('density'),
       accent,
+      visualTheme,
     });
     if (!parsed.success) {
       setError(parsed.error.issues[0]?.message ?? 'Revise os dados');
@@ -221,9 +225,39 @@ function SettingsForm({ user }: { user: CurrentUser }) {
                 style={{ background: item.color }}
                 aria-label={item.label}
                 aria-pressed={accent === item.id}
-                onClick={() => setAccent(item.id)}
+                onClick={() => {
+                  setAccent(item.id);
+                  document.documentElement.dataset.accent = item.id;
+                }}
               >
                 {accent === item.id && <Check size={16} strokeWidth={3} />}
+              </button>
+            ))}
+          </div>
+          <span className="field">Tema visual</span>
+          <div className="visual-theme-picker">
+            {visualThemeSchema.options.map((id) => (
+              <button
+                type="button"
+                key={id}
+                className="visual-theme-choice"
+                data-preview={id}
+                aria-pressed={visualTheme === id}
+                onClick={(event) => {
+                  const target = event.currentTarget;
+                  transitionTheme(() => {
+                    setVisualTheme(id);
+                    document.documentElement.dataset.visualTheme = id;
+                  }, target);
+                }}
+              >
+                <span className="visual-theme-swatch" aria-hidden="true">
+                  <i />
+                  <i />
+                  <i />
+                </span>
+                {visualThemeLabels[id]}
+                {visualTheme === id && <Check size={14} strokeWidth={3} />}
               </button>
             ))}
           </div>

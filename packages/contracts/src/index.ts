@@ -7,7 +7,7 @@ import {
 } from './progress';
 export * from './progress';
 export * from './support';
-export const appVersion = '0.0.5';
+export const appVersion = '0.0.6';
 
 export const healthSchema = z.object({ status: z.literal('ok'), service: z.literal('jinsei-api') });
 
@@ -35,6 +35,26 @@ export const accentSchema = z.enum([
   'teal',
   'bronze',
 ]);
+/** Visual themes change surfaces and add a decorative backdrop; accent stays independent. */
+export const visualThemeSchema = z.enum([
+  'classic',
+  'sakura',
+  'aurora',
+  'ocean',
+  'forest',
+  'sunset',
+  'neon',
+]);
+export type VisualTheme = z.infer<typeof visualThemeSchema>;
+export const visualThemeLabels: Record<VisualTheme, string> = {
+  classic: 'Clássico',
+  sakura: 'Sakura',
+  aurora: 'Aurora',
+  ocean: 'Oceano',
+  forest: 'Floresta',
+  sunset: 'Pôr do sol',
+  neon: 'Neon',
+};
 export const densitySchema = z.enum(['compact', 'comfortable']);
 /** IANA time zone used for daily missions and streaks. */
 export const timezoneSchema = z
@@ -92,6 +112,7 @@ export const preferencesPatchSchema = onboardingSchema
   .partial()
   .extend({
     accent: accentSchema.optional(),
+    visualTheme: visualThemeSchema.optional(),
     bio: z.string().trim().max(500).optional(),
     isPublic: z.boolean().optional(),
     sidebarCollapsed: z.boolean().optional(),
@@ -128,6 +149,7 @@ export const currentUserSchema = z.object({
   preferences: z.object({
     theme: themeSchema,
     accent: accentSchema,
+    visualTheme: visualThemeSchema.default('classic'),
     density: densitySchema,
     sidebarCollapsed: z.boolean(),
     timezone: z.string(),

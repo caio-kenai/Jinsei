@@ -23,6 +23,7 @@ export function AuthBoundary({ children }: { children: React.ReactNode }) {
     if (user) {
       setTheme(user.preferences.theme);
       document.documentElement.dataset.accent = user.preferences.accent;
+      document.documentElement.dataset.visualTheme = user.preferences.visualTheme;
     }
   }, [user, setTheme]);
   if (

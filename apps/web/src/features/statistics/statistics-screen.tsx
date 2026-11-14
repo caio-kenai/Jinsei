@@ -2,12 +2,25 @@
 import { useQuery } from '@tanstack/react-query';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { ChartColumn, LoaderCircle } from 'lucide-react';
+import {
+  BookMarked,
+  BookOpen,
+  ChartColumn,
+  CircleCheck,
+  Film,
+  Gamepad2,
+  Heart,
+  Library,
+  LoaderCircle,
+  Star,
+  Tv,
+} from 'lucide-react';
 import { categoryLabels, type Statistics } from '@jinsei/contracts';
 import { api } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { categoryIcons } from '@/components/shared/category-icons';
 import { StatusBadge } from '@/features/library/status-badge';
+import { categoryColors, chartPalette, ratingColor, statusColors } from '@/lib/palette';
 import { NumberTicker } from '@/components/motion/number-ticker';
 import { ActivityHeatmap, BarList, ColumnChart } from './charts';
 
@@ -51,23 +64,38 @@ export function StatisticsScreen() {
 
 function StatisticsContent({ statistics }: { statistics: Statistics }) {
   const { totals } = statistics;
-  const tiles: { label: string; value: number | null; decimals?: number; suffix?: string }[] = [
-    { label: 'Títulos', value: totals.entries },
-    { label: 'Concluídos', value: totals.completed },
-    { label: 'Favoritos', value: totals.favorites },
-    { label: 'Nota média', value: totals.averageRating, decimals: 2, suffix: ' ★' },
-    { label: 'Horas jogadas', value: Math.round(totals.hoursPlayed) },
-    { label: 'Episódios', value: totals.episodesWatched },
-    { label: 'Capítulos', value: totals.chaptersRead },
-    { label: 'Páginas', value: totals.pagesRead },
-    { label: 'Sessões de filmes', value: totals.timesWatched },
+  const tiles: {
+    label: string;
+    value: number | null;
+    decimals?: number;
+    suffix?: string;
+    Icon: typeof Library;
+  }[] = [
+    { label: 'Títulos', value: totals.entries, Icon: Library },
+    { label: 'Concluídos', value: totals.completed, Icon: CircleCheck },
+    { label: 'Favoritos', value: totals.favorites, Icon: Heart },
+    { label: 'Nota média', value: totals.averageRating, decimals: 2, suffix: ' ★', Icon: Star },
+    { label: 'Horas jogadas', value: Math.round(totals.hoursPlayed), Icon: Gamepad2 },
+    { label: 'Episódios', value: totals.episodesWatched, Icon: Tv },
+    { label: 'Capítulos', value: totals.chaptersRead, Icon: BookOpen },
+    { label: 'Páginas', value: totals.pagesRead, Icon: BookMarked },
+    { label: 'Sessões de filmes', value: totals.timesWatched, Icon: Film },
   ];
   const completedThisYear = statistics.completionsByMonth.reduce((sum, row) => sum + row.count, 0);
   return (
     <>
       <div className="stat-tiles">
-        {tiles.map(({ label, value, decimals, suffix }) => (
-          <div className="stat-tile" key={label}>
+        {tiles.map(({ label, value, decimals, suffix, Icon }, index) => (
+          <div
+            className="stat-tile"
+            key={label}
+            style={
+              { '--tile-color': chartPalette[index % chartPalette.length] } as React.CSSProperties
+            }
+          >
+            <span className="stat-tile-icon" aria-hidden="true">
+              <Icon size={15} />
+            </span>
             <span>{label}</span>
             <strong>
               {value === null ? (
@@ -109,6 +137,7 @@ function StatisticsContent({ statistics }: { statistics: Statistics }) {
               key: row.status,
               label: <StatusBadge status={row.status} />,
               value: row.count,
+              color: statusColors[row.status],
             }))}
           />
         </section>
@@ -129,6 +158,7 @@ function StatisticsContent({ statistics }: { statistics: Statistics }) {
                       </>
                     ),
                     value: row.total,
+                    color: categoryColors[row.mediaType],
                     detail: `${number(row.total)} · ${number(row.completed)} concluídos`,
                   };
                 })}
@@ -147,6 +177,7 @@ function StatisticsContent({ statistics }: { statistics: Statistics }) {
               label: row.rating.toLocaleString('pt-BR'),
               title: `${row.rating.toLocaleString('pt-BR')} estrelas`,
               value: row.count,
+              color: ratingColor(row.rating),
             }))}
           />
         </section>

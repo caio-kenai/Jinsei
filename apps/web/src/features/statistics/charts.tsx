@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis } from 'recharts';
+import { Bar, BarChart, Cell, ResponsiveContainer, Tooltip, XAxis } from 'recharts';
 
 const number = (value: number) => value.toLocaleString('pt-BR');
 
@@ -10,7 +10,7 @@ const number = (value: number) => value.toLocaleString('pt-BR');
 export function BarList({
   rows,
 }: {
-  rows: { key: string; label: React.ReactNode; value: number; detail?: string }[];
+  rows: { key: string; label: React.ReactNode; value: number; detail?: string; color?: string }[];
 }) {
   const max = Math.max(1, ...rows.map((row) => row.value));
   return (
@@ -19,7 +19,14 @@ export function BarList({
         <li key={row.key} title={`${row.detail ?? number(row.value)}`}>
           <span className="bar-label">{row.label}</span>
           <span className="bar-track">
-            <span style={{ width: `${(row.value / max) * 100}%` }} />
+            <span
+              style={{
+                width: `${(row.value / max) * 100}%`,
+                background: row.color
+                  ? `linear-gradient(90deg, ${row.color}, color-mix(in srgb, ${row.color} 70%, #fff))`
+                  : undefined,
+              }}
+            />
           </span>
           <span className="bar-value">{row.detail ?? number(row.value)}</span>
         </li>
@@ -34,7 +41,7 @@ export function ColumnChart({
   label,
   unit,
 }: {
-  rows: { key: string; label: string; title: string; value: number }[];
+  rows: { key: string; label: string; title: string; value: number; color?: string }[];
   label: string;
   unit: [string, string];
 }) {
@@ -91,15 +98,27 @@ export function ColumnChart({
                   );
                 }}
               />
+              <defs>
+                <linearGradient id="column-gradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" style={{ stopColor: 'var(--chart-top, #e5306f)' }} />
+                  <stop offset="100%" style={{ stopColor: 'var(--primary)' }} />
+                </linearGradient>
+              </defs>
               <Bar
                 dataKey="value"
-                fill="var(--primary)"
+                fill="url(#column-gradient)"
                 fillOpacity={0.85}
                 radius={[4, 4, 0, 0]}
                 minPointSize={(value) => (Number(value) > 0 ? 4 : 0)}
                 activeBar={{ fillOpacity: 1 }}
-                isAnimationActive={false}
-              />
+                isAnimationActive
+                animationDuration={700}
+              >
+                {rows.some((row) => row.color) &&
+                  rows.map((row) => (
+                    <Cell key={row.key} fill={row.color ?? 'url(#column-gradient)'} />
+                  ))}
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         </div>
