@@ -20,6 +20,7 @@ import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/compone
 import { CatalogSearch } from '@/features/catalog/catalog-search';
 import { MediaCover } from './media-cover';
 import { StarRatingInput } from '@/components/shared/star-rating';
+import { ManualMetadataFields, manualMetadataValues } from './manual-metadata-fields';
 
 export function AddEntryDialog({
   open,
@@ -93,6 +94,7 @@ function AddEntryContent({
                 .split(',')
                 .map((part) => part.trim())
                 .filter(Boolean),
+              ...manualMetadataValues(fields, mediaType),
             },
           }
         : selected?.id
@@ -180,6 +182,7 @@ function AddEntryContent({
                     </label>
                   )}
                 </div>
+                <ManualMetadataFields mediaType={mediaType} />
                 <label className="field">
                   URL da capa
                   <Input
