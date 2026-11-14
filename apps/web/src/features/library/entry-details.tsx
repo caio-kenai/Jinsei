@@ -21,6 +21,7 @@ import { useEntryMutation } from './use-library';
 import { StarRatingInput } from '@/components/shared/star-rating';
 import { ProgressFields } from './progress-fields';
 import { creditsLine, metadataFacts } from './progress-format';
+import { ViewingHistory } from './viewing-history';
 
 export function EntryDetails({ id, onClose }: { id: string; onClose: () => void }) {
   const result = useQuery({
@@ -67,6 +68,7 @@ function EntryForm({ entry, onClose }: { entry: LibraryEntry; onClose: () => voi
     control,
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<EntryPatchInput>({
     resolver: zodResolver(entryPatchSchema),
@@ -183,6 +185,7 @@ function EntryForm({ entry, onClose }: { entry: LibraryEntry; onClose: () => voi
               Salvar alterações
             </Button>
           </form>
+          <ViewingHistory entry={entry} onStatusChange={(status) => setValue('status', status)} />
         </section>
         <aside className="details-metadata">
           <MediaCover
