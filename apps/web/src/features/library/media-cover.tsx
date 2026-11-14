@@ -23,6 +23,14 @@ export function MediaCover({
       title={!url || failedUrl === url ? `Capa indisponível: ${title}` : undefined}
       style={{ '--cover-color': colors[hash % colors.length] } as CSSProperties}
     >
+      {url && failedUrl !== url && large && (
+        // A blurred copy fills the frame, so covers of any shape stay centered without bars.
+        <span
+          className="cover-backdrop"
+          style={{ backgroundImage: `url("${url.replace(/"/g, '%22')}")` }}
+          aria-hidden="true"
+        />
+      )}
       {url && failedUrl !== url ? (
         <Image
           src={url}

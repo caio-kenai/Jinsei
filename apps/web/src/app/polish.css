@@ -109,3 +109,25 @@
   background: var(--surface);
   text-transform: none;
 }
+
+/* Large covers sit on a blurred copy of themselves, so any aspect ratio looks centered. */
+.cover-backdrop {
+  position: absolute;
+  inset: -16px;
+  background-size: cover;
+  background-position: center;
+  filter: blur(16px) saturate(1.25) brightness(0.8);
+  transform: scale(1.08);
+  pointer-events: none;
+}
+.cover:has(.cover-backdrop)::after {
+  display: none;
+}
+.cover-large img {
+  object-position: center;
+}
+
+/* Mixed portrait and landscape thumbnails share one slot, so titles line up in lists. */
+.title-cell > .cover:not(.cover-landscape) {
+  margin-inline: 17.5px;
+}
