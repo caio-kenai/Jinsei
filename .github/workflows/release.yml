@@ -20,7 +20,7 @@ jobs:
     env:
       DATABASE_URL: postgresql://jinsei:build@localhost:5432/jinsei
     permissions:
-      contents: read
+      contents: write
       packages: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -91,6 +91,14 @@ jobs:
             docker tag "local/jinsei-$app:$VERSION" "$image"
             docker push "$image"
           done
+      - name: Anexa o pacote self-host e as somas de verificação
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ github.event.release.tag_name || inputs.tag }}
+        run: |
+          git fetch --no-tags --depth=1 origin "refs/tags/$RELEASE_TAG:refs/tags/$RELEASE_TAG"
+          bundle="$(scripts/selfhost-bundle.sh "$RELEASE_TAG" dist-release)"
+          gh release upload "$RELEASE_TAG" "$bundle" dist-release/SHA256SUMS --clobber
       - name: Encerra apenas os containers de teste
         if: always()
         run: docker compose --env-file tests/fixtures/selfhost.env.example -f compose.selfhost.yml -p jinsei-selfhost-test down --volumes
