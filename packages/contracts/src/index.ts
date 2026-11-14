@@ -1,4 +1,5 @@
 import { z } from 'zod';
+export * from './support';
 export const appVersion = '0.0.1';
 
 export const healthSchema = z.object({ status: z.literal('ok'), service: z.literal('jinsei-api') });
@@ -95,7 +96,6 @@ export const instanceSettingsSchema = z
     contactEmail: z.union([z.email().max(254), z.literal('')]),
     registrationsEnabled: z.boolean(),
     externalCatalogEnabled: z.boolean(),
-    supportEnabled: z.boolean(),
   })
   .strict();
 export type InstanceSettings = z.infer<typeof instanceSettingsSchema>;

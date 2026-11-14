@@ -23,9 +23,13 @@ test('políticas usam navegação pública e o apoio está acessível sem conta'
     'Privacidade',
     'Termos',
   ]);
+  await expect(page.locator('.marketing-footer')).toContainText('Criado por Caio Pacifico');
   await navigation.getByRole('button', { name: 'Buy Me a Monster' }).click();
   await expect(
     page.getByRole('dialog', { name: 'Um Monster para o próximo capítulo?' }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('dialog').getByRole('img', { name: 'QR Code Pix para apoio voluntário' }),
   ).toBeVisible();
   await page.getByRole('dialog').getByRole('button', { name: 'Fechar', exact: true }).click();
   await page.setViewportSize({ width: 390, height: 844 });

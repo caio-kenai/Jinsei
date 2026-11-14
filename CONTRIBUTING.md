@@ -6,6 +6,6 @@ Antes de abrir um pull request, explique o comportamento alterado, acrescente ve
 
 Use commits objetivos em português, por exemplo `Feat: Adiciona filtro por favoritos` ou `Fix: Preserva o progresso ao alterar a nota`. Tipos aceitos: Feat, Fix, Refactor, Chore, Docs, Style, Test, Perf, Build, Ci e Security. Não termine o título com ponto final. Instale o hook opcional com `pnpm hooks:install`.
 
-Mantenha autorização no servidor, validação de entrada, isolamento por usuário e os créditos das fontes de dados/imagens. Alterações de esquema devem incluir migrations; não edite migrations já aplicadas. Não versione dados de teste pessoais, segredos, dumps ou referências privadas. Preserve a licença AGPL v3 do código e as condições dos assets.
+Mantenha autorização no servidor, validação de entrada, isolamento por usuário e os créditos das fontes de dados/imagens. Alterações de esquema devem incluir migrations; não edite migrations já aplicadas. Não versione dados de teste pessoais, segredos, dumps ou referências privadas. Preserve a licença AGPL v3 do código, os [termos adicionais de atribuição](ADDITIONAL_TERMS.md), incluindo o Buy Me a Monster com o Pix oficial do criador, e as condições dos assets.
 
 Consulte o [Código de Conduta](CODE_OF_CONDUCT.md). Vulnerabilidades devem seguir o fluxo de [SECURITY.md](SECURITY.md).

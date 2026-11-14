@@ -4,7 +4,7 @@ export default function Page() {
   return (
     <LegalLayout title="Termos de uso" active="terms">
       <p>
-        Atualizado em 13 de novembro de 2026. O Jinsei é um projeto gratuito e open source para
+        Atualizado em 14 de novembro de 2026. O Jinsei é um projeto gratuito e open source para
         organizar experiências culturais. Esta é uma versão inicial, disponível para instalação e
         administração em servidor próprio.
       </p>
@@ -25,8 +25,17 @@ export default function Page() {
         >
           repositório do projeto
         </a>
-        . O texto integral da licença rege as permissões e condições aplicáveis. As imagens, marcas
-        e dados de terceiros têm direitos próprios.
+        , com{' '}
+        <a
+          href="https://github.com/caio-kenai/Jinsei/blob/main/ADDITIONAL_TERMS.md"
+          target="_blank"
+          rel="noreferrer"
+        >
+          termos adicionais de atribuição
+        </a>{' '}
+        que exigem preservar a autoria de Caio Pacifico e o Buy Me a Monster em todas as cópias e
+        instalações. O texto integral da licença rege as permissões e condições aplicáveis. As
+        imagens, marcas e dados de terceiros têm direitos próprios.
       </p>
       <h2>Metadados e imagens</h2>
       <p>
@@ -37,9 +46,10 @@ export default function Page() {
       </p>
       <h2>Apoio voluntário</h2>
       <p>
-        Doações são opcionais e não desbloqueiam funcionalidades. O Jinsei não processa pagamentos,
-        solicita credenciais bancárias ou confirma recebimentos. Uma eventual operação Pix é
-        realizada exclusivamente no aplicativo bancário escolhido pelo doador.
+        O Buy Me a Monster direciona doações ao criador do Jinsei, em qualquer servidor. Doações são
+        opcionais e não desbloqueiam funcionalidades. O Jinsei não processa pagamentos, solicita
+        credenciais bancárias ou confirma recebimentos. Uma eventual operação Pix é realizada
+        exclusivamente no aplicativo bancário escolhido pelo doador.
       </p>
       <h2>Disponibilidade e seus dados</h2>
       <p>
