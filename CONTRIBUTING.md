@@ -6,6 +6,12 @@ Antes de abrir um pull request, explique o comportamento alterado, acrescente ve
 
 Use commits objetivos em português, por exemplo `Feat: Adiciona filtro por favoritos` ou `Fix: Preserva o progresso ao alterar a nota`. Tipos aceitos: Feat, Fix, Refactor, Chore, Docs, Style, Test, Perf, Build, Ci e Security. Não termine o título com ponto final. Instale o hook opcional com `pnpm hooks:install`.
 
+Contratos de API ficam em `packages/contracts` (Zod) e são compartilhados pela API e pela interface; recompile com `pnpm --filter @jinsei/contracts build` ao alterá-los. Novas telas devem reutilizar os componentes e estilos existentes, funcionar nos temas claro e escuro, respeitar `prefers-reduced-motion` e manter foco visível e rótulos acessíveis.
+
+Recursos sociais exigem cuidado redobrado: nunca exponha e-mail, anotações, tags ou títulos manuais; respeite as opções de privacidade do perfil e cubra com testes quem pode ver ou alterar cada dado. Inclua os novos dados pessoais na exportação e na exclusão de conta.
+
 Mantenha autorização no servidor, validação de entrada, isolamento por usuário e os créditos das fontes de dados/imagens. Alterações de esquema devem incluir migrations; não edite migrations já aplicadas. Não versione dados de teste pessoais, segredos, dumps ou referências privadas. Preserve a licença AGPL v3 do código, os [termos adicionais de atribuição](ADDITIONAL_TERMS.md), incluindo o Buy Me a Monster com o Pix oficial do criador, e as condições dos assets.
+
+As versões seguem `0.0.1` → `0.0.9` → `0.1.0`. Para preparar uma versão, rode `node scripts/version.mjs --next --write`, registre as mudanças no [CHANGELOG](CHANGELOG.md) e faça o commit `Chore: Prepara a versão X.Y.Z`. As releases publicam as imagens no GHCR e anexam o pacote self-host com `SHA256SUMS`.
 
 Consulte o [Código de Conduta](CODE_OF_CONDUCT.md). Vulnerabilidades devem seguir o fluxo de [SECURITY.md](SECURITY.md).
