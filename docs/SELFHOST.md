@@ -1,6 +1,8 @@
 # Hospedar seu próprio Jinsei
 
-A versão inicial é **0.0.1**. Os pacotes oficiais são imagens Linux **amd64** para a API e o frontend, publicadas no [GitHub Packages](https://github.com/caio-kenai?tab=packages&repo_name=Jinsei). Use uma versão fixa ao atualizar. ARM64 ainda não foi validado.
+A versão atual é **0.0.4**. Os pacotes oficiais são imagens Linux **amd64** para a API e o frontend, publicadas no [GitHub Packages](https://github.com/caio-kenai?tab=packages&repo_name=Jinsei). Use uma versão fixa ao atualizar. ARM64 ainda não foi validado.
+
+Cada release também traz `Jinsei-<versão>-selfhost.zip`, com apenas os arquivos necessários para instalar (compose, exemplo de ambiente, Caddy, licença e documentação), e o arquivo `SHA256SUMS` para conferir o download com `sha256sum -c SHA256SUMS`.
 
 Você controla o banco, o domínio e as políticas da sua instalação. A administração da instância permite mudar nome, descrição e contato público, abrir ou fechar cadastros, e permitir consultas externas. Bibliotecas e anotações continuam privadas por usuário.
 
@@ -13,7 +15,7 @@ Você controla o banco, o domínio e as políticas da sua instalação. A admini
 ## Instalação local com imagens prontas
 
 ```sh
-git clone --branch v0.0.1 https://github.com/caio-kenai/Jinsei.git
+git clone --branch v0.0.4 https://github.com/caio-kenai/Jinsei.git
 cd Jinsei
 cp .env.selfhost.example .env.selfhost
 ```
@@ -22,7 +24,7 @@ No PowerShell, use `Copy-Item .env.selfhost.example .env.selfhost`. Edite esse a
 
 | Variável                      | Configuração                                                                                    |
 | ----------------------------- | ----------------------------------------------------------------------------------------------- |
-| `JINSEI_VERSION`              | `0.0.1`, a versão das duas imagens                                                              |
+| `JINSEI_VERSION`              | `0.0.4`, a versão das duas imagens                                                              |
 | `POSTGRES_PASSWORD`           | Senha aleatória própria; use letras e números para evitar caracteres reservados na URL do banco |
 | `PUBLIC_ORIGIN`               | `http://localhost:3000` para acesso somente local                                               |
 | `JINSEI_BIND` / `JINSEI_PORT` | `127.0.0.1` / `3000` por padrão                                                                 |
@@ -107,8 +109,8 @@ Reverter apenas a imagem não reverte uma migração. Em caso de incompatibilida
 ## Compilar suas imagens
 
 ```sh
-docker build -f docker/app/Dockerfile --target api -t local/jinsei-api:0.0.1 .
-docker build -f docker/app/Dockerfile --target web -t local/jinsei-web:0.0.1 .
+docker build -f docker/app/Dockerfile --target api -t local/jinsei-api:0.0.4 .
+docker build -f docker/app/Dockerfile --target web -t local/jinsei-web:0.0.4 .
 ```
 
 Defina `JINSEI_REGISTRY=local` na sua configuração e use `up -d --wait --pull never`. Ambas as imagens executam como usuário `node`, sem root. A construção instala dependências e gera o frontend; não requer credenciais dos catálogos.
