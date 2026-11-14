@@ -13,6 +13,18 @@ import { env } from '../src/config/env';
 import { InstanceService } from '../src/modules/instance/instance.module';
 import { metadataResult } from '../src/modules/catalog/metadata';
 
+/** Public catalogs rate-limit bursts (for example parallel CI jobs), so real lookups are retried. */
+async function retry<T>(task: () => Promise<T>, attempts = 4): Promise<T> {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      return await task();
+    } catch (error) {
+      if (attempt >= attempts) throw error;
+      await new Promise((resolve) => setTimeout(resolve, 1500 * 2 ** attempt));
+    }
+  }
+}
+
 async function seed() {
   if (env.NODE_ENV === 'production')
     throw new Error('O seed de demonstração não pode ser executado em produção');
@@ -138,23 +150,30 @@ async function seed() {
     ] as const;
     for (const [index, game] of games.entries()) {
       const query = 'search' in game ? game.search : game.title;
-      const found = await catalog.search(user.id, query, 'games');
-      const item =
-        found.items.find(
-          (result) =>
-            result.title.toLowerCase().replace(/[’']/g, '') ===
-            game.title.toLowerCase().replace(/[’']/g, ''),
-        ) ?? found.items[0];
-      if (!item)
-        throw new Error(
-          `Catálogo real indisponível para ${game.title}; o seed não substitui respostas por mocks`,
-        );
+      const item = await retry(async () => {
+        const found = await catalog.search(user.id, query, 'games');
+        const match =
+          found.items.find(
+            (result) =>
+              result.title.toLowerCase().replace(/[’']/g, '') ===
+              game.title.toLowerCase().replace(/[’']/g, ''),
+          ) ?? found.items[0];
+        if (!match)
+          throw new Error(
+            `Catálogo real indisponível para ${game.title}; o seed não substitui respostas por mocks`,
+          );
+        return match;
+      });
       const media =
         item.externalId && item.provider === 'wikidata'
-          ? await catalog.importSource({ provider: 'wikidata', externalId: item.externalId })
+          ? await retry(() =>
+              catalog.importSource({ provider: 'wikidata', externalId: item.externalId! }),
+            )
           : item.id
             ? await catalog.existing(user.id, item.id)
-            : await catalog.importSource({ provider: 'wikidata', externalId: item.externalId! });
+            : await retry(() =>
+                catalog.importSource({ provider: 'wikidata', externalId: item.externalId! }),
+              );
       if (
         await db.userMediaEntry.findUnique({
           where: { userId_mediaId: { userId: user.id, mediaId: media.id } },
@@ -188,7 +207,7 @@ async function seed() {
       { provider: 'wikidata', externalId: 'Q151599' },
     ] as const) {
       // Additional real catalog records exercise the shared cover and progress models.
-      const media = await catalog.importSource(source);
+      const media = await retry(() => catalog.importSource(source));
       const existing = await db.userMediaEntry.findUnique({
         where: { userId_mediaId: { userId: user.id, mediaId: media.id } },
       });
@@ -241,7 +260,8 @@ async function seed() {
     await db.$disconnect();
   }
 }
-void seed().catch(() => {
+void seed().catch((error: unknown) => {
   console.error('O seed não foi concluído. Confira o PostgreSQL e a disponibilidade do Wikidata.');
+  console.error(error instanceof Error ? error.message : error);
   process.exitCode = 1;
 });
