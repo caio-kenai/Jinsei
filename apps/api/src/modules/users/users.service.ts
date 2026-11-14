@@ -43,6 +43,7 @@ export class UsersService {
         accent: user.preference.accent,
         density: user.preference.density,
         sidebarCollapsed: user.preference.sidebarCollapsed,
+        timezone: user.preference.timezone,
         categories: user.categories.map((category) => category.mediaTypeId),
         onboarded: Boolean(user.preference.onboardedAt),
       },
@@ -62,6 +63,7 @@ export class UsersService {
           accent,
           density,
           sidebarCollapsed,
+          timezone,
         } = input;
         await tx.profile.update({
           where: { userId },
@@ -74,6 +76,7 @@ export class UsersService {
             accent,
             density,
             sidebarCollapsed,
+            timezone,
             ...(onboarding ? { onboardedAt: new Date() } : {}),
           },
         });
