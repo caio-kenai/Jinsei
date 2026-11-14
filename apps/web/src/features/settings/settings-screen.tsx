@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTheme } from 'next-themes';
+import { transitionTheme } from '@/lib/theme-transition';
 import { Download, Save, Trash2, LoaderCircle, ShieldCheck, Check } from 'lucide-react';
 import {
   categoryLabels,
@@ -59,7 +60,7 @@ function SettingsForm({ user }: { user: CurrentUser }) {
       client.setQueryData(['me'], next);
       await client.invalidateQueries({ queryKey: ['library'] });
       await client.invalidateQueries({ queryKey: ['summary'] });
-      setTheme(next.preferences.theme);
+      transitionTheme(() => setTheme(next.preferences.theme));
       toast.success('Preferências salvas');
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Tente novamente');

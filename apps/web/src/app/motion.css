@@ -108,6 +108,50 @@
   background: var(--hover);
 }
 
+/* Theme changes reveal the new palette in a circle (see lib/theme-transition). */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+::view-transition-new(root) {
+  z-index: 2;
+}
+.theme-toggle {
+  position: relative;
+  overflow: hidden;
+}
+.theme-toggle .theme-light-icon,
+.theme-toggle .theme-dark-icon,
+.dark .theme-toggle .theme-light-icon,
+.dark .theme-toggle .theme-dark-icon {
+  display: block;
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  transition:
+    transform 520ms var(--ease-spring),
+    opacity 300ms ease;
+}
+.theme-toggle .theme-dark-icon {
+  opacity: 0;
+  transform: translateY(18px) rotate(-90deg) scale(0.4);
+}
+.dark .theme-toggle .theme-light-icon {
+  opacity: 0;
+  transform: translateY(-18px) rotate(90deg) scale(0.4);
+}
+.dark .theme-toggle .theme-dark-icon {
+  opacity: 1;
+  transform: none;
+}
+.theme-toggle:hover .theme-light-icon {
+  transform: rotate(45deg);
+}
+.dark .theme-toggle:hover .theme-dark-icon {
+  transform: rotate(-18deg) scale(1.08);
+}
+
 /* Press feedback on every button-like control. */
 .button,
 .toolbar-button,

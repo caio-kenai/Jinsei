@@ -17,41 +17,44 @@
   filter: brightness(0.96);
   box-shadow: 0 0 0 2px color-mix(in srgb, currentColor 18%, transparent);
 }
-.inline-control.status-planned {
-  color: #697183;
-  background: #edf0f5;
+/* Solid, vivid status colors with white text everywhere, like task tags. */
+.status-badge.status-planned,
+.inline-control.status-planned,
+.dark .status-badge.status-planned,
+.dark .inline-control.status-planned {
+  color: #fff;
+  background: #7c8494;
 }
-.inline-control.status-in_progress {
+.status-badge.status-in_progress,
+.inline-control.status-in_progress,
+.dark .status-badge.status-in_progress,
+.dark .inline-control.status-in_progress {
   color: #fff;
   background: #7050cf;
 }
-.inline-control.status-paused {
-  color: #9b711e;
-  background: #fcf2dc;
-}
-.inline-control.status-completed {
-  color: #258367;
-  background: #e5f3ec;
-}
-.inline-control.status-dropped {
-  color: #bf4960;
-  background: #fbe9ee;
-}
-.dark .inline-control.status-planned {
-  color: #b1b7c5;
-  background: #34363e;
-}
+.status-badge.status-paused,
+.inline-control.status-paused,
+.dark .status-badge.status-paused,
 .dark .inline-control.status-paused {
-  color: #dfc083;
-  background: #423a28;
+  color: #fff;
+  background: #c77c02;
 }
+.status-badge.status-completed,
+.inline-control.status-completed,
+.dark .status-badge.status-completed,
 .dark .inline-control.status-completed {
-  color: #8dd4b8;
-  background: #263d34;
+  color: #fff;
+  background: #15936a;
 }
+.status-badge.status-dropped,
+.inline-control.status-dropped,
+.dark .status-badge.status-dropped,
 .dark .inline-control.status-dropped {
-  color: #efa3b1;
-  background: #482c34;
+  color: #fff;
+  background: #d93a50;
+}
+.status-badge .status-dot {
+  background: #fff;
 }
 
 /* Dashboard-style pages get the same top and bottom spacing as the home page. */
@@ -67,4 +70,42 @@
 }
 .library-table tbody tr:not(.group-row):hover {
   background: var(--hover);
+}
+
+/* Every button variant answers the pointer. */
+.button:not(:disabled) {
+  cursor: pointer;
+}
+.button-primary:hover:not(:disabled) {
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--primary) 28%, transparent);
+  transform: translateY(-1px);
+}
+.button-secondary:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--hover) 70%, var(--foreground) 8%);
+}
+.button-outline:hover:not(:disabled) {
+  box-shadow: 0 4px 12px #0000000d;
+}
+.button-destructive:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--destructive) 9%, var(--surface));
+}
+.button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+.button svg {
+  transition: transform 220ms cubic-bezier(0.34, 1.36, 0.64, 1);
+}
+.button:hover:not(:disabled) .lucide-arrow-right {
+  transform: translateX(3px);
+}
+.button:hover:not(:disabled) .lucide-plus {
+  transform: rotate(90deg);
+}
+
+/* The native option list keeps readable colors under the white pill text. */
+.inline-control.status-badge option {
+  color: var(--foreground);
+  background: var(--surface);
+  text-transform: none;
 }

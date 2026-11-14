@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Brand } from '@/components/shared/brand';
 import { SignupDialog } from '@/features/auth/signup-dialog';
@@ -8,9 +8,16 @@ import { SupportDialog } from '@/features/support/support-dialog';
 
 export function PublicHeader({ onSignup }: { onSignup?: () => void }) {
   const [signup, setSignup] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const update = () => setScrolled(window.scrollY > 8);
+    update();
+    window.addEventListener('scroll', update, { passive: true });
+    return () => window.removeEventListener('scroll', update);
+  }, []);
   return (
     <>
-      <header className="marketing-header">
+      <header className={`marketing-header ${scrolled ? 'is-scrolled' : ''}`}>
         <div className="marketing-container marketing-header-inner">
           <Link href="/" aria-label="Jinsei página inicial">
             <Brand />

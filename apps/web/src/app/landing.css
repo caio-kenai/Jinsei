@@ -1,0 +1,535 @@
+/*
+ * Presentation page effects. Patterns adapted from Magic UI (Shiny Text, Magic Card,
+ * Rainbow/Shimmer Button) and React Bits (Blur Text, Rotating Text, Aurora), rebuilt
+ * with CSS and motion so they follow the Jinsei palette and the reduced-motion setting.
+ */
+@property --cta-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+/* Header gains depth once the page scrolls. */
+.marketing-header {
+  transition:
+    box-shadow 240ms ease,
+    background 240ms ease;
+}
+.marketing-header.is-scrolled {
+  background: #ffffffd9;
+  box-shadow:
+    0 1px 0 #0000000d,
+    0 8px 30px #0000000a;
+}
+.marketing-about-link {
+  position: relative;
+  transition: color 160ms ease;
+}
+.marketing-about-link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -3px;
+  height: 1.5px;
+  border-radius: 2px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 260ms var(--ease-out);
+}
+.marketing-about-link:hover {
+  color: #111;
+}
+.marketing-about-link:hover::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+/* Every public button responds to the pointer. */
+.public-button {
+  transition:
+    background 160ms ease,
+    color 160ms ease,
+    box-shadow 220ms ease,
+    transform 220ms var(--ease-out);
+}
+.public-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px #00000024;
+}
+.public-button-muted:hover {
+  box-shadow: 0 6px 16px #00000014;
+}
+.public-button:active {
+  transform: translateY(0) scale(0.98);
+  box-shadow: none;
+}
+.public-text-link svg,
+.cta-arrow {
+  transition: transform 220ms var(--ease-spring);
+}
+.public-text-link:hover svg,
+.public-button:hover .cta-arrow {
+  transform: translateX(4px);
+}
+
+/* Hero: aurora blobs drift behind the headline over a faint dot grid. */
+.marketing-hero {
+  position: relative;
+  isolation: isolate;
+}
+.hero-backdrop {
+  position: absolute;
+  inset: -40px -10vw 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+  mask-image: radial-gradient(ellipse 80% 90% at 60% 30%, #000 20%, transparent 75%);
+}
+.hero-backdrop::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(#0000001f 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+.hero-blob {
+  position: absolute;
+  width: 420px;
+  height: 420px;
+  border-radius: 50%;
+  filter: blur(70px);
+  opacity: 0.38;
+}
+.hero-blob-a {
+  top: -60px;
+  right: 18%;
+  background: #ff6fb1;
+  animation: blob-a 18s ease-in-out infinite alternate;
+}
+.hero-blob-b {
+  top: 40px;
+  right: -2%;
+  background: #ffae4a;
+  animation: blob-b 22s ease-in-out infinite alternate;
+}
+.hero-blob-c {
+  top: 160px;
+  right: 34%;
+  width: 320px;
+  height: 320px;
+  background: #7f8bff;
+  animation: blob-c 20s ease-in-out infinite alternate;
+}
+@keyframes blob-a {
+  to {
+    transform: translate(-90px, 60px) scale(1.15);
+  }
+}
+@keyframes blob-b {
+  to {
+    transform: translate(-70px, 110px) scale(0.9);
+  }
+}
+@keyframes blob-c {
+  to {
+    transform: translate(120px, -50px) scale(1.2);
+  }
+}
+
+/* Pill: a light sweep runs across the text. */
+.marketing-pill {
+  transition:
+    border-color 200ms ease,
+    box-shadow 200ms ease,
+    transform 200ms var(--ease-out);
+}
+.marketing-pill:hover {
+  border-color: #d6d6d6;
+  box-shadow: 0 6px 18px #0000000f;
+  transform: translateY(-1px);
+}
+.marketing-pill svg {
+  transition: transform 220ms var(--ease-spring);
+}
+.marketing-pill:hover svg {
+  transform: translateX(3px);
+}
+.pill-color-dot {
+  box-shadow: 0 0 0 0 #e5093866;
+  animation: dot-pulse 2.4s ease-out infinite;
+}
+@keyframes dot-pulse {
+  70% {
+    box-shadow: 0 0 0 7px #e5093800;
+  }
+  100% {
+    box-shadow: 0 0 0 0 #e5093800;
+  }
+}
+.shiny-text {
+  color: #2a2a2a;
+  background: linear-gradient(110deg, #2a2a2a 40%, #b9b9b9 50%, #2a2a2a 60%) 0 0 / 250% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shiny 3.8s linear infinite;
+}
+@keyframes shiny {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -150% 0;
+  }
+}
+
+/* Headline words and the rotating category. */
+.blur-line {
+  display: inline;
+}
+.blur-word {
+  display: inline-block;
+  will-change: transform, filter, opacity;
+}
+.rotating-word {
+  display: inline-flex;
+  position: relative;
+  overflow: hidden;
+  vertical-align: bottom;
+  padding: 0 0.08em 0.06em;
+}
+.rotating-word-item {
+  display: inline-block;
+  background: linear-gradient(100deg, #e5306f, #f7832b 55%, #7a5cff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Main call to action: rotating rainbow border, soft aura and a passing shine. */
+.cta-glow {
+  position: relative;
+  isolation: isolate;
+  background: transparent;
+  overflow: visible;
+}
+.cta-glow:hover {
+  background: transparent;
+  transform: translateY(-2px);
+  box-shadow: none;
+}
+.cta-glow > .cta-aura,
+.cta-glow > .cta-border,
+.cta-glow > .cta-surface {
+  position: absolute;
+  border-radius: inherit;
+  pointer-events: none;
+}
+.cta-aura {
+  inset: 4px;
+  z-index: -3;
+  background: conic-gradient(
+    from var(--cta-angle),
+    #ff3d8b,
+    #ff8a2b,
+    #ffd23f,
+    #7a5cff,
+    #2f7bff,
+    #ff3d8b
+  );
+  filter: blur(16px);
+  opacity: 0.45;
+  animation: cta-spin 4s linear infinite;
+  transition: opacity 260ms ease;
+}
+.cta-border {
+  inset: -2px;
+  z-index: -2;
+  background: conic-gradient(
+    from var(--cta-angle),
+    #ff3d8b,
+    #ff8a2b,
+    #ffd23f,
+    #7a5cff,
+    #2f7bff,
+    #ff3d8b
+  );
+  animation: cta-spin 4s linear infinite;
+}
+.cta-surface {
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  background: var(--cta-surface, #202020);
+  transition: background 200ms ease;
+}
+.cta-shine {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 35%, #ffffff2e 50%, transparent 65%);
+  transform: translateX(-110%);
+  animation: cta-shine 3.4s var(--ease-out) infinite;
+}
+.cta-label {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.cta-glow:hover .cta-aura {
+  opacity: 0.85;
+}
+.cta-glow:hover .cta-surface {
+  filter: brightness(0.86);
+}
+.button.cta-glow {
+  --cta-surface: var(--primary);
+  color: var(--primary-foreground);
+  border: 0;
+}
+.button.cta-glow:hover:not(:disabled) {
+  filter: none;
+  transform: translateY(-1px);
+}
+.cta-glow:disabled .cta-aura,
+.cta-glow:disabled .cta-border,
+.cta-glow:disabled .cta-shine {
+  animation: none;
+  opacity: 0;
+}
+.cta-glow:disabled .cta-surface {
+  opacity: 0.55;
+}
+.cta-glow:active {
+  transform: translateY(0) scale(0.98);
+}
+@keyframes cta-spin {
+  to {
+    --cta-angle: 360deg;
+  }
+}
+@keyframes cta-shine {
+  0%,
+  55% {
+    transform: translateX(-110%);
+  }
+  100% {
+    transform: translateX(110%);
+  }
+}
+
+/* Closing call to action: white button with a shine sweep. */
+.cta-light {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.cta-light-shine {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(110deg, transparent 35%, #ffd7ea 50%, transparent 65%);
+  transform: translateX(-110%);
+  animation: cta-shine 3.8s var(--ease-out) infinite;
+}
+.closing-copy .closing-signup:hover {
+  box-shadow: 0 12px 30px #0000003d;
+}
+.closing-gradient {
+  background-size: 140% 140%;
+  animation: closing-drift 14s ease-in-out infinite alternate;
+}
+@keyframes closing-drift {
+  to {
+    background-position: 100% 60%;
+  }
+}
+.closing-phone {
+  animation: device-float 6s ease-in-out infinite;
+}
+@keyframes device-float {
+  50% {
+    translate: 0 -8px;
+  }
+}
+
+/* Product preview tilts into place while scrolling. */
+.scroll-tilt {
+  perspective: 1400px;
+}
+.scroll-tilt-inner {
+  transform-origin: 50% 0;
+  will-change: transform;
+}
+
+/* Category strip items lift and take color under the pointer. */
+.marketing-category-strip > div {
+  transition:
+    color 200ms ease,
+    transform 220ms var(--ease-spring);
+  cursor: default;
+}
+.marketing-category-strip > div:hover {
+  color: #111;
+  transform: translateY(-2px);
+}
+.marketing-category-strip > div svg {
+  transition: transform 260ms var(--ease-spring);
+}
+.marketing-category-strip > div:hover svg {
+  transform: rotate(-8deg) scale(1.12);
+}
+
+/* Feature cards: a light follows the pointer. */
+.spotlight-card {
+  position: relative;
+  border-radius: 16px;
+  padding: 10px;
+  margin: -10px;
+  isolation: isolate;
+  transition: transform 260ms var(--ease-out);
+}
+.spotlight-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  opacity: 0;
+  background: radial-gradient(
+    260px circle at var(--spot-x, 50%) var(--spot-y, 50%),
+    #ff6fb11f,
+    #7f8bff14 45%,
+    transparent 70%
+  );
+  transition: opacity 260ms ease;
+}
+.spotlight-card:hover {
+  transform: translateY(-4px);
+}
+.spotlight-card:hover::before {
+  opacity: 1;
+}
+.spotlight-card .feature-art {
+  transition:
+    box-shadow 260ms ease,
+    transform 260ms var(--ease-out);
+}
+.spotlight-card:hover .feature-art {
+  box-shadow: 0 16px 40px #0000001a;
+}
+
+/* Scroll reveal uses the shared easing and adds a soft blur. */
+.will-reveal {
+  filter: blur(6px);
+  transition:
+    opacity 0.8s var(--ease-out),
+    transform 0.8s var(--ease-out),
+    filter 0.8s var(--ease-out);
+}
+.will-reveal.is-revealed {
+  filter: none;
+}
+
+/* Onboarding: the card unfolds and each choice reacts to the pointer. */
+.onboarding-page > .brand {
+  animation: rise-in 520ms var(--ease-out) backwards;
+}
+.onboarding-card {
+  animation: card-in 620ms var(--ease-out) 80ms backwards;
+}
+@keyframes card-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.985);
+    filter: blur(6px);
+  }
+}
+.onboarding-card > * {
+  animation: rise-in 460ms var(--ease-out) backwards;
+}
+.onboarding-card > :nth-child(1) {
+  animation-delay: 180ms;
+}
+.onboarding-card > :nth-child(2) {
+  animation-delay: 230ms;
+}
+.onboarding-card > :nth-child(3) {
+  animation-delay: 280ms;
+}
+.onboarding-card > :nth-child(4) {
+  animation-delay: 330ms;
+}
+.onboarding-card > :nth-child(5) {
+  animation-delay: 380ms;
+}
+.onboarding-card > :nth-child(n + 6) {
+  animation-delay: 430ms;
+}
+.category-choice,
+.theme-choice {
+  transition:
+    background 180ms ease,
+    border-color 180ms ease,
+    box-shadow 220ms ease,
+    transform 220ms var(--ease-out);
+}
+.category-choice:hover,
+.theme-choice:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--foreground) 22%, transparent);
+  box-shadow: 0 8px 20px #00000012;
+}
+.category-choice:active,
+.theme-choice:active {
+  transform: translateY(0) scale(0.97);
+}
+.category-choice > svg:first-child,
+.theme-choice > svg {
+  transition: transform 300ms var(--ease-spring);
+}
+.category-choice:hover > svg:first-child {
+  transform: translateY(-2px) scale(1.12) rotate(-6deg);
+}
+.theme-choice:hover > svg {
+  transform: rotate(20deg) scale(1.1);
+}
+.category-choice.selected > svg:first-child {
+  animation: pop 380ms var(--ease-spring);
+}
+.category-check {
+  animation: check-in 360ms var(--ease-spring);
+}
+@keyframes check-in {
+  from {
+    opacity: 0;
+    transform: scale(0.3) rotate(-30deg);
+  }
+}
+.onboarding-card .field input {
+  transition:
+    border-color 160ms ease,
+    box-shadow 200ms ease;
+}
+.onboarding-card .field input:focus {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 16%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-blob,
+  .shiny-text,
+  .cta-aura,
+  .cta-border,
+  .cta-shine,
+  .cta-light-shine,
+  .closing-gradient,
+  .closing-phone,
+  .pill-color-dot {
+    animation: none;
+  }
+  .will-reveal {
+    filter: none;
+  }
+}

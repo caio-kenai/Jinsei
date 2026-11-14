@@ -1,4 +1,5 @@
 'use client';
+import { transitionTheme } from '@/lib/theme-transition';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -145,9 +146,12 @@ export function OnboardingForm() {
                 key={value}
                 className={theme === value ? 'theme-choice selected' : 'theme-choice'}
                 aria-pressed={theme === value}
-                onClick={() => {
-                  setThemeValue(value);
-                  setTheme(value);
+                onClick={(event) => {
+                  const target = event.currentTarget;
+                  transitionTheme(() => {
+                    setThemeValue(value);
+                    setTheme(value);
+                  }, target);
                 }}
               >
                 <Icon size={18} />
@@ -163,15 +167,26 @@ export function OnboardingForm() {
         )}
         <div className="onboarding-footer">
           <small>Sua biblioteca começa privada, do seu jeito.</small>
-          <Button disabled={saving || categories.length === 0} type="submit">
-            {saving ? (
-              <LoaderCircle className="spin" size={16} />
-            ) : (
-              <>
-                Começar minha jornada
-                <ArrowRight size={16} />
-              </>
-            )}
+          <Button
+            className="cta-glow onboarding-submit"
+            disabled={saving || categories.length === 0}
+            type="submit"
+          >
+            <span className="cta-aura" aria-hidden="true" />
+            <span className="cta-border" aria-hidden="true" />
+            <span className="cta-surface" aria-hidden="true">
+              <span className="cta-shine" />
+            </span>
+            <span className="cta-label">
+              {saving ? (
+                <LoaderCircle className="spin" size={16} />
+              ) : (
+                <>
+                  Começar minha jornada
+                  <ArrowRight size={16} className="cta-arrow" />
+                </>
+              )}
+            </span>
           </Button>
         </div>
       </form>
