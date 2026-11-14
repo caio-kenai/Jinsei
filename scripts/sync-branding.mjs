@@ -10,8 +10,10 @@ for (const name of ['jinsei-logo.png', 'jinsei-icon.png', 'buy-me-a-monster.png'
   );
 }
 const appIcon = fileURLToPath(new URL('../assets/branding/jinsei-icon.png', import.meta.url));
+// Browser tabs get the bare mark, edge to edge; the home screen keeps the full app icon.
+const tabIcon = fileURLToPath(new URL('../assets/branding/jinsei-favicon.png', import.meta.url));
 for (const size of [32, 64, 180])
-  await sharp(appIcon)
+  await sharp(size === 180 ? appIcon : tabIcon)
     .resize(size, size, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } })
     .png({ compressionLevel: 9 })
     .toFile(fileURLToPath(new URL(`favicon-${size}.png`, destination)));
