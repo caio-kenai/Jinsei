@@ -8,6 +8,7 @@ import {
   ChevronRight,
   FolderHeart,
   GripVertical,
+  ImageUp,
   LoaderCircle,
   Pencil,
   Plus,
@@ -26,6 +27,8 @@ import { progressSummary } from '@/features/library/progress-format';
 import { CollectionFormDialog } from './collection-form-dialog';
 import { AddItemsDialog } from './add-items-dialog';
 import { useCollection, useCollectionMutations } from './use-collections';
+import { useInstance } from '@/features/instance/use-instance';
+import { uploadImage } from '@/lib/upload';
 
 /** Position between the neighbours of the target index, so only the moved item changes. */
 function positionAt(items: CollectionItem[], index: number) {
@@ -40,6 +43,7 @@ function positionAt(items: CollectionItem[], index: number) {
 export function CollectionScreen({ id }: { id: string }) {
   const result = useCollection(id);
   const mutations = useCollectionMutations(id);
+  const instance = useInstance();
   const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [adding, setAdding] = useState(false);
@@ -85,6 +89,29 @@ export function CollectionScreen({ id }: { id: string }) {
           </div>
         </div>
         <div className="context-actions">
+          {instance.data?.uploadsEnabled && (
+            <label className="toolbar-button">
+              <ImageUp size={12} />
+              Enviar capa
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                className="sr-only"
+                onChange={async (event) => {
+                  const file = event.target.files?.[0];
+                  event.target.value = '';
+                  if (!file) return;
+                  try {
+                    await uploadImage(`/collections/${id}/cover`, file);
+                    await result.refetch();
+                    toast.success('Capa atualizada');
+                  } catch (error) {
+                    toast.error(error instanceof Error ? error.message : 'Tente novamente');
+                  }
+                }}
+              />
+            </label>
+          )}
           <Button variant="ghost" size="sm" onClick={() => setEditing(true)}>
             <Pencil size={13} />
             Editar

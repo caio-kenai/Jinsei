@@ -81,6 +81,8 @@ function EntryForm({ entry, onClose }: { entry: LibraryEntry; onClose: () => voi
       progress: entry.progress.kind === 'film' ? undefined : entry.progress,
       startedOn: entry.startedOn,
       completedOn: entry.completedOn,
+      review: entry.review,
+      reviewPublic: entry.reviewPublic,
     },
   });
   const remove = useMutation({
@@ -195,6 +197,19 @@ function EntryForm({ entry, onClose }: { entry: LibraryEntry; onClose: () => voi
                 placeholder="O que você quer lembrar desta experiência?"
               />
               <small>Visíveis somente para você.</small>
+            </label>
+            <label className="field">
+              Resenha
+              <Textarea
+                {...register('review')}
+                rows={4}
+                maxLength={5000}
+                placeholder="O que você diria a alguém sobre esta obra?"
+              />
+            </label>
+            <label className="checkbox-field">
+              <input type="checkbox" {...register('reviewPublic')} />
+              Publicar a resenha no meu perfil público
             </label>
             {Object.keys(errors).length > 0 && (
               <div role="alert" className="error-banner">
