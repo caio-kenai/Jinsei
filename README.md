@@ -15,7 +15,7 @@
 
 Jinsei é uma aplicação gratuita e open source para organizar jogos, animes, mangás, filmes, séries e livros em uma biblioteca pessoal. Separe o que quer começar, registre suas avaliações e mantenha suas anotações em um espaço privado.
 
-O projeto está em desenvolvimento inicial. Todas as categorias compartilham cadastro, capas, status, notas, favoritos e acompanhamento de progresso adaptado a cada tipo de obra. Metas, perfis públicos e uploads ainda não estão disponíveis.
+O projeto está em desenvolvimento inicial. Todas as categorias compartilham cadastro, capas, status, notas, favoritos e acompanhamento de progresso adaptado a cada tipo de obra. Perfis públicos e uploads ainda não estão disponíveis.
 
 ## Funcionalidades
 
@@ -23,6 +23,7 @@ O projeto está em desenvolvimento inicial. Todas as categorias compartilham cad
 - Biblioteca em Lista, Galeria, Quadro e Calendário, com várias visualizações salvas por categoria, agrupamento por status, busca, filtros, ordenação e colunas configuráveis.
 - Quadro com arrastar e soltar entre status e ordem manual; calendário com inícios, conclusões e sessões de filmes.
 - Coleções e rankings pessoais com títulos de qualquer categoria, capa, descrição e visibilidade.
+- Metas de títulos, episódios, capítulos, páginas, horas, filmes ou coleções, com progresso calculado automaticamente pela biblioteca.
 - Avaliações em cinco estrelas, com incrementos de ¼ (0,25), favoritos, tags, anotações privadas e edição em lote de status.
 - Progresso por categoria: horas e conclusão em jogos, episódios em animes e séries (com temporada atual), capítulos e volumes em mangás, páginas em livros e histórico de sessões em filmes.
 - Status atualizado automaticamente ao iniciar ou concluir uma obra pelo progresso, com avanço rápido de um episódio ou capítulo na lista.
