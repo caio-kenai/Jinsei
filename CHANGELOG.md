@@ -1,5 +1,12 @@
 # Histórico de versões
 
+## Em desenvolvimento
+
+- Categoria Livros, com busca no Open Library e acompanhamento por páginas.
+- Progresso por episódios (com temporada atual), capítulos, volumes, páginas e sessões de filmes.
+- Metadados específicos de cada categoria importados dos catálogos e informados no cadastro manual.
+- Status ajustado automaticamente ao iniciar ou concluir uma obra pelo progresso.
+
 ## 0.0.1 — 2026-11-13
 
 Primeira versão do Jinsei, para desenvolvimento e instalação em servidor próprio.

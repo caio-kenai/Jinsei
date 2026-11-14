@@ -31,8 +31,8 @@ export function AboutDialog({
           </p>
         )}
         <DialogDescription className="dialog-description">
-          Um lugar para organizar seus jogos, filmes, séries, animes e mangás. Gratuito, open source
-          e feito para acompanhar suas histórias.
+          Um lugar para organizar seus jogos, filmes, séries, animes, mangás e livros. Gratuito,
+          open source e feito para acompanhar suas histórias.
         </DialogDescription>
         <div className="about-links">
           <a href="https://github.com/caio-kenai/Jinsei" target="_blank" rel="noreferrer">
