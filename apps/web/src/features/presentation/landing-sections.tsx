@@ -4,6 +4,11 @@ import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import {
   BookMarked,
   BookOpen,
+  ChartColumn,
+  MessageSquareText,
+  Palette,
+  Tent,
+  UsersRound,
   CalendarDays,
   Check,
   ChevronDown,
@@ -28,6 +33,7 @@ import {
   UserRound,
 } from 'lucide-react';
 import { NumberTicker } from '@/components/motion/number-ticker';
+import { CommunityArt } from './landing-showcase';
 
 const ease = [0.22, 1, 0.36, 1] as const;
 const reveal = {
@@ -322,6 +328,11 @@ const bento = [
     text: 'Mostre favoritos, coleções e resenhas só se e quando quiser.',
     Art: ProfileArt,
   },
+  {
+    title: 'Amigos, conversas e clubes',
+    text: 'Veja o que seus amigos estão vivendo, converse e reúna gente que gosta das mesmas histórias.',
+    Art: CommunityArt,
+  },
 ];
 
 export function FeatureBento() {
@@ -367,20 +378,42 @@ const marqueeItems = [
   { label: 'Metas', Icon: Target, color: '#2f7bff' },
   { label: 'Jornada', Icon: Sparkles, color: '#7050cf' },
 ];
+const featureItems = [
+  { label: 'Amigos', Icon: UsersRound, color: '#2f7bff' },
+  { label: 'Clubes', Icon: Tent, color: '#f7832b' },
+  { label: 'Rankings', Icon: Trophy, color: '#c77c02' },
+  { label: 'Reviews', Icon: MessageSquareText, color: '#e5306f' },
+  { label: 'Estatísticas', Icon: ChartColumn, color: '#15936a' },
+  { label: 'Temas', Icon: Palette, color: '#7050cf' },
+  { label: 'Perfil público', Icon: UserRound, color: '#0e9aa7' },
+  { label: 'Seus dados', Icon: ShieldCheck, color: '#595d66' },
+];
 
-/** Endless ribbon of everything Jinsei organizes (Magic UI's Marquee). */
+function MarqueeRow({ items, reverse }: { items: typeof marqueeItems; reverse?: boolean }) {
+  // Two identical halves, each wider than any screen, make the loop seamless.
+  const half = [...items, ...items, ...items];
+  return (
+    <div className={`landing-marquee-track ${reverse ? 'is-reverse' : ''}`}>
+      {[0, 1].map((copy) => (
+        <div className="landing-marquee-group" key={copy}>
+          {half.map(({ label, Icon, color }, index) => (
+            <span key={`${label}-${index}`} style={{ '--chip': color } as React.CSSProperties}>
+              <Icon size={16} />
+              {label}
+            </span>
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/** Endless ribbons of everything Jinsei organizes (Magic UI's Marquee). */
 export function CategoryMarquee() {
-  const row = [...marqueeItems, ...marqueeItems];
   return (
     <div className="landing-marquee" aria-hidden="true">
-      <div className="landing-marquee-track">
-        {row.map(({ label, Icon, color }, index) => (
-          <span key={`${label}-${index}`} style={{ '--chip': color } as React.CSSProperties}>
-            <Icon size={16} />
-            {label}
-          </span>
-        ))}
-      </div>
+      <MarqueeRow items={marqueeItems} />
+      <MarqueeRow items={featureItems} reverse />
     </div>
   );
 }
