@@ -1,0 +1,302 @@
+/*
+ * Visual themes. Each theme tints the shell, the rail and the sidebar and adds a
+ * decorative band at the top of the workspace. The accent color stays independent,
+ * and text surfaces keep their contrast. Effects stop with reduced motion.
+ */
+:root {
+  --theme-a: #7050cf;
+  --theme-b: #e5306f;
+  --theme-c: #2f7bff;
+  --band-opacity: 0;
+}
+
+/* Swatches used by the picker in the settings. */
+.visual-theme-picker {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 10px;
+}
+.visual-theme-choice {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 220ms ease,
+    border-color 160ms ease;
+}
+.visual-theme-choice:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px #00000014;
+}
+.visual-theme-choice[aria-pressed='true'] {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 30%, transparent);
+}
+.visual-theme-choice > svg {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 2px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+.visual-theme-swatch {
+  display: flex;
+  width: 100%;
+  height: 46px;
+  overflow: hidden;
+  border-radius: 8px;
+}
+.visual-theme-swatch i {
+  flex: 1;
+}
+[data-preview='classic'] .visual-theme-swatch i:nth-child(1) {
+  background: #171719;
+}
+[data-preview='classic'] .visual-theme-swatch i:nth-child(2) {
+  background: #f8f8fa;
+}
+[data-preview='classic'] .visual-theme-swatch i:nth-child(3) {
+  background: #e8e8ed;
+}
+[data-preview='sakura'] .visual-theme-swatch {
+  background: linear-gradient(120deg, #ffd1e3, #ff7eb3 55%, #b45cff);
+}
+[data-preview='aurora'] .visual-theme-swatch {
+  background: linear-gradient(120deg, #3ee8b5, #3a8dff 50%, #9b5cff);
+}
+[data-preview='ocean'] .visual-theme-swatch {
+  background: linear-gradient(120deg, #a8e6ff, #2f9bff 55%, #1546b8);
+}
+[data-preview='forest'] .visual-theme-swatch {
+  background: linear-gradient(120deg, #d6f5c6, #3fae6a 55%, #11553c);
+}
+[data-preview='sunset'] .visual-theme-swatch {
+  background: linear-gradient(120deg, #ffd36e, #ff7a3d 50%, #d6337a);
+}
+[data-preview='neon'] .visual-theme-swatch {
+  background: linear-gradient(120deg, #0b0b14, #ff2fd6 55%, #23f0ff);
+}
+
+/* Palettes. */
+[data-visual-theme='sakura'] {
+  --theme-a: #ff7eb3;
+  --theme-b: #ffb3cf;
+  --theme-c: #b45cff;
+}
+[data-visual-theme='aurora'] {
+  --theme-a: #3ee8b5;
+  --theme-b: #3a8dff;
+  --theme-c: #9b5cff;
+}
+[data-visual-theme='ocean'] {
+  --theme-a: #2f9bff;
+  --theme-b: #6fd3ff;
+  --theme-c: #1546b8;
+}
+[data-visual-theme='forest'] {
+  --theme-a: #3fae6a;
+  --theme-b: #a7e07f;
+  --theme-c: #11553c;
+}
+[data-visual-theme='sunset'] {
+  --theme-a: #ff7a3d;
+  --theme-b: #ffc35c;
+  --theme-c: #d6337a;
+}
+[data-visual-theme='neon'] {
+  --theme-a: #ff2fd6;
+  --theme-b: #23f0ff;
+  --theme-c: #7a5cff;
+}
+
+/* Shared treatment for every non-classic theme. */
+:root:not([data-visual-theme='classic'])[data-visual-theme] {
+  --band-opacity: 0.22;
+  --sidebar: color-mix(in srgb, var(--theme-a) 6%, #f8f8fa);
+  --hover: color-mix(in srgb, var(--theme-a) 9%, #f1f1f5);
+  --selected: color-mix(in srgb, var(--theme-a) 14%, #eaeaea);
+  --rail: color-mix(in srgb, var(--theme-c) 32%, #121216);
+}
+.dark:not([data-visual-theme='classic'])[data-visual-theme] {
+  --band-opacity: 0.3;
+  --background: color-mix(in srgb, var(--theme-c) 6%, #18181b);
+  --sidebar: color-mix(in srgb, var(--theme-a) 7%, #1e1e22);
+  --surface: color-mix(in srgb, var(--theme-c) 5%, #202024);
+  --elevated: color-mix(in srgb, var(--theme-c) 6%, #26262c);
+  --hover: color-mix(in srgb, var(--theme-a) 12%, #2b2b31);
+  --selected: color-mix(in srgb, var(--theme-a) 18%, #313134);
+  --border: color-mix(in srgb, var(--theme-a) 12%, #323238);
+  --rail: color-mix(in srgb, var(--theme-c) 30%, #0d0d10);
+}
+[data-visual-theme]:not([data-visual-theme='classic']) .app-shell {
+  background:
+    radial-gradient(
+      ellipse at 0% 0%,
+      color-mix(in srgb, var(--theme-a) 30%, transparent),
+      transparent 45%
+    ),
+    radial-gradient(
+      ellipse at 100% 0%,
+      color-mix(in srgb, var(--theme-c) 26%, transparent),
+      transparent 50%
+    ),
+    var(--sidebar);
+}
+[data-visual-theme]:not([data-visual-theme='classic']) .global-header {
+  background: color-mix(in srgb, var(--background) 72%, transparent);
+  backdrop-filter: blur(10px);
+}
+[data-visual-theme]:not([data-visual-theme='classic']) .main-sidebar {
+  background: color-mix(in srgb, var(--sidebar) 88%, transparent);
+  backdrop-filter: blur(8px);
+}
+[data-visual-theme]:not([data-visual-theme='classic']) .global-rail {
+  background: linear-gradient(
+    180deg,
+    var(--rail),
+    color-mix(in srgb, var(--theme-a) 28%, var(--rail))
+  );
+}
+
+/* Decorative band at the top of the workspace. */
+.app-workspace {
+  position: relative;
+  isolation: isolate;
+}
+.app-workspace::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 260px;
+  z-index: -1;
+  pointer-events: none;
+  opacity: var(--band-opacity);
+  background:
+    radial-gradient(ellipse at 15% 0%, var(--theme-a), transparent 60%),
+    radial-gradient(ellipse at 60% -10%, var(--theme-b), transparent 55%),
+    radial-gradient(ellipse at 95% 10%, var(--theme-c), transparent 55%);
+  background-size: 160% 160%;
+  mask-image: linear-gradient(#000, transparent);
+  transition: opacity 400ms ease;
+}
+.app-workspace > main {
+  position: relative;
+}
+[data-visual-theme]:not([data-visual-theme='classic']) .context-header,
+[data-visual-theme]:not([data-visual-theme='classic']) .view-tabs,
+[data-visual-theme]:not([data-visual-theme='classic']) .toolbar {
+  background: transparent;
+}
+
+/* Theme effects. */
+[data-visual-theme='aurora'] .app-workspace::before,
+[data-visual-theme='ocean'] .app-workspace::before,
+[data-visual-theme='sunset'] .app-workspace::before {
+  animation: band-drift 18s ease-in-out infinite alternate;
+}
+@keyframes band-drift {
+  to {
+    background-position: 100% 40%;
+  }
+}
+/* Sakura: petals drift across the shell. */
+[data-visual-theme='sakura'] .app-shell::after {
+  content: '';
+  position: fixed;
+  inset: -20% 0 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.55;
+  background-image:
+    radial-gradient(6px 4px at 10% 20%, #ff9cc4 60%, transparent 62%),
+    radial-gradient(5px 3px at 30% 70%, #ffb8d4 60%, transparent 62%),
+    radial-gradient(6px 4px at 55% 35%, #ff8fbd 60%, transparent 62%),
+    radial-gradient(4px 3px at 75% 80%, #ffc6dc 60%, transparent 62%),
+    radial-gradient(6px 4px at 90% 15%, #ff9cc4 60%, transparent 62%);
+  background-size: 420px 420px;
+  animation: petals 28s linear infinite;
+}
+@keyframes petals {
+  to {
+    background-position: 220px 420px;
+  }
+}
+/* Ocean: soft wave along the band. */
+[data-visual-theme='ocean'] .app-workspace::after {
+  content: '';
+  position: absolute;
+  inset: 150px 0 auto;
+  height: 60px;
+  z-index: -1;
+  pointer-events: none;
+  opacity: calc(var(--band-opacity) * 1.4);
+  background: radial-gradient(40px 14px at 50% 0, transparent 96%, var(--theme-b)) 0 0 / 80px 30px
+    repeat-x;
+  mask-image: linear-gradient(transparent, #000 40%, transparent);
+  animation: wave 9s linear infinite;
+}
+@keyframes wave {
+  to {
+    background-position: 80px 0;
+  }
+}
+/* Forest: leaf-like dots fade over the band. */
+[data-visual-theme='forest'] .app-workspace::after {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 220px;
+  z-index: -1;
+  pointer-events: none;
+  opacity: calc(var(--band-opacity) * 0.9);
+  background-image: radial-gradient(
+    color-mix(in srgb, var(--theme-c) 60%, transparent) 1.5px,
+    transparent 1.5px
+  );
+  background-size: 16px 16px;
+  mask-image: linear-gradient(#000, transparent);
+}
+/* Neon: glowing primary controls and a cyber grid. */
+[data-visual-theme='neon'] .app-workspace::after {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 240px;
+  z-index: -1;
+  pointer-events: none;
+  opacity: calc(var(--band-opacity) * 1.2);
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--theme-b) 50%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--theme-a) 50%, transparent) 1px, transparent 1px);
+  background-size: 28px 28px;
+  mask-image: linear-gradient(#000, transparent);
+}
+[data-visual-theme='neon'] .button-primary,
+[data-visual-theme='neon'] .rail-active-bg {
+  box-shadow:
+    0 0 12px color-mix(in srgb, var(--theme-a) 55%, transparent),
+    0 0 26px color-mix(in srgb, var(--theme-b) 30%, transparent);
+}
+[data-visual-theme='neon'] .global-rail {
+  box-shadow: inset -1px 0 0 color-mix(in srgb, var(--theme-b) 50%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-workspace::before,
+  .app-workspace::after,
+  .app-shell::after {
+    animation: none !important;
+  }
+}

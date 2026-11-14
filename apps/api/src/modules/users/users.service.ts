@@ -51,6 +51,7 @@ export class UsersService {
       preferences: {
         theme: user.preference.theme,
         accent: user.preference.accent,
+        visualTheme: user.preference.visualTheme,
         density: user.preference.density,
         sidebarCollapsed: user.preference.sidebarCollapsed,
         timezone: user.preference.timezone,
@@ -71,6 +72,7 @@ export class UsersService {
           categories,
           theme,
           accent,
+          visualTheme,
           density,
           sidebarCollapsed,
           timezone,
@@ -106,6 +108,7 @@ export class UsersService {
           data: {
             theme,
             accent,
+            visualTheme,
             density,
             sidebarCollapsed,
             timezone,
