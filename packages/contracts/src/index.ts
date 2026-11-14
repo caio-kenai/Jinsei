@@ -36,6 +36,19 @@ export const accentSchema = z.enum([
   'bronze',
 ]);
 export const densitySchema = z.enum(['compact', 'comfortable']);
+/** IANA time zone used for daily missions and streaks. */
+export const timezoneSchema = z
+  .string()
+  .min(1)
+  .max(64)
+  .refine((value) => {
+    try {
+      new Intl.DateTimeFormat('en', { timeZone: value });
+      return true;
+    } catch {
+      return false;
+    }
+  }, 'Fuso horário inválido');
 export const emailSchema = z.email('Informe um e-mail válido').max(254).trim().toLowerCase();
 export const passwordSchema = z.string().min(12, 'Use pelo menos 12 caracteres').max(128);
 export const credentialsSchema = z
@@ -73,6 +86,7 @@ export const preferencesPatchSchema = onboardingSchema
     isPublic: z.boolean().optional(),
     sidebarCollapsed: z.boolean().optional(),
     density: densitySchema.optional(),
+    timezone: timezoneSchema.optional(),
   })
   .strict();
 export type PreferencesPatch = z.infer<typeof preferencesPatchSchema>;
@@ -92,6 +106,7 @@ export const currentUserSchema = z.object({
     accent: accentSchema,
     density: densitySchema,
     sidebarCollapsed: z.boolean(),
+    timezone: z.string(),
     categories: z.array(mediaTypeSchema),
     onboarded: z.boolean(),
   }),
@@ -550,3 +565,67 @@ export const goalSchema = z.object({
   createdAt: z.string(),
 });
 export type Goal = z.infer<typeof goalSchema>;
+
+export const missionPeriods = ['daily', 'weekly', 'monthly'] as const;
+export type MissionPeriod = (typeof missionPeriods)[number];
+export const missionPeriodLabels: Record<MissionPeriod, string> = {
+  daily: 'Diárias',
+  weekly: 'Semanais',
+  monthly: 'Mensais',
+};
+export const missionSchema = z.object({
+  key: z.string(),
+  period: z.enum(missionPeriods),
+  label: z.string(),
+  progress: z.number(),
+  target: z.number(),
+  xp: z.number(),
+  completed: z.boolean(),
+  endsAt: z.string(),
+});
+export type Mission = z.infer<typeof missionSchema>;
+export const badgeSchema = z.object({
+  key: z.string(),
+  label: z.string(),
+  description: z.string(),
+  icon: z.string(),
+  unlockedAt: z.string().nullable(),
+  progress: z.number(),
+  target: z.number(),
+});
+export type Badge = z.infer<typeof badgeSchema>;
+export const profileTitleSchema = z.object({
+  key: z.string(),
+  label: z.string(),
+  requirement: z.string(),
+  unlocked: z.boolean(),
+});
+export type ProfileTitle = z.infer<typeof profileTitleSchema>;
+export const progressionSchema = z.object({
+  level: z.number(),
+  xp: z.number(),
+  levelXp: z.number(),
+  nextLevelXp: z.number(),
+  streak: z.object({
+    current: z.number(),
+    best: z.number(),
+    today: z.boolean(),
+    days: z.array(isoDateSchema),
+  }),
+  missions: z.array(missionSchema),
+  badges: z.array(badgeSchema),
+  titles: z.array(profileTitleSchema),
+  activeTitle: z.string().nullable(),
+  unlocked: z.array(z.string()),
+  timezone: z.string(),
+});
+export type Progression = z.infer<typeof progressionSchema>;
+export const activeTitleSchema = z.object({ title: z.string().max(40).nullable() }).strict();
+
+/** Total experience required to reach a level: 100, 300, 600, 1000… */
+export const xpForLevel = (level: number) => 50 * level * (level - 1);
+export function levelForXp(xp: number) {
+  let level = 1;
+  while (xpForLevel(level + 1) <= xp) level += 1;
+  return level;
+}

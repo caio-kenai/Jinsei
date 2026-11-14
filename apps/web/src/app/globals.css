@@ -2985,3 +2985,299 @@ tr:hover .progress-increment,
   display: flex;
   gap: 6px;
 }
+
+.journey-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: 14px;
+  margin-top: 6px;
+}
+.journey-card {
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+}
+.journey-card h2 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 2px 0 8px;
+}
+.journey-card small {
+  font-size: 11px;
+  color: var(--muted);
+}
+.level-card {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+.level-badge {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  font-size: 26px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  box-shadow: inset 0 -4px 0 #0000002e;
+}
+.level-body {
+  flex: 1;
+  min-width: 0;
+}
+.xp-track,
+.mission-track,
+.badge-track {
+  display: block;
+  height: 6px;
+  border-radius: 6px;
+  background: var(--hover);
+  overflow: hidden;
+  margin: 6px 0;
+}
+.xp-track > span,
+.mission-track > span,
+.badge-track > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--primary);
+  transition: width 0.5s ease;
+}
+.xp-track {
+  height: 8px;
+}
+.xp-track > span {
+  background: linear-gradient(
+    90deg,
+    var(--primary),
+    color-mix(in srgb, var(--primary) 60%, #f5a524)
+  );
+}
+.streak-card {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+.streak-flame {
+  flex: none;
+  color: var(--muted);
+}
+.streak-card.lit .streak-flame,
+.streak-chip.lit {
+  color: #f06a1d;
+}
+.streak-card.lit .streak-flame {
+  filter: drop-shadow(0 0 8px #f06a1d66);
+  animation: streak-flicker 2.4s ease-in-out infinite;
+}
+@keyframes streak-flicker {
+  50% {
+    transform: scale(1.06) rotate(-2deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .streak-card.lit .streak-flame {
+    animation: none;
+  }
+}
+.streak-days {
+  display: flex;
+  gap: 4px;
+  margin-top: 10px;
+}
+.streak-days span {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  background: var(--hover);
+}
+.streak-days span.done {
+  background: #f06a1d;
+}
+.mission-columns {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 14px;
+}
+.journey-section-title {
+  font-size: 13px !important;
+}
+.mission-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.mission-list li {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: start;
+}
+.mission-check {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+  border: 1.5px solid var(--border);
+  border-radius: 50%;
+}
+.mission-list li.completed .mission-check {
+  border-color: var(--success);
+  background: var(--success);
+  color: white;
+}
+.mission-list li.completed .mission-track > span {
+  background: var(--success);
+}
+.mission-label {
+  font-size: 12px;
+}
+.mission-list li.completed .mission-label {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+.mission-body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.mission-xp {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.journey-section {
+  margin-top: 26px;
+}
+.journey-hint {
+  font-size: 11px;
+  margin: 4px 0 10px;
+}
+.badge-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+}
+.badge-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 14px 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  text-align: center;
+}
+.badge-card strong {
+  font-size: 12px;
+}
+.badge-card small {
+  font-size: 10px;
+  color: var(--muted);
+}
+.badge-card .badge-track {
+  width: 70%;
+}
+.badge-icon {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: var(--hover);
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+.badge-card.unlocked .badge-icon {
+  background: linear-gradient(135deg, #f5c04e, #f06a1d);
+  color: white;
+  box-shadow: 0 6px 16px #f06a1d38;
+}
+.badge-card.locked {
+  opacity: 0.7;
+}
+.badge-date {
+  font-variant-numeric: tabular-nums;
+}
+.title-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 8px;
+}
+.title-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.title-option span {
+  display: flex;
+  flex-direction: column;
+}
+.title-option strong {
+  font-size: 12px;
+}
+.title-option small {
+  font-size: 10px;
+  color: var(--muted);
+}
+.title-option.active {
+  border-color: var(--foreground);
+  background: var(--hover);
+}
+.title-option:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+.journey-today {
+  margin-top: 26px;
+}
+.journey-today .section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.journey-today .mission-list {
+  margin-top: 10px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.streak-chip,
+.level-chip,
+.profile-title-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--hover);
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 600;
+}
+.profile-title-chip {
+  margin-left: 8px;
+}
+@media (max-width: 900px) {
+  .journey-hero,
+  .mission-columns {
+    grid-template-columns: 1fr;
+  }
+}

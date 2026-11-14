@@ -12,6 +12,7 @@ import { EntryDetails } from '@/features/library/entry-details';
 import { MediaCover } from '@/features/library/media-cover';
 import { progressPercent, progressSummary } from '@/features/library/progress-format';
 import { ActiveGoals } from '@/features/goals/active-goals';
+import { JourneyToday } from '@/features/progression/journey-today';
 import { StatusBadge } from '@/features/library/status-badge';
 import { StarRating } from '@/components/shared/star-rating';
 
@@ -140,6 +141,7 @@ export function HomeScreen() {
           </Button>
         </div>
       )}
+      <JourneyToday />
       <ActiveGoals />
       <div className="home-columns">
         <section>
