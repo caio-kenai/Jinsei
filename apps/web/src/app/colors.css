@@ -1,0 +1,120 @@
+/*
+ * Color reach: the chosen accent now tints navigation, tabs, inputs and charts,
+ * and dashboards use vivid categorical colors (see lib/palette.ts).
+ */
+:root {
+  --heat: var(--primary);
+  --chart-top: color-mix(in srgb, var(--primary) 55%, #e5306f);
+}
+:root[data-accent='black'] {
+  --heat: #15936a;
+  --chart-top: #7050cf;
+}
+.dark[data-accent='black'] {
+  --chart-top: #b99aef;
+}
+
+/* Navigation and tabs follow the accent. */
+:root:not([data-accent='black']) .nav-active-bg {
+  background: color-mix(in srgb, var(--primary) 13%, var(--sidebar));
+}
+:root:not([data-accent='black']) .nav-link.active,
+:root:not([data-accent='black']) .nav-link.active svg {
+  color: color-mix(in srgb, var(--primary) 82%, var(--foreground));
+}
+:root:not([data-accent='black']) .rail-active-bg {
+  background: var(--primary);
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--primary) 45%, transparent);
+}
+:root:not([data-accent='black']) .rail-button.active > svg {
+  color: var(--primary-foreground);
+}
+.view-tab-indicator {
+  background: var(--primary);
+}
+:root:not([data-accent='black']) .toolbar-button.selected {
+  background: color-mix(in srgb, var(--primary) 12%, transparent);
+  color: var(--primary);
+}
+input[type='checkbox'],
+input[type='radio'],
+input[type='range'],
+progress {
+  accent-color: var(--primary);
+}
+.input:focus,
+.public-input:focus,
+select:focus-visible,
+textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 16%, transparent);
+  outline: none;
+}
+.title-open:hover {
+  color: var(--primary);
+}
+:root[data-accent='black'] .title-open:hover {
+  color: var(--foreground);
+  text-decoration: underline;
+}
+.progress-fill,
+.xp-track > span,
+.mission-track > span {
+  background: linear-gradient(90deg, var(--primary), var(--chart-top));
+}
+.mission-list li.completed .mission-track > span {
+  background: linear-gradient(90deg, #15936a, #3fc48f);
+}
+
+/* Heatmap uses a vivid single hue. */
+.heat-1 {
+  fill: color-mix(in srgb, var(--heat) 28%, var(--hover));
+  background: color-mix(in srgb, var(--heat) 28%, var(--hover));
+}
+.heat-2 {
+  fill: color-mix(in srgb, var(--heat) 52%, var(--hover));
+  background: color-mix(in srgb, var(--heat) 52%, var(--hover));
+}
+.heat-3 {
+  fill: color-mix(in srgb, var(--heat) 76%, var(--hover));
+  background: color-mix(in srgb, var(--heat) 76%, var(--hover));
+}
+.heat-4 {
+  fill: var(--heat);
+  background: var(--heat);
+}
+
+/* Statistic tiles carry their own color. */
+.stat-tile {
+  position: relative;
+  overflow: hidden;
+  border-color: color-mix(in srgb, var(--tile-color, var(--primary)) 22%, var(--border));
+  background: linear-gradient(
+    150deg,
+    color-mix(in srgb, var(--tile-color, var(--primary)) 9%, var(--surface)),
+    var(--surface) 70%
+  );
+  transition:
+    transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 220ms ease;
+}
+.stat-tile:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--tile-color, var(--primary)) 18%, transparent);
+}
+.stat-tile .stat-tile-icon {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  margin-bottom: 4px;
+  border-radius: 8px;
+  color: #fff;
+  background: var(--tile-color, var(--primary));
+}
+.bar-track > span {
+  border-radius: 0 6px 6px 0;
+}
+.bar-track {
+  height: 12px;
+}

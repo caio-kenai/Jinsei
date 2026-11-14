@@ -4,6 +4,7 @@ import '@fontsource-variable/plus-jakarta-sans';
 import './globals.css';
 import './public.css';
 import './themes.css';
+import './colors.css';
 import './polish.css';
 import './motion.css';
 import './landing.css';
