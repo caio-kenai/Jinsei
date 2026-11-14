@@ -41,7 +41,6 @@ export class InstanceService {
       contactEmail: record.contactEmail,
       registrationsEnabled: record.registrationsEnabled,
       externalCatalogEnabled: record.externalCatalogEnabled,
-      supportEnabled: record.supportEnabled,
     });
     return { ...settings, version: appVersion, publicUrl: env.WEB_ORIGIN };
   }

@@ -1,6 +1,6 @@
 'use client';
 import Link from 'next/link';
-import { appVersion } from '@jinsei/contracts';
+import { appVersion, creatorSupport } from '@jinsei/contracts';
 import { Brand } from '@/components/shared/brand';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import '@/app/legal.css';
@@ -18,7 +18,9 @@ export function AboutDialog({
       <DialogContent className="about-dialog">
         <Brand compact />
         <DialogTitle className="dialog-title">Jinsei</DialogTitle>
-        <span className="about-version">Versão {appVersion} · GNU AGPL v3</span>
+        <span className="about-version">
+          Versão {appVersion} · GNU AGPL v3 · Criado por {creatorSupport.creator}
+        </span>
         {instance && (
           <p className="attribution">
             {instance.name} · {new URL(instance.publicUrl).host}
@@ -40,6 +42,13 @@ export function AboutDialog({
           </a>
           <Link href="/privacy">Privacidade</Link>
           <Link href="/terms">Termos de uso</Link>
+          <a
+            href="https://github.com/caio-kenai/Jinsei/blob/main/ADDITIONAL_TERMS.md"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Termos da licença
+          </a>
         </div>
         <p className="attribution">
           Metadados e imagens de Wikidata, Wikimedia Commons, CheapShark, TVmaze e Open Library. Os
