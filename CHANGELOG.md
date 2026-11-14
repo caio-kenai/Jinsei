@@ -9,6 +9,8 @@
 - Visualizações em Quadro (arrastar e soltar entre status) e Calendário, com várias visualizações salvas por espaço.
 - Datas de início e conclusão registradas automaticamente e editáveis.
 - Coleções e rankings com reordenação, títulos de várias categorias e visibilidade configurável.
+- Metas com progresso automático por período, categoria ou coleção, exibidas também no início.
+- Exportação de dados com coleções, metas e histórico de progresso.
 
 ## 0.0.1 — 2026-11-13
 

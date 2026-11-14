@@ -451,3 +451,102 @@ export const collectionItemPatchSchema = z
   })
   .strict();
 export type CollectionItemPatch = z.infer<typeof collectionItemPatchSchema>;
+
+export const goalMetrics = [
+  'titles_completed',
+  'titles_started',
+  'episodes_watched',
+  'chapters_read',
+  'pages_read',
+  'hours_played',
+  'movies_watched',
+  'collection_completed',
+] as const;
+export const goalMetricSchema = z.enum(goalMetrics);
+export type GoalMetric = z.infer<typeof goalMetricSchema>;
+export const goalMetricLabels: Record<GoalMetric, string> = {
+  titles_completed: 'Concluir títulos',
+  titles_started: 'Começar títulos',
+  episodes_watched: 'Assistir episódios',
+  chapters_read: 'Ler capítulos',
+  pages_read: 'Ler páginas',
+  hours_played: 'Jogar horas',
+  movies_watched: 'Assistir filmes',
+  collection_completed: 'Concluir uma coleção',
+};
+export const goalUnits: Record<GoalMetric, [string, string]> = {
+  titles_completed: ['título', 'títulos'],
+  titles_started: ['título', 'títulos'],
+  episodes_watched: ['episódio', 'episódios'],
+  chapters_read: ['capítulo', 'capítulos'],
+  pages_read: ['página', 'páginas'],
+  hours_played: ['hora', 'horas'],
+  movies_watched: ['sessão', 'sessões'],
+  collection_completed: ['título', 'títulos'],
+};
+/** Categories each metric can be limited to; an empty list means it has no category. */
+export const goalScopes: Record<GoalMetric, MediaType[]> = {
+  titles_completed: [...mediaTypes],
+  titles_started: [...mediaTypes],
+  episodes_watched: ['anime', 'series'],
+  chapters_read: ['manga'],
+  pages_read: ['books'],
+  hours_played: ['games'],
+  movies_watched: ['movies'],
+  collection_completed: [],
+};
+export const goalStates = ['active', 'achieved', 'expired', 'archived'] as const;
+export type GoalState = (typeof goalStates)[number];
+export const goalStateLabels: Record<GoalState, string> = {
+  active: 'Em andamento',
+  achieved: 'Concluída',
+  expired: 'Encerrada',
+  archived: 'Arquivada',
+};
+const goalFields = z.object({
+  name: z.string().trim().min(1, 'Dê um nome à meta').max(80),
+  description: z.string().trim().max(500).default(''),
+  metric: goalMetricSchema,
+  mediaType: mediaTypeSchema.nullable().default(null),
+  collectionId: z.string().max(100).nullable().default(null),
+  target: z.number().int().min(1).max(1000000),
+  startsOn: isoDateSchema,
+  endsOn: isoDateSchema.nullable().default(null),
+});
+const goalRules = (goal: {
+  metric?: GoalMetric;
+  mediaType?: MediaType | null;
+  collectionId?: string | null;
+  startsOn?: string;
+  endsOn?: string | null;
+}) =>
+  (!goal.metric ||
+    ((goal.metric === 'collection_completed') === Boolean(goal.collectionId) &&
+      (!goal.mediaType || goalScopes[goal.metric].includes(goal.mediaType)))) &&
+  (!goal.startsOn || !goal.endsOn || goal.endsOn >= goal.startsOn);
+export const goalInputSchema = goalFields
+  .strict()
+  .refine(goalRules, 'Revise a categoria, a coleção e o período da meta');
+export type GoalInput = z.infer<typeof goalInputSchema>;
+export const goalPatchSchema = goalFields
+  .partial()
+  .extend({ archived: z.boolean().optional() })
+  .strict()
+  .refine(goalRules, 'Revise a categoria, a coleção e o período da meta');
+export type GoalPatch = z.infer<typeof goalPatchSchema>;
+export const goalSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  description: z.string(),
+  metric: goalMetricSchema,
+  mediaType: mediaTypeSchema.nullable(),
+  collectionId: z.string().nullable(),
+  collectionName: z.string().nullable(),
+  target: z.number(),
+  current: z.number(),
+  startsOn: isoDateSchema,
+  endsOn: isoDateSchema.nullable(),
+  state: z.enum(goalStates),
+  createdAt: z.string(),
+});
+export type Goal = z.infer<typeof goalSchema>;

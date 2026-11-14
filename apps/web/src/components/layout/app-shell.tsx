@@ -23,6 +23,7 @@ import {
   CupSoda,
   Info,
   FolderHeart,
+  Target,
 } from 'lucide-react';
 import { categoryLabels, mediaTypes, type CurrentUser } from '@jinsei/contracts';
 import { Brand } from '@/components/shared/brand';
@@ -142,6 +143,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           Coleções
         </Link>
         <Link
+          href="/goals"
+          onClick={close}
+          className={cn('nav-link', pathname === '/goals' && 'active')}
+        >
+          <Target size={17} />
+          Metas
+        </Link>
+        <Link
           href="/discover"
           onClick={close}
           className={cn('nav-link', pathname === '/discover' && 'active')}
@@ -210,6 +219,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           { href: '/library', label: 'Biblioteca', Icon: Library },
           { href: '/favorites', label: 'Favoritos', Icon: Heart },
           { href: '/collections', label: 'Coleções', Icon: FolderHeart },
+          { href: '/goals', label: 'Metas', Icon: Target },
           { href: '/discover', label: 'Descobrir', Icon: Compass },
         ].map(({ href, label, Icon }) => (
           <Link

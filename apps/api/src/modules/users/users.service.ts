@@ -111,19 +111,53 @@ export class UsersService {
     return { changed: true };
   }
   async export(userId: string) {
-    const [account, entries, tags, views, activity] = await Promise.all([
-      this.me(userId),
-      this.library.export(userId),
-      this.db.tag.findMany({ where: { userId }, select: { name: true, color: true } }),
-      this.db.savedView.findMany({
-        where: { userId },
-        select: { scope: true, name: true, position: true, config: true },
-      }),
-      this.db.activityLog.findMany({
-        where: { userId },
-        select: { action: true, changes: true, createdAt: true },
-      }),
-    ]);
+    const [account, entries, tags, views, activity, collections, goals, progress] =
+      await Promise.all([
+        this.me(userId),
+        this.library.export(userId),
+        this.db.tag.findMany({ where: { userId }, select: { name: true, color: true } }),
+        this.db.savedView.findMany({
+          where: { userId },
+          select: { scope: true, name: true, position: true, config: true },
+        }),
+        this.db.activityLog.findMany({
+          where: { userId },
+          select: { action: true, changes: true, createdAt: true },
+        }),
+        this.db.collection.findMany({
+          where: { userId },
+          select: {
+            name: true,
+            slug: true,
+            description: true,
+            visibility: true,
+            ranked: true,
+            coverUrl: true,
+            items: {
+              orderBy: { position: 'asc' },
+              select: { note: true, entry: { select: { media: { select: { title: true } } } } },
+            },
+          },
+        }),
+        this.db.goal.findMany({
+          where: { userId },
+          select: {
+            name: true,
+            description: true,
+            metric: true,
+            mediaTypeId: true,
+            target: true,
+            startsOn: true,
+            endsOn: true,
+            archived: true,
+          },
+        }),
+        this.db.progressLog.findMany({
+          where: { userId },
+          select: { mediaTypeId: true, metric: true, delta: true, occurredOn: true },
+          orderBy: { occurredOn: 'asc' },
+        }),
+      ]);
     return {
       version: 1,
       ratingScale: { maximum: 5, step: 0.25 },
@@ -133,6 +167,9 @@ export class UsersService {
       tags,
       views,
       activity,
+      collections,
+      goals,
+      progress,
     };
   }
   async remove(userId: string, password: string) {

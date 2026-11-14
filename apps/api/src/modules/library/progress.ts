@@ -112,3 +112,27 @@ export function progressUpdate(progress: ProgressInput): ProgressUpdate {
       return { readingProgress: { upsert: { create: data.values, update: data.values } } };
   }
 }
+
+export type ProgressDelta = {
+  metric: 'minutes' | 'episodes' | 'chapters' | 'volumes' | 'pages';
+  delta: number;
+};
+
+/** Signed changes between the stored progress and an update, ignoring unchanged counters. */
+export function progressDeltas(before: EntryProgress, after: ProgressInput): ProgressDelta[] {
+  const changes: ProgressDelta[] = [];
+  if (before.kind === 'game' && after.kind === 'game')
+    changes.push({
+      metric: 'minutes',
+      delta: Math.round(after.hoursPlayed * 60) - Math.round(before.hoursPlayed * 60),
+    });
+  if (before.kind === 'episodic' && after.kind === 'episodic')
+    changes.push({ metric: 'episodes', delta: after.episodesWatched - before.episodesWatched });
+  if (before.kind === 'reading' && after.kind === 'reading')
+    changes.push(
+      { metric: 'chapters', delta: after.chaptersRead - before.chaptersRead },
+      { metric: 'volumes', delta: after.volumesRead - before.volumesRead },
+      { metric: 'pages', delta: after.pagesRead - before.pagesRead },
+    );
+  return changes.filter((change) => change.delta !== 0);
+}
