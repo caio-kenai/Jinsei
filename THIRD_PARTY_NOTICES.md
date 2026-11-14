@@ -1,6 +1,6 @@
 # Créditos e componentes de terceiros
 
-O código do Jinsei usa GNU AGPL v3, conforme [LICENSE](LICENSE). As dependências mantêm suas próprias licenças; consulte os arquivos LICENSE dos pacotes e `pnpm-lock.yaml` para as versões instaladas.
+O código do Jinsei usa GNU AGPL v3, conforme [LICENSE](LICENSE), com os [termos adicionais de atribuição](ADDITIONAL_TERMS.md) da seção 7. As dependências mantêm suas próprias licenças; consulte os arquivos LICENSE dos pacotes e `pnpm-lock.yaml` para as versões instaladas.
 
 - Inter e Plus Jakarta Sans: SIL Open Font License 1.1. Cópias dos avisos são distribuídas em `apps/web/public/licenses/` junto da aplicação. As fontes são servidas localmente, sem consulta ao Google Fonts no navegador.
 - Ícones Lucide: ISC, distribuídos pelo pacote `lucide-react`.
