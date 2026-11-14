@@ -33,6 +33,7 @@ import { metadataResult } from '../catalog/metadata';
 import {
   isoDay,
   progressCreate,
+  progressDeltas,
   progressInclude,
   progressResult,
   progressUpdate,
@@ -256,6 +257,23 @@ export class LibraryService {
         },
       });
       if (input.tags) await this.replaceTags(tx, userId, id, input.tags);
+      // Dated progress changes feed goals and missions with activity per period.
+      const deltas = input.progress
+        ? progressDeltas(
+            progressResult(existing, existing.media.mediaTypeId as MediaType),
+            input.progress,
+          )
+        : [];
+      if (deltas.length)
+        await tx.progressLog.createMany({
+          data: deltas.map((change) => ({
+            ...change,
+            userId,
+            entryId: id,
+            mediaTypeId: existing.media.mediaTypeId,
+            occurredOn: today(),
+          })),
+        });
       if (status || input.progress || input.rating !== undefined)
         await tx.activityLog.create({
           data: {

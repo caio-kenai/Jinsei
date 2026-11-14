@@ -26,6 +26,8 @@ model User {
   activities   ActivityLog[]
   savedViews   SavedView[]
   collections  Collection[]
+  goals        Goal[]
+  progressLogs ProgressLog[]
 }
 
 model Profile {
@@ -208,6 +210,7 @@ model UserMediaEntry {
   readingProgress ReadingProgress?
   viewings        EntryViewing[]
   collectionItems CollectionItem[]
+  progressLogs    ProgressLog[]
   tags            EntryTag[]
   activities      ActivityLog[]
 
@@ -325,6 +328,8 @@ model Collection {
   updatedAt   DateTime         @updatedAt
   items       CollectionItem[]
 
+  goals Goal[]
+
   @@unique([userId, slug])
   @@index([userId, updatedAt])
 }
@@ -342,4 +347,40 @@ model CollectionItem {
   @@unique([collectionId, entryId])
   @@index([collectionId, position])
   @@index([entryId])
+}
+
+model Goal {
+  id           String      @id @default(cuid())
+  userId       String
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name         String
+  description  String      @default("")
+  metric       String
+  mediaTypeId  String?
+  collectionId String?
+  collection   Collection? @relation(fields: [collectionId], references: [id], onDelete: SetNull)
+  target       Int
+  startsOn     DateTime    @db.Date
+  endsOn       DateTime?   @db.Date
+  archived     Boolean     @default(false)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@index([userId, archived])
+}
+
+/// Signed changes of consumption counters, dated, so goals and missions can sum activity per period.
+model ProgressLog {
+  id          String          @id @default(cuid())
+  userId      String
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  entryId     String?
+  entry       UserMediaEntry? @relation(fields: [entryId], references: [id], onDelete: SetNull)
+  mediaTypeId String
+  metric      String
+  delta       Int
+  occurredOn  DateTime        @db.Date
+  createdAt   DateTime        @default(now())
+
+  @@index([userId, metric, occurredOn])
 }
