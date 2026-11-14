@@ -1,5 +1,10 @@
 import { z } from 'zod';
-import { entryProgressSchema, mediaMetadataSchema, progressInputSchema } from './progress';
+import {
+  entryProgressSchema,
+  isoDateSchema,
+  mediaMetadataSchema,
+  progressInputSchema,
+} from './progress';
 export * from './progress';
 export const appVersion = '0.0.1';
 
@@ -131,6 +136,8 @@ export const personalFieldsSchema = z.object({
   notes: z.string().max(10000).default(''),
   tags: z.array(z.string().trim().min(1).max(24)).max(8).default([]),
   progress: progressInputSchema.optional(),
+  startedOn: isoDateSchema.nullable().optional(),
+  completedOn: isoDateSchema.nullable().optional(),
 });
 export const manualMediaSchema = z
   .object({
@@ -186,6 +193,8 @@ export const entryPatchSchema = z
     notes: personalFieldsSchema.shape.notes.removeDefault().optional(),
     tags: personalFieldsSchema.shape.tags.removeDefault().optional(),
     progress: progressInputSchema.optional(),
+    startedOn: isoDateSchema.nullable().optional(),
+    completedOn: isoDateSchema.nullable().optional(),
   })
   .strict();
 export type EntryPatchInput = z.infer<typeof entryPatchSchema>;
@@ -196,7 +205,9 @@ export const libraryQuerySchema = z
     status: statusSchema.optional(),
     favorite: z.enum(['true', 'false']).optional(),
     tag: z.string().max(24).optional(),
-    sort: z.enum(['updatedAt', 'title', 'rating', 'createdAt']).default('updatedAt'),
+    sort: z
+      .enum(['updatedAt', 'title', 'rating', 'createdAt', 'completedOn'])
+      .default('updatedAt'),
     order: z.enum(['asc', 'desc']).default('desc'),
     page: z.coerce.number().int().min(1).max(100000).default(1),
     limit: z.coerce.number().int().min(1).max(100).default(50),
@@ -258,6 +269,8 @@ export const libraryEntrySchema = z.object({
   tags: z.array(z.string()),
   metadata: mediaMetadataSchema,
   progress: entryProgressSchema,
+  startedOn: isoDateSchema.nullable(),
+  completedOn: isoDateSchema.nullable(),
   updatedAt: z.string(),
   createdAt: z.string(),
   attribution: catalogResultSchema.shape.attribution,

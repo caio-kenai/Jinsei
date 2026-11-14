@@ -78,6 +78,8 @@ function EntryForm({ entry, onClose }: { entry: LibraryEntry; onClose: () => voi
       favorite: entry.favorite,
       notes: entry.notes,
       progress: entry.progress.kind === 'film' ? undefined : entry.progress,
+      startedOn: entry.startedOn,
+      completedOn: entry.completedOn,
     },
   });
   const remove = useMutation({
@@ -147,6 +149,24 @@ function EntryForm({ entry, onClose }: { entry: LibraryEntry; onClose: () => voi
               </div>
             </div>
             <ProgressFields entry={entry} register={register} />
+            <div className="form-grid">
+              <label className="field">
+                Início
+                <Input
+                  type="date"
+                  min="1900-01-01"
+                  {...register('startedOn', { setValueAs: (value) => value || null })}
+                />
+              </label>
+              <label className="field">
+                Conclusão
+                <Input
+                  type="date"
+                  min="1900-01-01"
+                  {...register('completedOn', { setValueAs: (value) => value || null })}
+                />
+              </label>
+            </div>
             <label className="checkbox-field">
               <input type="checkbox" {...register('favorite')} />
               <Heart size={14} />

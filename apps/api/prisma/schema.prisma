@@ -196,6 +196,8 @@ model UserMediaEntry {
   statusId        String
   status          UserStatus       @relation(fields: [statusId], references: [id])
   ratingSteps     Int?
+  startedOn       DateTime?        @db.Date
+  completedOn     DateTime?        @db.Date
   favorite        Boolean          @default(false)
   notes           String           @default("")
   createdAt       DateTime         @default(now())
@@ -211,6 +213,8 @@ model UserMediaEntry {
   @@index([userId, updatedAt])
   @@index([userId, statusId])
   @@index([userId, favorite])
+  @@index([userId, completedOn])
+  @@index([userId, startedOn])
 }
 
 model GameProgress {

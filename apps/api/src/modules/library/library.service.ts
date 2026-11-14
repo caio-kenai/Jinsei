@@ -28,7 +28,13 @@ import {
   normalizeName,
 } from '../catalog/catalog.service';
 import { metadataResult } from '../catalog/metadata';
-import { progressCreate, progressInclude, progressResult, progressUpdate } from './progress';
+import {
+  isoDay,
+  progressCreate,
+  progressInclude,
+  progressResult,
+  progressUpdate,
+} from './progress';
 
 const entryInclude = {
   media: { include: catalogInclude },
@@ -49,9 +55,35 @@ export function entryResult(entry: Entry) {
     notes: entry.notes,
     tags: entry.tags.map(({ tag }) => tag.name),
     progress: progressResult(entry, entry.media.mediaTypeId as MediaType),
+    startedOn: entry.startedOn ? isoDay(entry.startedOn) : null,
+    completedOn: entry.completedOn ? isoDay(entry.completedOn) : null,
     createdAt: entry.createdAt.toISOString(),
     updatedAt: entry.updatedAt.toISOString(),
   });
+}
+
+const day = (value: string) => new Date(`${value}T00:00:00.000Z`);
+const today = () => day(new Date().toISOString().slice(0, 10));
+
+/**
+ * Start and completion dates follow status transitions unless the person sets them explicitly:
+ * leaving "planned" records the start and entering "completed" records the completion.
+ */
+function entryDates(
+  existing: { startedOn: Date | null; completedOn: Date | null; status: { key: string } } | null,
+  nextStatus: StatusKey | undefined,
+  input: { startedOn?: string | null; completedOn?: string | null },
+  when: Date = today(),
+) {
+  const data: { startedOn?: Date | null; completedOn?: Date | null } = {};
+  const previous = existing?.status.key;
+  if (nextStatus && nextStatus !== 'planned' && !existing?.startedOn) data.startedOn = when;
+  if (nextStatus === 'completed' && previous !== 'completed') data.completedOn = when;
+  if (input.startedOn !== undefined)
+    data.startedOn = input.startedOn === null ? null : day(input.startedOn);
+  if (input.completedOn !== undefined)
+    data.completedOn = input.completedOn === null ? null : day(input.completedOn);
+  return data;
 }
 
 @Injectable()
@@ -80,7 +112,9 @@ export class LibraryService {
         ? { media: { title: query.order } }
         : query.sort === 'rating'
           ? { ratingSteps: { sort: query.order, nulls: 'last' } }
-          : { [query.sort]: query.order },
+          : query.sort === 'completedOn'
+            ? { completedOn: { sort: query.order, nulls: 'last' } }
+            : { [query.sort]: query.order },
       { id: 'asc' },
     ];
     const [entries, total] = await this.db.$transaction([
@@ -163,6 +197,7 @@ export class LibraryService {
             ratingSteps: input.rating === null ? null : input.rating * 4,
             favorite: input.favorite,
             notes: input.notes,
+            ...entryDates(null, input.status, input),
             ...progressCreate(media.mediaTypeId as MediaType, input.progress),
           },
         });
@@ -212,6 +247,7 @@ export class LibraryService {
           favorite: input.favorite,
           notes: input.notes,
           updatedAt: new Date(),
+          ...entryDates(existing, statusKey, input),
           ...(input.progress ? progressUpdate(input.progress) : {}),
         },
       });
@@ -258,7 +294,16 @@ export class LibraryService {
       await tx.entryViewing.create({ data: { entryId: id, watchedOn } });
       await tx.userMediaEntry.update({
         where: { id, userId },
-        data: { statusId: status?.id, updatedAt: new Date() },
+        data: {
+          statusId: status?.id,
+          updatedAt: new Date(),
+          ...entryDates(
+            existing,
+            status ? statusKey : undefined,
+            { completedOn: undefined },
+            watchedOn,
+          ),
+        },
       });
       await tx.activityLog.create({
         data: {
