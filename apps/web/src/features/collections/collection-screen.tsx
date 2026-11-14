@@ -1,5 +1,20 @@
 'use client';
 import { useState } from 'react';
+import {
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -49,7 +64,6 @@ export function CollectionScreen({ id }: { id: string }) {
   const [adding, setAdding] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [detailId, setDetailId] = useState<string | null>(null);
-  const [dragging, setDragging] = useState<string | null>(null);
   if (result.isPending)
     return (
       <div className="empty-state">
@@ -140,80 +154,13 @@ export function CollectionScreen({ id }: { id: string }) {
             </Button>
           </div>
         ) : (
-          <ol className={`collection-items ${collection.ranked ? 'ranked' : ''}`}>
-            {items.map((item, index) => (
-              <li
-                key={item.entry.id}
-                className={`collection-item ${dragging === item.entry.id ? 'dragging' : ''}`}
-                draggable
-                onDragStart={(event) => {
-                  event.dataTransfer.setData('text/plain', item.entry.id);
-                  setDragging(item.entry.id);
-                }}
-                onDragEnd={() => setDragging(null)}
-                onDragOver={(event) => dragging && event.preventDefault()}
-                onDrop={(event) => {
-                  event.preventDefault();
-                  const id = event.dataTransfer.getData('text/plain') || dragging;
-                  const from = items.findIndex((other) => other.entry.id === id);
-                  if (id && from !== index) move(id, index);
-                  setDragging(null);
-                }}
-              >
-                <GripVertical size={14} className="collection-grip" aria-hidden="true" />
-                {collection.ranked && <span className="collection-rank">{index + 1}</span>}
-                <MediaCover
-                  title={item.entry.title}
-                  url={item.entry.coverUrl}
-                  layout={item.entry.coverAttribution?.layout}
-                />
-                <span className="collection-item-main">
-                  <button className="title-open" onClick={() => setDetailId(item.entry.id)}>
-                    {item.entry.title}
-                  </button>
-                  <small>
-                    {categoryLabels[item.entry.mediaType]} · {progressSummary(item.entry)}
-                  </small>
-                </span>
-                <StatusBadge status={item.entry.status} />
-                {item.entry.rating !== null ? (
-                  <StarRating value={item.entry.rating} size={11} />
-                ) : (
-                  <span className="muted collection-norating">Sem nota</span>
-                )}
-                <span className="collection-item-actions">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    aria-label={`Subir ${item.entry.title}`}
-                    disabled={index === 0}
-                    onClick={() => move(item.entry.id, index - 1)}
-                  >
-                    <ArrowUp size={13} />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    aria-label={`Descer ${item.entry.title}`}
-                    disabled={index === items.length - 1}
-                    onClick={() => move(item.entry.id, index + 1)}
-                  >
-                    <ArrowDown size={13} />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    aria-label={`Remover ${item.entry.title} da coleção`}
-                    onClick={() =>
-                      mutations.removeItem.mutate({ collectionId: id, entryId: item.entry.id })
-                    }
-                  >
-                    <X size={13} />
-                  </Button>
-                </span>
-              </li>
-            ))}
-          </ol>
+          <CollectionItems
+            items={items}
+            ranked={collection.ranked}
+            onMove={move}
+            onOpen={setDetailId}
+            onRemove={(entryId) => mutations.removeItem.mutate({ collectionId: id, entryId })}
+          />
         )}
       </div>
       <CollectionFormDialog
@@ -265,5 +212,170 @@ export function CollectionScreen({ id }: { id: string }) {
       </Dialog>
       {detailId && <EntryDetails id={detailId} onClose={() => setDetailId(null)} />}
     </>
+  );
+}
+
+function CollectionItems({
+  items,
+  ranked,
+  onMove,
+  onOpen,
+  onRemove,
+}: {
+  items: CollectionItem[];
+  ranked: boolean;
+  onMove: (entryId: string, index: number) => void;
+  onOpen: (entryId: string) => void;
+  onRemove: (entryId: string) => void;
+}) {
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
+  const ids = items.map((item) => item.entry.id);
+  const titleOf = (id: string | number) =>
+    items.find((item) => item.entry.id === id)?.entry.title ?? 'Título';
+  const positionOf = (id: string | number) => ids.indexOf(String(id)) + 1;
+  return (
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      accessibility={{
+        announcements: {
+          onDragStart: ({ active }) =>
+            `${titleOf(active.id)} selecionado na posição ${positionOf(active.id)}.`,
+          onDragOver: ({ active, over }) =>
+            over ? `${titleOf(active.id)} na posição ${positionOf(over.id)}.` : undefined,
+          onDragEnd: ({ active, over }) =>
+            over
+              ? `${titleOf(active.id)} movido para a posição ${positionOf(over.id)}.`
+              : 'Movimento cancelado.',
+          onDragCancel: ({ active }) => `Movimento de ${titleOf(active.id)} cancelado.`,
+        },
+        screenReaderInstructions: {
+          draggable:
+            'Pressione espaço ou Enter para pegar o título, use as setas para reordenar e espaço para soltar. Esc cancela.',
+        },
+      }}
+      onDragEnd={({ active, over }) => {
+        if (!over || active.id === over.id) return;
+        onMove(String(active.id), ids.indexOf(String(over.id)));
+      }}
+    >
+      <SortableContext items={ids} strategy={verticalListSortingStrategy}>
+        <ol className={`collection-items ${ranked ? 'ranked' : ''}`}>
+          {items.map((item, index) => (
+            <SortableCollectionItem
+              key={item.entry.id}
+              item={item}
+              index={index}
+              total={items.length}
+              ranked={ranked}
+              onMove={onMove}
+              onOpen={onOpen}
+              onRemove={onRemove}
+            />
+          ))}
+        </ol>
+      </SortableContext>
+    </DndContext>
+  );
+}
+
+function SortableCollectionItem({
+  item,
+  index,
+  total,
+  ranked,
+  onMove,
+  onOpen,
+  onRemove,
+}: {
+  item: CollectionItem;
+  index: number;
+  total: number;
+  ranked: boolean;
+  onMove: (entryId: string, index: number) => void;
+  onOpen: (entryId: string) => void;
+  onRemove: (entryId: string) => void;
+}) {
+  const { entry } = item;
+  const {
+    setNodeRef,
+    setActivatorNodeRef,
+    attributes,
+    listeners,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: entry.id });
+  return (
+    <li
+      ref={setNodeRef}
+      className={`collection-item ${isDragging ? 'dragging' : ''}`}
+      style={{
+        transform: CSS.Translate.toString(transform),
+        transition: transition,
+      }}
+    >
+      <button
+        type="button"
+        ref={setActivatorNodeRef}
+        className="collection-grip"
+        aria-label={`Reordenar ${entry.title}`}
+        {...attributes}
+        {...listeners}
+      >
+        <GripVertical size={14} aria-hidden="true" />
+      </button>
+      {ranked && <span className="collection-rank">{index + 1}</span>}
+      <MediaCover
+        title={entry.title}
+        url={entry.coverUrl}
+        layout={entry.coverAttribution?.layout}
+      />
+      <span className="collection-item-main">
+        <button className="title-open" onClick={() => onOpen(entry.id)}>
+          {entry.title}
+        </button>
+        <small>
+          {categoryLabels[entry.mediaType]} · {progressSummary(entry)}
+        </small>
+      </span>
+      <StatusBadge status={entry.status} />
+      {entry.rating !== null ? (
+        <StarRating value={entry.rating} size={11} />
+      ) : (
+        <span className="muted collection-norating">Sem nota</span>
+      )}
+      <span className="collection-item-actions">
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label={`Subir ${entry.title}`}
+          disabled={index === 0}
+          onClick={() => onMove(entry.id, index - 1)}
+        >
+          <ArrowUp size={13} />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label={`Descer ${entry.title}`}
+          disabled={index === total - 1}
+          onClick={() => onMove(entry.id, index + 1)}
+        >
+          <ArrowDown size={13} />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label={`Remover ${entry.title} da coleção`}
+          onClick={() => onRemove(entry.id)}
+        >
+          <X size={13} />
+        </Button>
+      </span>
+    </li>
   );
 }

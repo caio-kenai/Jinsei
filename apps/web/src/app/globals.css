@@ -2453,6 +2453,15 @@ tr:hover .progress-increment,
   opacity: 0.45;
   transform: scale(0.98);
 }
+.board-card:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+.board-card-overlay {
+  cursor: grabbing;
+  box-shadow: 0 12px 28px #00000026;
+  transform: rotate(1.5deg);
+}
 .board-card.drop-before::before,
 .drop-placeholder {
   content: '';
@@ -2738,11 +2747,26 @@ tr:hover .progress-increment,
   background: var(--hover);
 }
 .collection-item.dragging {
-  opacity: 0.5;
+  position: relative;
+  z-index: 1;
+  background: var(--surface);
+  box-shadow: 0 8px 20px #0000001f;
 }
 .collection-grip {
+  display: grid;
+  place-items: center;
+  width: 14px;
+  padding: 0;
+  border: 0;
+  background: none;
   color: var(--muted);
   cursor: grab;
+  touch-action: none;
+}
+.collection-grip:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: 3px;
 }
 .collection-rank {
   min-width: 26px;
