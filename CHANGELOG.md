@@ -1,5 +1,11 @@
 # Histórico de versões
 
+## 0.1.2 — 2026-11-14
+
+- Apresentação: o ícone da categoria muda junto na prévia, as faixas de categorias e recursos são infinitas e mais espaçadas e a grade de recursos ganhou o cartão de comunidade.
+- Menos listas espalhadas alterna exemplos de jogo, anime e livro; Sua biblioteca. As suas regras. mostra telas de exemplo animadas.
+- Buy Me a Monster com logotipo e QR Code mais equilibrados.
+
 ## 0.1.1 — 2026-11-14
 
 - Totais do perfil em cartões coloridos; missões da Jornada com cores por período e selo de nível em gradiente.
