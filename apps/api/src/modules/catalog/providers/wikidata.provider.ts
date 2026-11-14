@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { emptyMetadata, type CatalogResult, type MediaType } from '@jinsei/contracts';
+import type { CatalogResult, MediaMetadata, MediaType, ReleaseStatus } from '@jinsei/contracts';
 import { z } from 'zod';
 import { type CatalogProvider, ProviderCache, providerFetch } from './catalog-provider';
 import { commonsCover } from './commons-cover';
@@ -29,6 +29,27 @@ const ids = (entity: Entity, property: string) =>
     const parsed = entityIdSchema.safeParse(value);
     return parsed.success ? [parsed.data.id] : [];
   });
+const quantitySchema = z.object({ amount: z.string(), unit: z.string() });
+const quantity = (entity: Entity, property: string) => {
+  const parsed = quantitySchema.safeParse(values(entity, property)[0]);
+  const amount = parsed.success ? Number(parsed.data.amount) : NaN;
+  return parsed.success && Number.isFinite(amount)
+    ? { amount, unit: parsed.data.unit.split('/').at(-1) }
+    : null;
+};
+const count = (entity: Entity, property: string) => {
+  const value = quantity(entity, property)?.amount;
+  return value && Number.isInteger(value) && value > 0 ? value : null;
+};
+// Durations use minute (Q7727), hour (Q25235) or second (Q11574) units.
+const minutes = (entity: Entity) => {
+  const value = quantity(entity, 'P2047');
+  const factor = { Q7727: 1, Q25235: 60, Q11574: 1 / 60 }[value?.unit ?? ''];
+  return value && factor ? Math.round(value.amount * factor) || null : null;
+};
+// An end time (P582) marks a work that is no longer being released.
+const release = (entity: Entity): ReleaseStatus =>
+  values(entity, 'P582').length ? 'finished' : 'unknown';
 const label = (entity: Entity) =>
   entity.labels.pt?.value ?? entity.labels.en?.value ?? entity.labels.mul?.value ?? entity.id;
 const category = (entity: Entity): MediaType | null => {
@@ -101,13 +122,49 @@ export class WikidataProvider implements CatalogProvider {
     const referenced = [
       ...new Set(
         entities.flatMap((entity) =>
-          ['P400', 'P136', 'P178'].flatMap((property) => ids(entity, property)),
+          ['P400', 'P136', 'P178', 'P123', 'P272', 'P50', 'P57'].flatMap((property) =>
+            ids(entity, property),
+          ),
         ),
       ),
     ].slice(0, 50);
     const labels = await this.entities(referenced);
     const named = (entity: Entity, property: string) =>
       ids(entity, property).flatMap((id) => (labels[id] ? [label(labels[id])] : []));
+    const metadata = (entity: Entity, type: MediaType): MediaMetadata => {
+      switch (type) {
+        case 'games':
+          return {
+            kind: 'game',
+            platforms: named(entity, 'P400'),
+            developers: named(entity, 'P178'),
+            publishers: named(entity, 'P123'),
+          };
+        case 'anime':
+        case 'series':
+          return {
+            kind: 'episodic',
+            studios: named(entity, 'P272'),
+            totalEpisodes: count(entity, 'P1113'),
+            totalSeasons: count(entity, 'P2437'),
+            seasons: [],
+            releaseStatus: release(entity),
+          };
+        case 'manga':
+        case 'books':
+          return {
+            kind: 'reading',
+            authors: named(entity, 'P50'),
+            publishers: named(entity, 'P123'),
+            totalChapters: null,
+            totalVolumes: count(entity, 'P2635'),
+            totalPages: count(entity, 'P1104'),
+            releaseStatus: release(entity),
+          };
+        case 'movies':
+          return { kind: 'film', directors: named(entity, 'P57'), runtimeMinutes: minutes(entity) };
+      }
+    };
     return Promise.all(
       entities.map(async (entity) => {
         const date = z.object({ time: z.string() }).safeParse(values(entity, 'P577')[0]);
@@ -138,15 +195,7 @@ export class WikidataProvider implements CatalogProvider {
           platforms: named(entity, 'P400'),
           genres: named(entity, 'P136'),
           developers: named(entity, 'P178'),
-          metadata:
-            category(entity) === 'games'
-              ? {
-                  kind: 'game' as const,
-                  platforms: named(entity, 'P400'),
-                  developers: named(entity, 'P178'),
-                  publishers: [],
-                }
-              : emptyMetadata(category(entity)!),
+          metadata: metadata(entity, category(entity)!),
           attribution: {
             label: 'Wikidata',
             url: `https://www.wikidata.org/wiki/${entity.id}`,

@@ -79,6 +79,20 @@ export function sanitizeMetadata(metadata: MediaMetadata): MediaMetadata {
   }
 }
 
+/** Whether the specialized catalog record of the item category already exists. */
+export function hasMetadata(item: WithMetadata) {
+  switch (progressKinds[item.mediaTypeId as MediaType]) {
+    case 'game':
+      return Boolean(item.game);
+    case 'episodic':
+      return Boolean(item.series);
+    case 'reading':
+      return Boolean(item.reading);
+    case 'film':
+      return Boolean(item.movie);
+  }
+}
+
 export function metadataResult(item: WithMetadata): MediaMetadata {
   const empty = emptyMetadata(item.mediaTypeId as MediaType);
   switch (empty.kind) {

@@ -22,6 +22,7 @@ import { TmdbProvider } from './providers/tmdb.provider';
 import type { CatalogProvider } from './providers/catalog-provider';
 import { InstanceService } from '../instance/instance.module';
 import {
+  hasMetadata,
   manualMetadata,
   metadataCreate,
   metadataInclude,
@@ -206,12 +207,14 @@ export class CatalogService {
         'A busca externa está desativada nesta instância. Cadastre a obra manualmente.',
       );
     }
-    // Refresh old records without cover/provenance; otherwise retain the cached metadata for a day.
+    // Refresh old records without cover, provenance or category metadata; otherwise retain the
+    // cached metadata for a day.
     if (
       existing &&
       existing.media.title !== input.externalId &&
       existing.media.coverUrl &&
       existing.media.coverAttribution &&
+      hasMetadata(existing.media) &&
       existing.synchronizedAt.getTime() > Date.now() - 86400000
     )
       return existing.media;
