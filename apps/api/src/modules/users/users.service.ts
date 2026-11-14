@@ -6,12 +6,44 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { verify } from 'argon2';
-import { currentUserSchema, type PreferencesPatch } from '@jinsei/contracts';
+import { currentUserSchema, type AccountSession, type PreferencesPatch } from '@jinsei/contracts';
 import { PrismaService } from '../../prisma/prisma.service';
 import { mediaUrl } from '../uploads/uploads.service';
 import { s3, storageEnabled } from '../uploads/storage';
 import { hashPassword } from '../auth/auth.service';
 import { LibraryService } from '../library/library.service';
+
+/** Turns a user agent into a short "Chrome · Windows" style description. */
+export function describeAgent(agent: string) {
+  const browser = /Edg\//.test(agent)
+    ? 'Edge'
+    : /OPR\//.test(agent)
+      ? 'Opera'
+      : /Firefox\//.test(agent)
+        ? 'Firefox'
+        : /Chrome\//.test(agent)
+          ? 'Chrome'
+          : /Safari\//.test(agent)
+            ? 'Safari'
+            : 'Navegador';
+  const system = /Android/.test(agent)
+    ? 'Android'
+    : /iPhone|iPad|iOS/.test(agent)
+      ? 'iOS'
+      : /Windows/.test(agent)
+        ? 'Windows'
+        : /Mac OS X|Macintosh/.test(agent)
+          ? 'macOS'
+          : /Linux/.test(agent)
+            ? 'Linux'
+            : 'Sistema desconhecido';
+  const device = /Mobile|Android|iPhone/.test(agent)
+    ? 'Celular'
+    : /iPad|Tablet/.test(agent)
+      ? 'Tablet'
+      : 'Computador';
+  return { browser, system, device };
+}
 
 @Injectable()
 export class UsersService {
@@ -55,6 +87,9 @@ export class UsersService {
         density: user.preference.density,
         sidebarCollapsed: user.preference.sidebarCollapsed,
         timezone: user.preference.timezone,
+        dateFormat: user.preference.dateFormat,
+        timeFormat: user.preference.timeFormat,
+        celebrations: user.preference.celebrations,
         categories: user.categories.map((category) => category.mediaTypeId),
         onboarded: Boolean(user.preference.onboardedAt),
       },
@@ -76,6 +111,9 @@ export class UsersService {
           density,
           sidebarCollapsed,
           timezone,
+          dateFormat,
+          timeFormat,
+          celebrations,
           showFavorites,
           showStatistics,
           showReviews,
@@ -112,6 +150,9 @@ export class UsersService {
             density,
             sidebarCollapsed,
             timezone,
+            dateFormat,
+            timeFormat,
+            celebrations,
             ...(onboarding ? { onboardedAt: new Date() } : {}),
           },
         });
@@ -196,6 +237,63 @@ export class UsersService {
           orderBy: { occurredOn: 'asc' },
         }),
       ]);
+    const username = { select: { profile: { select: { username: true } } } } as const;
+    const [friendships, messages, memberships, posts] = await Promise.all([
+      this.db.friendship.findMany({
+        where: { OR: [{ requesterId: userId }, { addresseeId: userId }] },
+        select: {
+          status: true,
+          createdAt: true,
+          acceptedAt: true,
+          requesterId: true,
+          requester: username,
+          addressee: username,
+        },
+      }),
+      this.db.directMessage.findMany({
+        where: { OR: [{ senderId: userId }, { recipientId: userId }] },
+        select: {
+          body: true,
+          createdAt: true,
+          readAt: true,
+          senderId: true,
+          sender: username,
+          recipient: username,
+        },
+        orderBy: { createdAt: 'asc' },
+      }),
+      this.db.clubMember.findMany({
+        where: { userId },
+        select: { role: true, joinedAt: true, club: { select: { name: true, slug: true } } },
+      }),
+      this.db.clubPost.findMany({
+        where: { authorId: userId },
+        select: { body: true, createdAt: true, club: { select: { slug: true } } },
+      }),
+    ]);
+    const community = {
+      friendships: friendships.map((row) => ({
+        username:
+          (row.requesterId === userId ? row.addressee : row.requester).profile?.username ?? null,
+        direction: row.requesterId === userId ? 'sent' : 'received',
+        status: row.status,
+        createdAt: row.createdAt,
+        acceptedAt: row.acceptedAt,
+      })),
+      messages: messages.map((row) => ({
+        direction: row.senderId === userId ? 'sent' : 'received',
+        with: (row.senderId === userId ? row.recipient : row.sender).profile?.username ?? null,
+        body: row.body,
+        createdAt: row.createdAt,
+        readAt: row.readAt,
+      })),
+      clubs: memberships.map((row) => ({ ...row.club, role: row.role, joinedAt: row.joinedAt })),
+      clubPosts: posts.map((row) => ({
+        club: row.club.slug,
+        body: row.body,
+        createdAt: row.createdAt,
+      })),
+    };
     return {
       version: 1,
       ratingScale: { maximum: 5, step: 0.25 },
@@ -208,8 +306,42 @@ export class UsersService {
       collections,
       goals,
       progress,
+      community,
     };
   }
+  async sessions(userId: string, currentId: string): Promise<{ sessions: AccountSession[] }> {
+    const rows = await this.db.session.findMany({
+      where: { userId, expiresAt: { gt: new Date() } },
+      orderBy: { lastSeenAt: 'desc' },
+    });
+    return {
+      sessions: rows
+        .map((row) => ({
+          id: row.id,
+          ...describeAgent(row.userAgent),
+          createdAt: row.createdAt.toISOString(),
+          lastSeenAt: row.lastSeenAt.toISOString(),
+          expiresAt: row.expiresAt.toISOString(),
+          current: row.id === currentId,
+        }))
+        .sort((a, b) => Number(b.current) - Number(a.current)),
+    };
+  }
+
+  async endSession(userId: string, currentId: string, id: string) {
+    if (id === currentId) throw new ConflictException('Use Sair para encerrar esta sessão');
+    const { count } = await this.db.session.deleteMany({ where: { id, userId } });
+    if (!count) throw new NotFoundException('Sessão não encontrada');
+    return { ok: true };
+  }
+
+  async endOtherSessions(userId: string, currentId: string) {
+    const { count } = await this.db.session.deleteMany({
+      where: { userId, id: { not: currentId } },
+    });
+    return { ended: count };
+  }
+
   async remove(userId: string, password: string) {
     await this.confirmPassword(userId, password);
     const assets = await this.db.mediaAsset.findMany({ where: { userId }, select: { key: true } });

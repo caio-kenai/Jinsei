@@ -7,7 +7,7 @@ import {
   type Credentials,
   type RegistrationInput,
 } from '@jinsei/contracts';
-import type { Response } from 'express';
+import type { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { Public, SESSION_COOKIE, type AuthenticatedRequest } from './session.guard';
 import { ApiZodBody, ZodPipe } from '../../common/zod.pipe';
@@ -35,9 +35,10 @@ export class AuthController {
   @ApiZodBody(registrationSchema)
   async register(
     @Body(new ZodPipe(registrationSchema)) input: RegistrationInput,
+    @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
   ) {
-    const session = await this.auth.register(input);
+    const session = await this.auth.register(input, request.get('user-agent') ?? '');
     response.cookie(SESSION_COOKIE, session.token, {
       ...cookieOptions,
       expires: session.expiresAt,
@@ -52,9 +53,10 @@ export class AuthController {
   @ApiZodBody(credentialsSchema)
   async login(
     @Body(new ZodPipe(credentialsSchema)) input: Credentials,
+    @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
   ) {
-    const session = await this.auth.login(input);
+    const session = await this.auth.login(input, request.get('user-agent') ?? '');
     response.cookie(SESSION_COOKIE, session.token, {
       ...cookieOptions,
       expires: session.expiresAt,
