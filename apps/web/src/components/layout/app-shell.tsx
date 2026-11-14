@@ -48,6 +48,7 @@ import { UserMenu } from '@/features/profile/user-menu';
 import { AboutDialog } from '@/features/about/about-dialog';
 import { categoryIcons } from '@/components/shared/category-icons';
 import { useProgressionAnnouncements } from '@/features/progression/use-progression';
+import { CommandPalette } from '@/features/command/command-palette';
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const { data: user } = useCurrentUser();
@@ -59,13 +60,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [supportOpen, setSupportOpen] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
+  const [paletteOpen, setPaletteOpen] = useState(false);
   const [libraryOpen, setLibraryOpen] = useState(true);
   const searchRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
     const listener = (event: KeyboardEvent) => {
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
         event.preventDefault();
-        searchRef.current?.focus();
+        setPaletteOpen(true);
       }
     };
     window.addEventListener('keydown', listener);
@@ -301,6 +303,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               ref={searchRef}
               placeholder="Pesquisar na sua biblioteca"
               aria-label="Busca global na biblioteca"
+              onFocus={(event) => {
+                event.currentTarget.blur();
+                setPaletteOpen(true);
+              }}
             />
             <kbd>Ctrl K</kbd>
           </form>
@@ -345,6 +351,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </DialogContent>
       </Dialog>
       <SupportDialog open={supportOpen} onOpenChange={setSupportOpen} />
+      <CommandPalette
+        open={paletteOpen}
+        onOpenChange={setPaletteOpen}
+        categories={user.preferences.categories}
+      />
       <AboutDialog open={aboutOpen} onOpenChange={setAboutOpen} />
     </div>
   );
