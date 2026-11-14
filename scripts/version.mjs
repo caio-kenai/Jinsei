@@ -31,8 +31,15 @@ if (!process.argv.includes('--next')) {
   console.log(`${version} → ${next}`);
   if (process.argv.includes('--write')) {
     for (const item of values) {
-      // Files above contain only release-version occurrences of this exact value.
-      await writeFile(item.path, item.content.replaceAll(version, next));
+      // Only the version captured by each pattern changes; addresses like 127.0.0.1 stay intact.
+      const pattern = new RegExp(
+        item.pattern.source,
+        item.pattern.flags.includes('g') ? item.pattern.flags : `${item.pattern.flags}g`,
+      );
+      await writeFile(
+        item.path,
+        item.content.replace(pattern, (match) => match.replace(version, next)),
+      );
     }
     console.log('Versão atualizada. Revise, valide e registre os arquivos antes de publicar.');
   }

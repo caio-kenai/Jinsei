@@ -55,7 +55,7 @@ services:
       HOSTNAME: 0.0.0.0
       PORT: 3000
     ports:
-      - '${JINSEI_BIND:-127.0.0.2}:${JINSEI_PORT:-3000}:3000'
+      - '${JINSEI_BIND:-127.0.0.1}:${JINSEI_PORT:-3000}:3000'
     restart: unless-stopped
     networks: [application]
     depends_on:

@@ -3,9 +3,9 @@
   "private": true,
   "version": "0.0.2",
   "scripts": {
-    "dev": "node ../../scripts/sync-branding.mjs && next dev --hostname 127.0.0.2",
+    "dev": "node ../../scripts/sync-branding.mjs && next dev --hostname 127.0.0.1",
     "build": "node ../../scripts/sync-branding.mjs && next build",
-    "start": "next start --hostname 127.0.0.2",
+    "start": "next start --hostname 127.0.0.1",
     "typecheck": "next typegen && tsc --noEmit"
   },
   "dependencies": {
