@@ -77,7 +77,9 @@ Não execute o seed de demonstração em produção.
 
 ## Imagens enviadas
 
-Avatar, banner e capas de coleção usam um armazenamento compatível com S3 (AWS S3, Cloudflare R2, Backblaze B2, MinIO e similares). Defina `S3_ENDPOINT`, `S3_BUCKET`, `S3_REGION`, `S3_ACCESS_KEY` e `S3_SECRET_KEY` em `.env.selfhost`; o bucket é criado na primeira imagem quando não existir. O bucket não precisa ser público: a API entrega as imagens em `/api/media/<id>`. Sem essas variáveis, o envio de imagens fica indisponível e o restante do Jinsei funciona normalmente. Inclua o bucket na sua rotina de backup.
+Avatar, banner e capas de coleção funcionam sem configuração extra: por padrão as imagens ficam no volume `media` do Docker (`MEDIA_DIR=/data/media` dentro do contêiner da API). A API valida o formato real do arquivo e entrega as imagens em `/api/media/<id>`, então a pasta nunca precisa ser pública.
+
+Para guardar as imagens fora do servidor, use um armazenamento compatível com S3 (AWS S3, Cloudflare R2, Backblaze B2, MinIO e similares): defina `S3_ENDPOINT`, `S3_BUCKET`, `S3_REGION`, `S3_ACCESS_KEY` e `S3_SECRET_KEY` em `.env.selfhost`. Com essas variáveis o S3 passa a ser usado e o bucket é criado na primeira imagem quando não existir. Para desligar o envio de imagens, deixe as variáveis S3 vazias e defina `MEDIA_DIR=` vazio. Inclua o volume `media` ou o bucket na sua rotina de backup.
 
 ## Backup e restauração
 
@@ -93,6 +95,13 @@ O dump contém dados pessoais. Proteja, copie para outro local e teste a restaur
 ```sh
 docker compose --env-file .env.selfhost -f compose.selfhost.yml cp ./jinsei-backup.dump postgres:/tmp/jinsei-backup.dump
 docker compose --env-file .env.selfhost -f compose.selfhost.yml exec -T postgres pg_restore -U jinsei -d jinsei --no-owner --exit-on-error /tmp/jinsei-backup.dump
+```
+
+Para copiar as imagens guardadas no volume `media`:
+
+```sh
+docker compose --env-file .env.selfhost -f compose.selfhost.yml exec -T api tar -C /data/media -czf /tmp/jinsei-media.tar.gz .
+docker compose --env-file .env.selfhost -f compose.selfhost.yml cp api:/tmp/jinsei-media.tar.gz ./jinsei-media.tar.gz
 ```
 
 Não restaure sobre um banco com dados sem planejar a substituição. Não use `down --volumes` na sua instalação: isso apaga o banco persistente. A aplicação não agenda backups nem remove cópias antigas; defina retenção e considere pedidos de exclusão ao restaurar.

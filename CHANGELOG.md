@@ -9,6 +9,7 @@
 - Confetes ao concluir títulos, subir de nível e ganhar insígnias, desativáveis nas configurações.
 - Ícones coloridos nas abas de visualização e capas centralizadas sobre fundo desfocado.
 - Exportação de dados inclui amizades, mensagens e clubes.
+- Fotos de avatar, banner e capas funcionam sem S3: as imagens ficam num volume do Docker, com S3 opcional.
 
 ## 0.0.9 — 2026-11-14
 
