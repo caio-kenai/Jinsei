@@ -17,41 +17,44 @@
   filter: brightness(0.96);
   box-shadow: 0 0 0 2px color-mix(in srgb, currentColor 18%, transparent);
 }
-.inline-control.status-planned {
-  color: #697183;
-  background: #edf0f5;
+/* Solid, vivid status colors with white text everywhere, like task tags. */
+.status-badge.status-planned,
+.inline-control.status-planned,
+.dark .status-badge.status-planned,
+.dark .inline-control.status-planned {
+  color: #fff;
+  background: #7c8494;
 }
-.inline-control.status-in_progress {
+.status-badge.status-in_progress,
+.inline-control.status-in_progress,
+.dark .status-badge.status-in_progress,
+.dark .inline-control.status-in_progress {
   color: #fff;
   background: #7050cf;
 }
-.inline-control.status-paused {
-  color: #9b711e;
-  background: #fcf2dc;
-}
-.inline-control.status-completed {
-  color: #258367;
-  background: #e5f3ec;
-}
-.inline-control.status-dropped {
-  color: #bf4960;
-  background: #fbe9ee;
-}
-.dark .inline-control.status-planned {
-  color: #b1b7c5;
-  background: #34363e;
-}
+.status-badge.status-paused,
+.inline-control.status-paused,
+.dark .status-badge.status-paused,
 .dark .inline-control.status-paused {
-  color: #dfc083;
-  background: #423a28;
+  color: #fff;
+  background: #c77c02;
 }
+.status-badge.status-completed,
+.inline-control.status-completed,
+.dark .status-badge.status-completed,
 .dark .inline-control.status-completed {
-  color: #8dd4b8;
-  background: #263d34;
+  color: #fff;
+  background: #15936a;
 }
+.status-badge.status-dropped,
+.inline-control.status-dropped,
+.dark .status-badge.status-dropped,
 .dark .inline-control.status-dropped {
-  color: #efa3b1;
-  background: #482c34;
+  color: #fff;
+  background: #d93a50;
+}
+.status-badge .status-dot {
+  background: #fff;
 }
 
 /* Dashboard-style pages get the same top and bottom spacing as the home page. */
@@ -98,4 +101,11 @@
 }
 .button:hover:not(:disabled) .lucide-plus {
   transform: rotate(90deg);
+}
+
+/* The native option list keeps readable colors under the white pill text. */
+.inline-control.status-badge option {
+  color: var(--foreground);
+  background: var(--surface);
+  text-transform: none;
 }
