@@ -1,18 +1,39 @@
+'use client';
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { format, parseISO } from 'date-fns';
+import { AnimatePresence, motion } from 'motion/react';
+import { format, formatDistanceToNowStrict, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { ExternalLink, FolderHeart, ListOrdered } from 'lucide-react';
+import {
+  CalendarDays,
+  CircleCheck,
+  ExternalLink,
+  FolderHeart,
+  Heart,
+  LayoutGrid,
+  Library,
+  ListOrdered,
+  Star,
+} from 'lucide-react';
 import {
   categoryLabels,
   goalStateLabels,
   goalUnits,
+  statusKeys,
   statusLabels,
+  type MediaType,
   type PublicProfile,
 } from '@jinsei/contracts';
 import { PublicFooter, PublicHeader } from '@/features/presentation/public-navigation';
 import { categoryIcons } from '@/components/shared/category-icons';
+import { NumberTicker } from '@/components/motion/number-ticker';
+import { MediaCover } from '@/features/library/media-cover';
+import { StatusBadge } from '@/features/library/status-badge';
+import { categoryColors, statusColors } from '@/lib/palette';
 import { PublicWorkCard } from './public-work';
 
+type Category = NonNullable<PublicProfile['statistics']>['categories'][number];
+const ease = [0.22, 1, 0.36, 1] as const;
 const initials = (name: string) =>
   name
     .split(/\s+/)
@@ -20,100 +41,192 @@ const initials = (name: string) =>
     .map((part) => part[0]?.toUpperCase())
     .join('');
 
+function StatusBar({ statuses }: { statuses: Category['statuses'] }) {
+  const total = Object.values(statuses).reduce((sum, value) => sum + value, 0);
+  return (
+    <div className="profile-status">
+      <div className="profile-status-bar">
+        {statusKeys.map((status) =>
+          statuses[status] ? (
+            <motion.i
+              key={status}
+              style={{ background: statusColors[status] }}
+              initial={{ width: 0 }}
+              animate={{ width: `${(statuses[status] / Math.max(1, total)) * 100}%` }}
+              transition={{ duration: 0.9, ease }}
+            />
+          ) : null,
+        )}
+      </div>
+      <ul>
+        {statusKeys.map((status) => (
+          <li key={status}>
+            <i style={{ background: statusColors[status] }} />
+            {statusLabels[status]}
+            <strong>{statuses[status].toLocaleString('pt-BR')}</strong>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function CategoryCard({ category, compact = false }: { category: Category; compact?: boolean }) {
+  const Icon = categoryIcons[category.mediaType];
+  return (
+    <motion.article
+      className={`profile-category-card ${compact ? 'is-compact' : ''}`}
+      style={{ '--cat': categoryColors[category.mediaType] } as React.CSSProperties}
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease }}
+    >
+      <header>
+        <span className="profile-category-icon">
+          <Icon size={16} />
+        </span>
+        <h3>{categoryLabels[category.mediaType]}</h3>
+        <span className="profile-category-score">
+          <Star size={13} fill="currentColor" />
+          {category.averageRating === null
+            ? '—'
+            : category.averageRating.toLocaleString('pt-BR', { maximumFractionDigits: 2 })}
+        </span>
+      </header>
+      <StatusBar statuses={category.statuses} />
+      <dl>
+        <div>
+          <dt>Total</dt>
+          <dd>
+            <NumberTicker value={category.total} />
+          </dd>
+        </div>
+        <div>
+          <dt>Favoritos</dt>
+          <dd>
+            <NumberTicker value={category.favorites} />
+          </dd>
+        </div>
+        {category.units.map((unit) => (
+          <div key={unit.label}>
+            <dt>{unit.label}</dt>
+            <dd>
+              <NumberTicker value={unit.value} decimals={Number.isInteger(unit.value) ? 0 : 1} />
+            </dd>
+          </div>
+        ))}
+      </dl>
+    </motion.article>
+  );
+}
+
 export function PublicProfilePage({ profile }: { profile: PublicProfile }) {
+  const categories = profile.statistics?.categories ?? [];
+  const present = useMemo(() => {
+    const types = new Set<MediaType>([
+      ...categories.map((row) => row.mediaType),
+      ...(profile.favorites ?? []).map((work) => work.mediaType),
+      ...(profile.history ?? []).map((work) => work.mediaType),
+    ]);
+    return [...types];
+  }, [categories, profile.favorites, profile.history]);
+  const [tab, setTab] = useState<'all' | MediaType>('all');
+  const matches = (type: MediaType) => tab === 'all' || tab === type;
+  const favorites = (profile.favorites ?? []).filter((work) => matches(work.mediaType));
+  const history = (profile.history ?? []).filter((work) => matches(work.mediaType)).slice(0, 8);
+  const reviews = (profile.reviews ?? []).filter((work) => matches(work.mediaType));
+  const selected = categories.find((row) => row.mediaType === tab);
   return (
     <div className="public-surface public-profile">
       <PublicHeader />
-      <main className="marketing-container">
-        <div
-          className="public-banner"
-          style={profile.bannerUrl ? { backgroundImage: `url(${profile.bannerUrl})` } : undefined}
-        />
-        <header className="public-profile-header">
-          {profile.avatarUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element -- Uploaded avatar served by the API
-            <img className="public-avatar" src={profile.avatarUrl} alt="" />
-          ) : (
-            <span className="public-avatar">{initials(profile.displayName)}</span>
-          )}
-          <div>
-            <h1>{profile.displayName}</h1>
-            <p className="public-username">
-              @{profile.username}
-              {profile.title && <span className="profile-title-chip">{profile.title}</span>}
-            </p>
-            {profile.bio && <p className="public-bio">{profile.bio}</p>}
-            <p className="public-since">
-              No Jinsei desde{' '}
-              {format(parseISO(profile.memberSince), "MMMM 'de' yyyy", { locale: ptBR })}
-            </p>
-            {profile.links.length > 0 && (
-              <nav className="public-links" aria-label="Links">
-                {profile.links.map((link) => (
-                  <a
-                    key={link.url}
-                    href={link.url}
-                    target="_blank"
-                    rel="noopener noreferrer nofollow ugc"
-                  >
-                    {link.label}
-                    <ExternalLink size={11} />
-                  </a>
-                ))}
-              </nav>
+      <div
+        className="profile-banner"
+        style={profile.bannerUrl ? { backgroundImage: `url(${profile.bannerUrl})` } : undefined}
+      />
+      <main className="marketing-container profile-layout">
+        <aside className="profile-aside">
+          <motion.div
+            className="profile-avatar"
+            initial={{ opacity: 0, scale: 0.9, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ duration: 0.5, ease }}
+          >
+            {profile.avatarUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element -- Uploaded avatar served by the API
+              <img src={profile.avatarUrl} alt="" />
+            ) : (
+              <span>{initials(profile.displayName)}</span>
             )}
-          </div>
-        </header>
-        {profile.statistics && (
-          <section className="public-section public-stats">
+          </motion.div>
+          <h1>{profile.displayName}</h1>
+          <p className="public-username">
+            @{profile.username}
+            {profile.title && <span className="profile-title-chip">{profile.title}</span>}
+          </p>
+          {profile.bio && <p className="profile-bio">{profile.bio}</p>}
+          <dl className="profile-info">
             <div>
-              <strong>{profile.statistics.entries.toLocaleString('pt-BR')}</strong>
-              <span>títulos</span>
+              <dt>
+                <CalendarDays size={13} />
+                No Jinsei desde
+              </dt>
+              <dd>{format(parseISO(profile.memberSince), "MMM 'de' yyyy", { locale: ptBR })}</dd>
             </div>
-            <div>
-              <strong>{profile.statistics.completed.toLocaleString('pt-BR')}</strong>
-              <span>concluídos</span>
-            </div>
-            <div>
-              <strong>
-                {profile.statistics.averageRating === null
-                  ? '—'
-                  : `${profile.statistics.averageRating.toLocaleString('pt-BR', { maximumFractionDigits: 2 })} ★`}
-              </strong>
-              <span>nota média</span>
-            </div>
-            {profile.statistics.byCategory.map((row) => {
-              const Icon = categoryIcons[row.mediaType];
-              return (
-                <div key={row.mediaType}>
-                  <strong>
-                    <Icon size={14} /> {row.total.toLocaleString('pt-BR')}
-                  </strong>
-                  <span>{categoryLabels[row.mediaType]}</span>
+            {profile.statistics && (
+              <>
+                <div>
+                  <dt>
+                    <Library size={13} />
+                    Títulos
+                  </dt>
+                  <dd>{profile.statistics.entries.toLocaleString('pt-BR')}</dd>
                 </div>
-              );
-            })}
-          </section>
-        )}
-        {profile.favorites && profile.favorites.length > 0 && (
-          <section className="public-section">
-            <h2>Favoritos</h2>
-            <div className="public-grid">
-              {profile.favorites.map((work) => (
-                <PublicWorkCard key={`${work.mediaType}:${work.title}`} work={work} />
+                <div>
+                  <dt>
+                    <CircleCheck size={13} />
+                    Concluídos
+                  </dt>
+                  <dd>{profile.statistics.completed.toLocaleString('pt-BR')}</dd>
+                </div>
+                <div>
+                  <dt>
+                    <Star size={13} />
+                    Nota média
+                  </dt>
+                  <dd>
+                    {profile.statistics.averageRating === null
+                      ? '—'
+                      : profile.statistics.averageRating.toLocaleString('pt-BR', {
+                          maximumFractionDigits: 2,
+                        })}
+                  </dd>
+                </div>
+              </>
+            )}
+          </dl>
+          {profile.links.length > 0 && (
+            <nav className="profile-links" aria-label="Links">
+              {profile.links.map((link) => (
+                <a
+                  key={link.url}
+                  href={link.url}
+                  target="_blank"
+                  rel="noopener noreferrer nofollow ugc"
+                >
+                  {link.label}
+                  <ExternalLink size={11} />
+                </a>
               ))}
-            </div>
-          </section>
-        )}
-        {profile.collections.length > 0 && (
-          <section className="public-section">
-            <h2>Coleções</h2>
-            <div className="public-collections">
+            </nav>
+          )}
+          {profile.collections.length > 0 && (
+            <section className="profile-aside-section">
+              <h2>Coleções</h2>
               {profile.collections.map((collection) => (
                 <Link
                   key={collection.slug}
                   href={`/u/${profile.username}/collections/${collection.slug}`}
-                  className="public-collection-link"
+                  className="profile-collection-link"
                 >
                   {collection.ranked ? <ListOrdered size={15} /> : <FolderHeart size={15} />}
                   <span>
@@ -124,58 +237,166 @@ export function PublicProfilePage({ profile }: { profile: PublicProfile }) {
                   </span>
                 </Link>
               ))}
-            </div>
-          </section>
-        )}
-        {profile.reviews && profile.reviews.length > 0 && (
-          <section className="public-section">
-            <h2>Resenhas</h2>
-            <div className="public-reviews">
-              {profile.reviews.map((review) => (
-                <PublicWorkCard key={`${review.mediaType}:${review.title}`} work={review}>
-                  <p className="public-review">{review.review}</p>
-                </PublicWorkCard>
-              ))}
-            </div>
-          </section>
-        )}
-        {profile.goals && profile.goals.length > 0 && (
-          <section className="public-section">
-            <h2>Metas</h2>
-            <ul className="public-goals">
-              {profile.goals.map((goal) => (
-                <li key={goal.name}>
-                  <strong>{goal.name}</strong>
-                  <span>
-                    {goal.current.toLocaleString('pt-BR')} / {goal.target.toLocaleString('pt-BR')}{' '}
-                    {goalUnits[goal.metric][1]} · {goalStateLabels[goal.state]}
-                  </span>
-                  <span className="mission-track">
-                    <span
-                      style={{ width: `${Math.min(100, (goal.current / goal.target) * 100)}%` }}
-                    />
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
-        {profile.history && profile.history.length > 0 && (
-          <section className="public-section">
-            <h2>Atividade recente</h2>
-            <ul className="public-history">
-              {profile.history.map((item) => (
-                <li key={`${item.mediaType}:${item.title}:${item.updatedAt}`}>
-                  <strong>{item.title}</strong>
-                  <span>
-                    {statusLabels[item.status]} ·{' '}
-                    {format(parseISO(item.updatedAt), 'd MMM yyyy', { locale: ptBR })}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
+            </section>
+          )}
+        </aside>
+        <section className="profile-main">
+          <nav className="profile-tabs" role="tablist" aria-label="Categorias do perfil">
+            {(['all', ...present] as const).map((type) => {
+              const Icon = type === 'all' ? LayoutGrid : categoryIcons[type];
+              return (
+                <button
+                  key={type}
+                  role="tab"
+                  aria-selected={tab === type}
+                  className={tab === type ? 'active' : ''}
+                  style={
+                    {
+                      '--cat': type === 'all' ? '#7050cf' : categoryColors[type],
+                    } as React.CSSProperties
+                  }
+                  onClick={() => setTab(type)}
+                >
+                  {tab === type && <motion.i layoutId="profile-tab" className="profile-tab-bg" />}
+                  <Icon size={16} />
+                  {type === 'all' ? 'Visão geral' : categoryLabels[type]}
+                </button>
+              );
+            })}
+          </nav>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={tab}
+              className="profile-panels"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.25 }}
+            >
+              {profile.statistics && (
+                <section className="profile-panel">
+                  <h2>Estatísticas</h2>
+                  {tab === 'all' ? (
+                    categories.length ? (
+                      <div className="profile-category-grid">
+                        {categories.map((category) => (
+                          <CategoryCard key={category.mediaType} category={category} compact />
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="muted">Nenhum título registrado ainda.</p>
+                    )
+                  ) : selected ? (
+                    <CategoryCard category={selected} />
+                  ) : (
+                    <p className="muted">Sem títulos nesta categoria.</p>
+                  )}
+                </section>
+              )}
+              {history.length > 0 && (
+                <section className="profile-panel">
+                  <h2>Últimas atualizações</h2>
+                  <ul className="profile-updates">
+                    {history.map((item, index) => {
+                      const content = (
+                        <>
+                          <MediaCover title={item.title} url={item.coverUrl} />
+                          <span className="profile-update-main">
+                            <strong>{item.title}</strong>
+                            {item.progressPercent !== null && (
+                              <span className="profile-update-track">
+                                <motion.i
+                                  style={{ background: statusColors[item.status] }}
+                                  initial={{ width: 0 }}
+                                  animate={{ width: `${item.progressPercent}%` }}
+                                  transition={{ duration: 0.8, delay: index * 0.04, ease }}
+                                />
+                              </span>
+                            )}
+                            <small>
+                              <StatusBadge status={item.status} />
+                              {item.progressLabel}
+                              {item.rating !== null &&
+                                ` · ${item.rating.toLocaleString('pt-BR')} ★`}
+                            </small>
+                          </span>
+                          <time dateTime={item.updatedAt}>
+                            {formatDistanceToNowStrict(parseISO(item.updatedAt), {
+                              addSuffix: true,
+                              locale: ptBR,
+                            })}
+                          </time>
+                        </>
+                      );
+                      return (
+                        <motion.li
+                          key={`${item.title}:${item.updatedAt}`}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ duration: 0.35, delay: index * 0.04, ease }}
+                        >
+                          {item.workId ? (
+                            <Link href={`/obras/${item.workId}`}>{content}</Link>
+                          ) : (
+                            <div>{content}</div>
+                          )}
+                        </motion.li>
+                      );
+                    })}
+                  </ul>
+                </section>
+              )}
+              {favorites.length > 0 && (
+                <section className="profile-panel">
+                  <h2>
+                    <Heart size={16} /> Favoritos
+                  </h2>
+                  <div className="public-grid">
+                    {favorites.map((work) => (
+                      <PublicWorkCard key={`${work.mediaType}:${work.title}`} work={work} />
+                    ))}
+                  </div>
+                </section>
+              )}
+              {reviews.length > 0 && (
+                <section className="profile-panel">
+                  <h2>Reviews</h2>
+                  <div className="public-reviews">
+                    {reviews.map((review) => (
+                      <PublicWorkCard key={`${review.mediaType}:${review.title}`} work={review}>
+                        <p className="public-review">{review.review}</p>
+                      </PublicWorkCard>
+                    ))}
+                  </div>
+                </section>
+              )}
+              {tab === 'all' && profile.goals && profile.goals.length > 0 && (
+                <section className="profile-panel">
+                  <h2>Metas</h2>
+                  <ul className="public-goals">
+                    {profile.goals.map((goal) => (
+                      <li key={goal.name}>
+                        <strong>{goal.name}</strong>
+                        <span>
+                          {goal.current.toLocaleString('pt-BR')} /{' '}
+                          {goal.target.toLocaleString('pt-BR')} {goalUnits[goal.metric][1]} ·{' '}
+                          {goalStateLabels[goal.state]}
+                        </span>
+                        <span className="mission-track">
+                          <span
+                            style={{
+                              width: `${Math.min(100, (goal.current / goal.target) * 100)}%`,
+                            }}
+                          />
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              )}
+            </motion.div>
+          </AnimatePresence>
+        </section>
       </main>
       <PublicFooter />
     </div>
