@@ -28,6 +28,18 @@ O cache de buscas é limitado a 100 consultas por provedor por dez minutos. Meta
 
 Cada categoria guarda seus dados em uma tabela própria do catálogo: séries e animes (`SeriesMetadata`, com temporadas em `SeriesSeason`), mangás e livros (`ReadingMetadata`) e filmes (`MovieMetadata`), além de `GameMetadata`. Os valores são normalizados e validados antes de serem gravados; contagens ausentes permanecem vazias. O progresso pessoal só é limitado ao total quando a obra consta como finalizada, já que obras em lançamento podem ter contagens desatualizadas. Livros do Open Library usam o identificador `books:<obra>`, separado dos mangás.
 
+## Páginas públicas das obras
+
+Cada obra do catálogo tem uma página pública em `/obras/<id>`, com ficha, sinopse, gêneros, personagens, elenco ou dubladores, equipe, notas e reviews da comunidade. Títulos cadastrados manualmente continuam privados e não têm página. Os detalhes ficam em `MediaDetail`: são renovados a cada duas semanas e, depois de uma falha, a busca é refeita no dia seguinte.
+
+| Fonte                                                  | Uso nas páginas públicas                                                                                               | Condições                                                                                                |
+| ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| [AniList](https://docs.anilist.co/guide/terms-of-use)  | Animes e mangás: sinopse, formato, episódios, capítulos, datas, estúdios, nota média, personagens, dubladores e equipe | API GraphQL gratuita para uso não comercial, com limite de requisições e atribuição com link para a obra |
+| [TVmaze](https://www.tvmaze.com/api)                   | Séries e animes catalogados: sinopse, emissora, situação, duração, idioma, nota, elenco e equipe                       | Metadados CC BY-SA 4.0, com atribuição e link                                                            |
+| [Open Library](https://openlibrary.org/developers/api) | Livros: descrição, assuntos e data da primeira publicação                                                              | Dados CC0                                                                                                |
+
+O MyAnimeList não é usado, porque seus termos proíbem coleta automatizada. As notas e os rankings do Jinsei usam somente as avaliações da comunidade, com média ponderada pela quantidade de votos. A nota externa aparece separada e identifica a fonte. As reviews aparecem apenas quando quem escreveu marcou a review como pública e mantém o perfil público.
+
 ## Disponibilidade
 
 Capas são buscadas quando há uma fonte disponível; cobertura universal não é garantida. Filmes contemporâneos e alguns jogos têm cobertura maior com TMDB/IGDB configuradas. Sem chaves, a aplicação continua operando com as fontes públicas e o cadastro pessoal. Indisponibilidade de um provedor não apaga registros existentes.
