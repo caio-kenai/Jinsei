@@ -51,6 +51,7 @@ import { MediaCover } from './media-cover';
 import { StatusBadge } from './status-badge';
 import { StarRating } from '@/components/shared/star-rating';
 import { ViewTabs, type Layout } from './view-tabs';
+import { LibraryBoard } from './library-board';
 
 type Props = {
   mediaType?: MediaType;
@@ -219,12 +220,14 @@ function LibraryWorkspace({
     },
     onError: (error) => toast.error(error.message),
   });
+  const board = config.layout === 'board';
+  // The board keeps its own manual order and shows up to 100 titles per page.
   const parameters = new URLSearchParams({
     q: debounced,
     page: String(page),
-    limit: '50',
-    sort: config.sort,
-    order: config.order,
+    limit: board ? '100' : '50',
+    sort: board ? 'boardRank' : config.sort,
+    order: board ? 'asc' : config.order,
   });
   if (mediaType) parameters.set('mediaType', mediaType);
   if (config.filters.status) parameters.set('status', config.filters.status);
@@ -522,6 +525,8 @@ function LibraryWorkspace({
               Adicionar meu primeiro título
             </Button>
           </div>
+        ) : board ? (
+          <LibraryBoard entries={result.data.items} onOpen={setDetailId} onPatch={onPatch} />
         ) : config.layout === 'list' ? (
           <LibraryTable
             entries={result.data.items}

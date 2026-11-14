@@ -195,6 +195,7 @@ export const entryPatchSchema = z
     progress: progressInputSchema.optional(),
     startedOn: isoDateSchema.nullable().optional(),
     completedOn: isoDateSchema.nullable().optional(),
+    boardRank: z.number().finite().min(-1e9).max(1e9).optional(),
   })
   .strict();
 export type EntryPatchInput = z.infer<typeof entryPatchSchema>;
@@ -206,7 +207,7 @@ export const libraryQuerySchema = z
     favorite: z.enum(['true', 'false']).optional(),
     tag: z.string().max(24).optional(),
     sort: z
-      .enum(['updatedAt', 'title', 'rating', 'createdAt', 'completedOn'])
+      .enum(['updatedAt', 'title', 'rating', 'createdAt', 'completedOn', 'boardRank'])
       .default('updatedAt'),
     order: z.enum(['asc', 'desc']).default('desc'),
     page: z.coerce.number().int().min(1).max(100000).default(1),
@@ -271,6 +272,7 @@ export const libraryEntrySchema = z.object({
   progress: entryProgressSchema,
   startedOn: isoDateSchema.nullable(),
   completedOn: isoDateSchema.nullable(),
+  boardRank: z.number(),
   updatedAt: z.string(),
   createdAt: z.string(),
   attribution: catalogResultSchema.shape.attribution,

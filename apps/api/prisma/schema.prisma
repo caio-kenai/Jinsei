@@ -197,6 +197,7 @@ model UserMediaEntry {
   ratingSteps     Int?
   startedOn       DateTime?        @db.Date
   completedOn     DateTime?        @db.Date
+  boardRank       Float            @default(0)
   favorite        Boolean          @default(false)
   notes           String           @default("")
   createdAt       DateTime         @default(now())
@@ -214,6 +215,7 @@ model UserMediaEntry {
   @@index([userId, favorite])
   @@index([userId, completedOn])
   @@index([userId, startedOn])
+  @@index([userId, statusId, boardRank])
 }
 
 model GameProgress {

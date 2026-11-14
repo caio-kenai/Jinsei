@@ -57,6 +57,7 @@ export function entryResult(entry: Entry) {
     progress: progressResult(entry, entry.media.mediaTypeId as MediaType),
     startedOn: entry.startedOn ? isoDay(entry.startedOn) : null,
     completedOn: entry.completedOn ? isoDay(entry.completedOn) : null,
+    boardRank: entry.boardRank,
     createdAt: entry.createdAt.toISOString(),
     updatedAt: entry.updatedAt.toISOString(),
   });
@@ -246,6 +247,7 @@ export class LibraryService {
                 : input.rating * 4,
           favorite: input.favorite,
           notes: input.notes,
+          boardRank: input.boardRank,
           updatedAt: new Date(),
           ...entryDates(existing, statusKey, input),
           ...(input.progress ? progressUpdate(input.progress) : {}),

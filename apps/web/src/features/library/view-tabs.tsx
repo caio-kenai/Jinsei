@@ -33,7 +33,7 @@ export const layoutIcons: Record<Layout, LucideIcon> = {
   calendar: CalendarDays,
 };
 /** Layouts that can be chosen for a view. */
-export const availableLayouts: Layout[] = ['list', 'gallery'];
+export const availableLayouts: Layout[] = ['list', 'gallery', 'board'];
 
 export function ViewTabs({
   views,
