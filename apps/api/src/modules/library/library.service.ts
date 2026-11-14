@@ -38,7 +38,7 @@ import {
   progressUpdate,
 } from './progress';
 
-const entryInclude = {
+export const entryInclude = {
   media: { include: catalogInclude },
   status: true,
   ...progressInclude,

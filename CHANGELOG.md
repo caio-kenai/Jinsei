@@ -8,6 +8,7 @@
 - Status ajustado automaticamente ao iniciar ou concluir uma obra pelo progresso.
 - Visualizações em Quadro (arrastar e soltar entre status) e Calendário, com várias visualizações salvas por espaço.
 - Datas de início e conclusão registradas automaticamente e editáveis.
+- Coleções e rankings com reordenação, títulos de várias categorias e visibilidade configurável.
 
 ## 0.0.1 — 2026-11-13
 

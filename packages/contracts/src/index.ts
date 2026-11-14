@@ -377,3 +377,77 @@ export const calendarEventSchema = z.object({
   coverUrl: z.string().nullable(),
 });
 export type CalendarEvent = z.infer<typeof calendarEventSchema>;
+
+export const collectionVisibilities = ['private', 'unlisted', 'public'] as const;
+export const collectionVisibilitySchema = z.enum(collectionVisibilities);
+export type CollectionVisibility = z.infer<typeof collectionVisibilitySchema>;
+export const collectionVisibilityLabels: Record<CollectionVisibility, string> = {
+  private: 'Privada',
+  unlisted: 'Não listada',
+  public: 'Pública',
+};
+const httpsImageSchema = z
+  .url()
+  .max(2000)
+  .refine((value) => value.startsWith('https://'), 'Use uma imagem HTTPS');
+const collectionFields = {
+  name: z.string().trim().min(1, 'Dê um nome à coleção').max(80),
+  description: z.string().trim().max(1000),
+  visibility: collectionVisibilitySchema,
+  ranked: z.boolean(),
+  coverUrl: httpsImageSchema.nullable(),
+};
+export const collectionInputSchema = z
+  .object({
+    ...collectionFields,
+    description: collectionFields.description.default(''),
+    visibility: collectionFields.visibility.default('private'),
+    ranked: collectionFields.ranked.default(false),
+    coverUrl: collectionFields.coverUrl.default(null),
+  })
+  .strict();
+export type CollectionInput = z.infer<typeof collectionInputSchema>;
+export const collectionPatchSchema = z
+  .object({
+    name: collectionFields.name.optional(),
+    description: collectionFields.description.optional(),
+    visibility: collectionFields.visibility.optional(),
+    ranked: collectionFields.ranked.optional(),
+    coverUrl: collectionFields.coverUrl.optional(),
+  })
+  .strict();
+export type CollectionPatch = z.infer<typeof collectionPatchSchema>;
+export const collectionSummarySchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  slug: z.string(),
+  description: z.string(),
+  visibility: collectionVisibilitySchema,
+  ranked: z.boolean(),
+  coverUrl: z.string().nullable(),
+  itemCount: z.number(),
+  covers: z.array(z.string()),
+  updatedAt: z.string(),
+  contains: z.boolean().optional(),
+});
+export type CollectionSummary = z.infer<typeof collectionSummarySchema>;
+export const collectionItemSchema = z.object({
+  position: z.number(),
+  note: z.string(),
+  entry: libraryEntrySchema,
+});
+export type CollectionItem = z.infer<typeof collectionItemSchema>;
+export const collectionDetailSchema = collectionSummarySchema.extend({
+  items: z.array(collectionItemSchema),
+});
+export type CollectionDetail = z.infer<typeof collectionDetailSchema>;
+export const collectionItemCreateSchema = z
+  .object({ entryId: z.string().min(1).max(100), note: z.string().trim().max(280).default('') })
+  .strict();
+export const collectionItemPatchSchema = z
+  .object({
+    position: z.number().finite().min(-1e9).max(1e9).optional(),
+    note: z.string().trim().max(280).optional(),
+  })
+  .strict();
+export type CollectionItemPatch = z.infer<typeof collectionItemPatchSchema>;
