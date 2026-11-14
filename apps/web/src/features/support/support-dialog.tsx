@@ -30,7 +30,7 @@ export function SupportDialog({
         <Image
           className="donation-logo"
           src="/branding/buy-me-a-monster.png"
-          width={2188}
+          width={2172}
           height={724}
           alt="Buy Me a Monster"
         />

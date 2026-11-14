@@ -24,7 +24,6 @@ import {
   ChevronDown,
   ChevronRight,
   Star,
-  ShieldCheck,
   SlidersHorizontal,
   LockKeyhole,
 } from 'lucide-react';
@@ -33,7 +32,9 @@ import { SignupDialog } from '@/features/auth/signup-dialog';
 import { categoryLabels, type MediaType, type StatusKey } from '@jinsei/contracts';
 import { StatusBadge } from '@/features/library/status-badge';
 import { ClosingShowcase } from './closing-showcase';
+import { AccentArt, ExperienceShowcase, PrivacyArt, ViewsSwitchArt } from './landing-showcase';
 import {
+  categoryPalette,
   CategoryMarquee,
   Faq,
   FeatureBento,
@@ -159,6 +160,7 @@ function ProductDemo() {
     return () => clearInterval(timer);
   }, []);
   const entries = examples[category];
+  const CategoryIcon = categories.find((item) => item.id === category)!.Icon;
   return (
     <div className="marketing-demo" id="como-funciona">
       <nav className="demo-categories" aria-label="Categorias da demonstração">
@@ -214,9 +216,16 @@ function ProductDemo() {
           </aside>
           <div className="demo-workspace">
             <div className="demo-context">
-              <span className="demo-category-square">
-                <Gamepad2 size={13} />
-              </span>
+              <motion.span
+                key={category}
+                className="demo-category-square"
+                style={{ background: categoryPalette[category] }}
+                initial={{ scale: 0.4, rotate: -30, opacity: 0 }}
+                animate={{ scale: 1, rotate: 0, opacity: 1 }}
+                transition={{ type: 'spring', stiffness: 520, damping: 22 }}
+              >
+                <CategoryIcon size={13} />
+              </motion.span>
               <strong>{categoryLabels[category]}</strong>
               <ChevronDown size={12} />
               <Star size={13} />
@@ -441,45 +450,7 @@ export function MarketingSite() {
                 <ArrowRight size={16} />
               </button>
             </div>
-            <div className="experience-panel">
-              <div className="experience-panel-header">
-                <Gamepad2 size={17} />
-                <strong>Hollow Knight</strong>
-                <Heart size={15} />
-              </div>
-              <div className="experience-field">
-                <span>Status</span>
-                <StatusBadge status="in_progress" />
-              </div>
-              <div className="experience-field">
-                <span>Sua nota</span>
-                <strong className="experience-stars">
-                  <StarRating value={4.75} size={14} /> <span>4¾ / 5</span>
-                </strong>
-              </div>
-              <div className="experience-field">
-                <span>Progresso</span>
-                <div className="experience-progress">
-                  <span>
-                    <b>32,5 horas</b>
-                    <small>64% concluído</small>
-                  </span>
-                  <i>
-                    <b />
-                  </i>
-                </div>
-              </div>
-              <div className="experience-note">
-                <span>
-                  <LockKeyhole size={12} />
-                  Anotação privada · Exemplo
-                </span>
-                <p>
-                  Explorar os caminhos que ficaram para trás. Uma jornada para aproveitar sem
-                  pressa.
-                </p>
-              </div>
-            </div>
+            <ExperienceShowcase />
           </div>
         </section>
         <HowItWorks />
@@ -498,11 +469,7 @@ export function MarketingSite() {
             </header>
             <div className="marketing-feature-grid">
               <SpotlightCard>
-                <div className="feature-art feature-art-views">
-                  <List size={24} />
-                  <span />
-                  <LayoutGrid size={24} />
-                </div>
+                <ViewsSwitchArt />
                 <h3>Uma biblioteca, diferentes olhares.</h3>
                 <p>
                   Alterne entre a clareza da lista e o visual da galeria. Seus registros continuam
@@ -510,14 +477,7 @@ export function MarketingSite() {
                 </p>
               </SpotlightCard>
               <SpotlightCard>
-                <div className="feature-art feature-art-colors">
-                  <i />
-                  <i />
-                  <i />
-                  <i />
-                  <i />
-                  <i />
-                </div>
+                <AccentArt />
                 <h3>Do seu jeito, em cada detalhe.</h3>
                 <p>
                   Temas claro e escuro, cores e categorias configuráveis. Um espaço que combina com
@@ -525,13 +485,7 @@ export function MarketingSite() {
                 </p>
               </SpotlightCard>
               <SpotlightCard>
-                <div className="feature-art feature-art-privacy">
-                  <ShieldCheck size={47} />
-                  <span>
-                    <Check size={13} />
-                    Só você
-                  </span>
-                </div>
+                <PrivacyArt />
                 <h3>Suas histórias pertencem a você.</h3>
                 <p>
                   Biblioteca privada, anotações pessoais e exportação dos seus dados. Você mantém o
