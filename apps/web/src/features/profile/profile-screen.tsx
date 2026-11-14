@@ -21,6 +21,7 @@ import { StarRating } from '@/components/shared/star-rating';
 import { MediaCover } from '@/features/library/media-cover';
 import { StatusBadge } from '@/features/library/status-badge';
 import { useCurrentUser } from '@/features/auth/use-current-user';
+import { useProgression } from '@/features/progression/use-progression';
 
 type Summary = {
   total: number;
@@ -30,6 +31,7 @@ type Summary = {
 };
 export function ProfileScreen() {
   const { data: user } = useCurrentUser();
+  const progression = useProgression();
   const favorites = useQuery({
     queryKey: ['library', 'profile-favorites'],
     queryFn: () => api<LibraryResponse>('/library/entries?favorite=true&limit=8'),
@@ -43,6 +45,9 @@ export function ProfileScreen() {
     queryFn: () => api<Summary>('/library/summary'),
   });
   if (!user) return null;
+  const activeTitle = progression.data?.titles.find(
+    (title) => title.key === progression.data?.activeTitle,
+  )?.label;
   return (
     <div className="profile-page">
       <header className="profile-heading">
@@ -55,7 +60,10 @@ export function ProfileScreen() {
               Privado
             </span>
           </div>
-          <p className="profile-username">@{user.profile.username}</p>
+          <p className="profile-username">
+            @{user.profile.username}
+            {activeTitle && <span className="profile-title-chip">{activeTitle}</span>}
+          </p>
           <p className="profile-bio">
             {user.profile.bio || 'Suas histórias favoritas dizem um pouco sobre você.'}
           </p>

@@ -39,6 +39,8 @@ export function ViewingHistory({
     }
     void client.invalidateQueries({ queryKey: ['library'] });
     void client.invalidateQueries({ queryKey: ['summary'] });
+    void client.invalidateQueries({ queryKey: ['progression'] });
+    void client.invalidateQueries({ queryKey: ['goals'] });
   }
   const add = useMutation({
     mutationFn: () =>

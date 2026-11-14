@@ -9,7 +9,10 @@ export function useGoals() {
 }
 export function useGoalMutations() {
   const client = useQueryClient();
-  const refresh = () => void client.invalidateQueries({ queryKey: ['goals'] });
+  const refresh = () => {
+    void client.invalidateQueries({ queryKey: ['goals'] });
+    void client.invalidateQueries({ queryKey: ['progression'] });
+  };
   const onError = (error: Error) => toast.error(error.message);
   return {
     create: useMutation({

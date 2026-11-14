@@ -24,6 +24,7 @@ import {
   Info,
   FolderHeart,
   Target,
+  Sparkles,
 } from 'lucide-react';
 import { categoryLabels, mediaTypes, type CurrentUser } from '@jinsei/contracts';
 import { Brand } from '@/components/shared/brand';
@@ -45,6 +46,7 @@ import { SupportDialog } from '@/features/support/support-dialog';
 import { UserMenu } from '@/features/profile/user-menu';
 import { AboutDialog } from '@/features/about/about-dialog';
 import { categoryIcons } from '@/components/shared/category-icons';
+import { useProgressionAnnouncements } from '@/features/progression/use-progression';
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const { data: user } = useCurrentUser();
@@ -68,6 +70,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     window.addEventListener('keydown', listener);
     return () => window.removeEventListener('keydown', listener);
   }, []);
+  // Missions and streaks follow the person's local day, so the browser zone is kept in sync.
+  const savedZone = user?.preferences.timezone;
+  useEffect(() => {
+    const zone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    if (savedZone && zone && zone !== savedZone) preferences.mutate({ timezone: zone });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- Runs only when the stored zone changes
+  }, [savedZone]);
+  useProgressionAnnouncements();
   if (!user) return null;
   const collapsed = user.preferences.sidebarCollapsed;
   const navigation = (close: () => void) => (
@@ -141,6 +151,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         >
           <FolderHeart size={17} />
           Coleções
+        </Link>
+        <Link
+          href="/journey"
+          onClick={close}
+          className={cn('nav-link', pathname === '/journey' && 'active')}
+        >
+          <Sparkles size={17} />
+          Jornada
         </Link>
         <Link
           href="/goals"
@@ -220,6 +238,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           { href: '/favorites', label: 'Favoritos', Icon: Heart },
           { href: '/collections', label: 'Coleções', Icon: FolderHeart },
           { href: '/goals', label: 'Metas', Icon: Target },
+          { href: '/journey', label: 'Jornada', Icon: Sparkles },
           { href: '/discover', label: 'Descobrir', Icon: Compass },
         ].map(({ href, label, Icon }) => (
           <Link

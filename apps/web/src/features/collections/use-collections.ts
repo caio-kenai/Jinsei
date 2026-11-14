@@ -32,6 +32,8 @@ export function useCollectionMutations(id?: string) {
   const done = (detail: CollectionDetail) => {
     client.setQueryData(['collection', detail.id], detail);
     void client.invalidateQueries({ queryKey: ['collections'] });
+    void client.invalidateQueries({ queryKey: ['progression'] });
+    void client.invalidateQueries({ queryKey: ['goals'] });
   };
   const onError = (error: Error) => toast.error(error.message);
   return {
