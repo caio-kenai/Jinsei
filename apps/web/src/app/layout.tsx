@@ -5,6 +5,7 @@ import './globals.css';
 import './public.css';
 import './themes.css';
 import './colors.css';
+import './dashboard.css';
 import './polish.css';
 import './motion.css';
 import './landing.css';
