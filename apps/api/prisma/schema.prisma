@@ -143,6 +143,7 @@ model MediaItem {
   movie            MovieMetadata?
   externalIds      MediaExternalId[]
   entries          UserMediaEntry[]
+  detail           MediaDetail?
 
   @@unique([ownerId, mediaTypeId, normalizedTitle])
   @@index([mediaTypeId, title])
@@ -194,6 +195,15 @@ model MovieMetadata {
   runtimeMinutes Int?
 }
 
+/// Rich public information gathered from free catalogs, refreshed periodically.
+model MediaDetail {
+  mediaId   String    @id
+  media     MediaItem @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  source    String
+  data      Json
+  fetchedAt DateTime  @default(now())
+}
+
 model MediaExternalId {
   id              String    @id @default(cuid())
   mediaId         String
@@ -222,6 +232,7 @@ model UserMediaEntry {
   notes           String           @default("")
   review          String           @default("")
   reviewPublic    Boolean          @default(false)
+  recommendation  String?
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
   gameProgress    GameProgress?
@@ -241,6 +252,8 @@ model UserMediaEntry {
   @@index([userId, startedOn])
   @@index([userId, statusId, boardRank])
   @@index([userId, reviewPublic])
+  @@index([mediaId, reviewPublic])
+  @@index([mediaId, ratingSteps])
 }
 
 model GameProgress {

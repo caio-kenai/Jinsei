@@ -181,6 +181,15 @@ export const accountDeleteSchema = z.object({ password: z.string().max(128) }).s
 
 export const statusKeys = ['planned', 'in_progress', 'paused', 'completed', 'dropped'] as const;
 export const statusSchema = z.enum(statusKeys);
+/** How a public review recommends the work. */
+export const recommendationSchema = z.enum(['recommended', 'mixed', 'not_recommended']);
+export type Recommendation = z.infer<typeof recommendationSchema>;
+export const recommendationLabels: Record<Recommendation, string> = {
+  recommended: 'Recomendo',
+  mixed: 'Sentimentos mistos',
+  not_recommended: 'Não recomendo',
+};
+
 export type StatusKey = z.infer<typeof statusSchema>;
 export const statusLabels: Record<StatusKey, string> = {
   planned: 'Planejado',
@@ -260,6 +269,7 @@ export const entryPatchSchema = z
     boardRank: z.number().finite().min(-1e9).max(1e9).optional(),
     review: z.string().trim().max(5000).optional(),
     reviewPublic: z.boolean().optional(),
+    recommendation: recommendationSchema.nullable().optional(),
   })
   .strict();
 export type EntryPatchInput = z.infer<typeof entryPatchSchema>;
@@ -333,6 +343,9 @@ export const libraryEntrySchema = z.object({
   notes: z.string(),
   review: z.string(),
   reviewPublic: z.boolean(),
+  recommendation: recommendationSchema.nullable().default(null),
+  /** Catalog works have a public page; manual titles stay private. */
+  publicWork: z.boolean().default(false),
   tags: z.array(z.string()),
   metadata: mediaMetadataSchema,
   progress: entryProgressSchema,
@@ -772,3 +785,95 @@ export const sitemapSchema = z.object({
   profiles: z.array(z.object({ username: z.string(), updatedAt: z.string() })),
   collections: z.array(z.object({ username: z.string(), slug: z.string(), updatedAt: z.string() })),
 });
+
+// Public work pages, community ratings, reviews and rankings.
+const personSchema = z.object({ name: z.string(), image: z.string().nullable() });
+/** Rich information gathered from free catalogs for a public work page. */
+export const workDetailSchema = z.object({
+  synopsis: z.string(),
+  facts: z.array(z.object({ label: z.string(), value: z.string() })),
+  genres: z.array(z.string()),
+  characters: z.array(
+    personSchema.extend({
+      role: z.string(),
+      voice: personSchema.extend({ language: z.string() }).nullable(),
+    }),
+  ),
+  staff: z.array(personSchema.extend({ role: z.string() })),
+  externalScore: z.object({ value: z.number(), max: z.number(), source: z.string() }).nullable(),
+  links: z.array(z.object({ label: z.string(), url: z.url() })),
+  source: z
+    .object({ label: z.string(), url: z.string().nullable(), license: z.string() })
+    .nullable(),
+});
+export type WorkDetail = z.infer<typeof workDetailSchema>;
+
+export const workCommunitySchema = z.object({
+  average: z.number().nullable(),
+  ratings: z.number(),
+  members: z.number(),
+  favorites: z.number(),
+  rank: z.number().nullable(),
+  popularity: z.number().nullable(),
+  statuses: z.record(statusSchema, z.number()),
+});
+export type WorkCommunity = z.infer<typeof workCommunitySchema>;
+
+export const workReviewSchema = z.object({
+  id: z.string(),
+  author: z.object({
+    username: z.string(),
+    displayName: z.string(),
+    avatarUrl: z.string().nullable(),
+  }),
+  rating: z.number().nullable(),
+  recommendation: recommendationSchema.nullable(),
+  status: statusSchema,
+  text: z.string(),
+  updatedAt: z.string(),
+});
+export type WorkReview = z.infer<typeof workReviewSchema>;
+
+export const publicWorkPageSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  mediaType: mediaTypeSchema,
+  releaseYear: z.number().nullable(),
+  coverUrl: z.string().nullable(),
+  coverAttribution: coverAttributionSchema.nullable(),
+  description: z.string(),
+  attribution: z.object({ label: z.string(), url: z.string().nullable(), license: z.string() }),
+  detail: workDetailSchema,
+  community: workCommunitySchema,
+  reviews: z.array(workReviewSchema),
+  reviewCounts: z.record(recommendationSchema, z.number()),
+});
+export type PublicWorkPage = z.infer<typeof publicWorkPageSchema>;
+
+export const rankingSortSchema = z.enum(['score', 'popular']);
+export const rankingQuerySchema = z
+  .object({
+    mediaType: mediaTypeSchema.optional(),
+    sort: rankingSortSchema.default('score'),
+    page: z.coerce.number().int().min(1).max(1000).default(1),
+  })
+  .strict();
+export type RankingQuery = z.infer<typeof rankingQuerySchema>;
+export const rankingItemSchema = z.object({
+  rank: z.number(),
+  id: z.string(),
+  title: z.string(),
+  mediaType: mediaTypeSchema,
+  releaseYear: z.number().nullable(),
+  coverUrl: z.string().nullable(),
+  average: z.number().nullable(),
+  ratings: z.number(),
+  members: z.number(),
+});
+export type RankingItem = z.infer<typeof rankingItemSchema>;
+export const rankingResponseSchema = z.object({
+  items: z.array(rankingItemSchema),
+  page: z.number(),
+  hasMore: z.boolean(),
+});
+export type RankingResponse = z.infer<typeof rankingResponseSchema>;

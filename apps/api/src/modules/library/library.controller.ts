@@ -39,6 +39,14 @@ export class LibraryController {
   @Get('summary') summary(@CurrentUserId() userId: string) {
     return this.library.summary(userId);
   }
+  /** The caller's entry for a catalog work, or null, used by public work pages. */
+  @Get('works/:mediaId') async byMedia(
+    @CurrentUserId() userId: string,
+    @Param('mediaId') mediaId: string,
+  ) {
+    const entry = await this.library.byMedia(userId, mediaId);
+    return { entry: entry ? entryResult(entry) : null };
+  }
   @Get('entries/:id') async get(@CurrentUserId() userId: string, @Param('id') id: string) {
     return entryResult(await this.library.get(userId, id));
   }
