@@ -3,13 +3,16 @@ import { Fragment, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { LoaderCircle, Heart, LockKeyhole, Trash2, Save } from 'lucide-react';
+import Link from 'next/link';
+import { ExternalLink, LoaderCircle, Heart, LockKeyhole, Trash2, Save } from 'lucide-react';
 import {
   entryPatchSchema,
   statusKeys,
   statusLabels,
   type LibraryEntry,
   type EntryPatchInput,
+  recommendationLabels,
+  type Recommendation,
 } from '@jinsei/contracts';
 import { toast } from 'sonner';
 import { api } from '@/lib/api';
@@ -83,6 +86,7 @@ function EntryForm({ entry, onClose }: { entry: LibraryEntry; onClose: () => voi
       completedOn: entry.completedOn,
       review: entry.review,
       reviewPublic: entry.reviewPublic,
+      recommendation: entry.recommendation,
     },
   });
   const remove = useMutation({
@@ -105,6 +109,16 @@ function EntryForm({ entry, onClose }: { entry: LibraryEntry; onClose: () => voi
           <div className="details-heading">
             <div>
               <h2>{entry.title}</h2>
+              {entry.publicWork && (
+                <Link
+                  className="details-public-link"
+                  href={`/obras/${entry.mediaId}`}
+                  target="_blank"
+                >
+                  Ver página da obra, notas e reviews
+                  <ExternalLink size={12} />
+                </Link>
+              )}
               <p>
                 {[entry.releaseYear, creditsLine(entry)].filter(Boolean).join(' · ') ||
                   'Sua experiência, do seu jeito'}
@@ -207,9 +221,33 @@ function EntryForm({ entry, onClose }: { entry: LibraryEntry; onClose: () => voi
                 placeholder="O que você diria a alguém sobre esta obra?"
               />
             </label>
+            <Controller
+              control={control}
+              name="recommendation"
+              render={({ field }) => (
+                <div
+                  className="recommendation-picker"
+                  role="radiogroup"
+                  aria-label="Sua recomendação"
+                >
+                  {(Object.keys(recommendationLabels) as Recommendation[]).map((key) => (
+                    <button
+                      type="button"
+                      key={key}
+                      role="radio"
+                      aria-checked={field.value === key}
+                      className={`recommendation-choice is-${key}`}
+                      onClick={() => field.onChange(field.value === key ? null : key)}
+                    >
+                      {recommendationLabels[key]}
+                    </button>
+                  ))}
+                </div>
+              )}
+            />
             <label className="checkbox-field">
               <input type="checkbox" {...register('reviewPublic')} />
-              Publicar a resenha no meu perfil público
+              Publicar a resenha no meu perfil e na página da obra
             </label>
             {Object.keys(errors).length > 0 && (
               <div role="alert" className="error-banner">
