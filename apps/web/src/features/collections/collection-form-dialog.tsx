@@ -101,7 +101,7 @@ export function CollectionFormDialog({
               URL da capa
               <Input
                 name="coverUrl"
-                type="url"
+                inputMode="url"
                 maxLength={2000}
                 defaultValue={initial?.coverUrl ?? ''}
                 placeholder="Opcional · https://…"

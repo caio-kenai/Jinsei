@@ -28,6 +28,14 @@ const schema = z.object({
   IGDB_CLIENT_ID: z.string().default(''),
   IGDB_CLIENT_SECRET: z.string().default(''),
   TMDB_READ_TOKEN: z.string().default(''),
+  S3_ENDPOINT: z.string().default(''),
+  S3_BUCKET: z.string().default(''),
+  S3_REGION: z.string().default('us-east-1'),
+  // Local development falls back to the MinIO root credentials of Docker Compose.
+  S3_ACCESS_KEY: z.string().default(process.env.MINIO_ROOT_USER ?? ''),
+  S3_SECRET_KEY: z.string().default(process.env.MINIO_ROOT_PASSWORD ?? ''),
+  // Multiplies every rate limit; only raise it for automated test runs.
+  THROTTLE_SCALE: z.coerce.number().int().min(1).max(1000).default(1),
 });
 const parsed = schema.safeParse(process.env);
 if (!parsed.success) {
@@ -36,6 +44,9 @@ if (!parsed.success) {
   );
 }
 export const env = parsed.data;
+if (env.NODE_ENV === 'production' && env.THROTTLE_SCALE !== 1) {
+  throw new Error('THROTTLE_SCALE não pode ser alterado em produção');
+}
 if (
   env.NODE_ENV === 'production' &&
   !env.WEB_ORIGIN.startsWith('https://') &&

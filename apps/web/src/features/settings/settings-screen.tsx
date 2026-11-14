@@ -15,6 +15,7 @@ import {
 import { toast } from 'sonner';
 import { useCurrentUser } from '@/features/auth/use-current-user';
 import { api, jsonBody } from '@/lib/api';
+import { PublicProfileSettings } from './public-profile-settings';
 import { Button } from '@/components/ui/button';
 import { Input, Select, Textarea } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -147,7 +148,7 @@ function SettingsForm({ user }: { user: CurrentUser }) {
           </label>
           <p style={{ display: 'flex', gap: 7, alignItems: 'center' }}>
             <ShieldCheck size={14} />
-            Seu perfil e sua biblioteca são privados nesta versão.
+            Sua biblioteca é privada. Você decide o que publicar na seção Perfil público.
           </p>
         </section>
         <section className="settings-section">
@@ -238,6 +239,7 @@ function SettingsForm({ user }: { user: CurrentUser }) {
           </Button>
         </div>
       </form>
+      <PublicProfileSettings user={user} />
       <section className="settings-section">
         <h2>Segurança</h2>
         <p>A alteração de senha encerra suas sessões, incluindo esta.</p>

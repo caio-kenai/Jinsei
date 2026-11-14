@@ -21,7 +21,7 @@ ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1
 WORKDIR /app
 LABEL org.opencontainers.image.source="https://github.com/caio-kenai/Jinsei" \
       org.opencontainers.image.licenses="AGPL-3.0-only" \
-      org.opencontainers.image.version="0.0.1"
+      org.opencontainers.image.version="0.0.2"
 
 FROM runtime AS api
 ENV HOST=0.0.0.0 PORT=4000

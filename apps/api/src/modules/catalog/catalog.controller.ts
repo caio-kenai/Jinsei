@@ -1,6 +1,6 @@
 import { Controller, Get, Inject, Query } from '@nestjs/common';
 import { ApiCookieAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
-import { Throttle } from '@nestjs/throttler';
+import { RateLimit } from '../../common/rate-limit';
 import { catalogQuerySchema } from '@jinsei/contracts';
 import { CurrentUserId, Public } from '../auth/session.guard';
 import { ZodPipe } from '../../common/zod.pipe';
@@ -17,7 +17,7 @@ export class CatalogController {
     return this.catalog.showcase();
   }
   @Get('media')
-  @Throttle({ default: { limit: 30, ttl: 60000 } })
+  @RateLimit(30)
   @ApiQuery({ name: 'q', required: true })
   @ApiQuery({ name: 'mediaType', required: false })
   search(

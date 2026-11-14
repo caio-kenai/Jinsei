@@ -8,6 +8,8 @@ import {
 import { verify } from 'argon2';
 import { currentUserSchema, type PreferencesPatch } from '@jinsei/contracts';
 import { PrismaService } from '../../prisma/prisma.service';
+import { mediaUrl } from '../uploads/uploads.service';
+import { s3, storageEnabled } from '../uploads/storage';
 import { hashPassword } from '../auth/auth.service';
 import { LibraryService } from '../library/library.service';
 
@@ -21,7 +23,7 @@ export class UsersService {
     const user = await this.db.user.findUnique({
       where: { id: userId },
       include: {
-        profile: true,
+        profile: { include: { links: { orderBy: { position: 'asc' } } } },
         preference: true,
         categories: { where: { enabled: true }, orderBy: { sortOrder: 'asc' } },
       },
@@ -37,6 +39,14 @@ export class UsersService {
         username: user.profile.username,
         bio: user.profile.bio,
         isPublic: user.profile.isPublic,
+        avatarUrl: mediaUrl(user.profile.avatarId),
+        bannerUrl: mediaUrl(user.profile.bannerId),
+        showFavorites: user.profile.showFavorites,
+        showStatistics: user.profile.showStatistics,
+        showReviews: user.profile.showReviews,
+        showHistory: user.profile.showHistory,
+        showGoals: user.profile.showGoals,
+        links: user.profile.links.map(({ label, url }) => ({ label, url })),
       },
       preferences: {
         theme: user.preference.theme,
@@ -64,11 +74,33 @@ export class UsersService {
           density,
           sidebarCollapsed,
           timezone,
+          showFavorites,
+          showStatistics,
+          showReviews,
+          showHistory,
+          showGoals,
+          links,
         } = input;
         await tx.profile.update({
           where: { userId },
-          data: { displayName, username, bio, isPublic },
+          data: {
+            displayName,
+            username,
+            bio,
+            isPublic,
+            showFavorites,
+            showStatistics,
+            showReviews,
+            showHistory,
+            showGoals,
+          },
         });
+        if (links) {
+          await tx.profileLink.deleteMany({ where: { userId } });
+          await tx.profileLink.createMany({
+            data: links.map((link, position) => ({ ...link, userId, position })),
+          });
+        }
         await tx.userPreference.update({
           where: { userId },
           data: {
@@ -177,10 +209,14 @@ export class UsersService {
   }
   async remove(userId: string, password: string) {
     await this.confirmPassword(userId, password);
+    const assets = await this.db.mediaAsset.findMany({ where: { userId }, select: { key: true } });
     await this.db.$transaction(async (tx) => {
       await tx.userMediaEntry.deleteMany({ where: { userId } });
       await tx.user.delete({ where: { id: userId } });
     });
+    // Uploaded images leave the storage together with the account.
+    if (storageEnabled)
+      await Promise.all(assets.map((asset) => s3('DELETE', asset.key).catch(() => undefined)));
     return { deleted: true };
   }
 }

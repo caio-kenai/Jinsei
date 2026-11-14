@@ -17,6 +17,7 @@ export default defineConfig({
       : [
           {
             command: 'pnpm --filter @jinsei/api start',
+            env: { THROTTLE_SCALE: '50' },
             url: 'http://127.0.0.1:4000/api/health',
             reuseExistingServer: !process.env.CI,
             timeout: 30000,

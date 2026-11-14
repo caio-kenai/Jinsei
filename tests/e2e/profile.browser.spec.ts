@@ -56,7 +56,7 @@ test('perfil privado mostra favoritos e a barra lateral recolhe sem esconder o c
   await expect(page.getByRole('heading', { name: 'Alex Costa', exact: true })).toBeVisible();
   await expect(page.getByText('Privado', { exact: true })).toBeVisible();
   expect(await page.locator('.profile-favorite-card').count()).toBeLessThanOrEqual(8);
-  await expect(page.locator('.profile-favorite-card')).toHaveCount(4);
+  await expect(page.locator('.profile-favorite-card')).toHaveCount(5);
   await expect
     .poll(
       () =>

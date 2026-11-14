@@ -2453,6 +2453,15 @@ tr:hover .progress-increment,
   opacity: 0.45;
   transform: scale(0.98);
 }
+.board-card:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+.board-card-overlay {
+  cursor: grabbing;
+  box-shadow: 0 12px 28px #00000026;
+  transform: rotate(1.5deg);
+}
 .board-card.drop-before::before,
 .drop-placeholder {
   content: '';
@@ -2738,11 +2747,26 @@ tr:hover .progress-increment,
   background: var(--hover);
 }
 .collection-item.dragging {
-  opacity: 0.5;
+  position: relative;
+  z-index: 1;
+  background: var(--surface);
+  box-shadow: 0 8px 20px #0000001f;
 }
 .collection-grip {
+  display: grid;
+  place-items: center;
+  width: 14px;
+  padding: 0;
+  border: 0;
+  background: none;
   color: var(--muted);
   cursor: grab;
+  touch-action: none;
+}
+.collection-grip:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: 3px;
 }
 .collection-rank {
   min-width: 26px;
@@ -3362,25 +3386,28 @@ tr:hover .progress-increment,
 .chart-baseline {
   stroke: var(--border);
 }
-.chart-hit {
-  fill: transparent;
+.column-chart-canvas {
+  width: 100%;
 }
-.chart-column {
-  fill: var(--primary);
-  opacity: 0.85;
+.chart-cursor {
+  fill: var(--hover);
 }
-.chart-column.active {
-  opacity: 1;
+.chart-tooltip {
+  display: grid;
+  gap: 2px;
+  padding: 6px 9px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  box-shadow: 0 6px 18px #0000001f;
+  font-size: 12px;
 }
-.chart-axis,
-.chart-value {
+.chart-tooltip span {
+  color: var(--muted);
+}
+.chart-axis {
   font-size: 10px;
-  text-anchor: middle;
   fill: var(--muted);
-}
-.chart-value {
-  fill: var(--foreground);
-  font-weight: 600;
 }
 .chart-toggle {
   position: absolute;
@@ -3530,4 +3557,61 @@ tr:hover .progress-increment,
   text-align: center;
   font-size: 12px;
   color: var(--muted);
+}
+
+.image-field .image-preview {
+  display: grid;
+  place-items: center;
+  width: 84px;
+  height: 84px;
+  border: 1px dashed var(--border);
+  border-radius: 50%;
+  overflow: hidden;
+  color: var(--muted);
+}
+.image-field .image-preview.wide {
+  width: 100%;
+  height: 84px;
+  border-radius: 10px;
+}
+.image-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.image-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+.image-actions label {
+  cursor: pointer;
+}
+.privacy-options,
+.profile-links {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border: 0;
+  padding: 0;
+}
+.privacy-options legend,
+.profile-links legend {
+  margin-bottom: 6px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.privacy-options small {
+  color: var(--muted);
+}
+.profile-link-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) auto;
+  gap: 6px;
+}
+.inline-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  text-decoration: underline;
 }

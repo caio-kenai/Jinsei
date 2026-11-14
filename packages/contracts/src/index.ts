@@ -7,7 +7,7 @@ import {
 } from './progress';
 export * from './progress';
 export * from './support';
-export const appVersion = '0.0.1';
+export const appVersion = '0.0.2';
 
 export const healthSchema = z.object({ status: z.literal('ok'), service: z.literal('jinsei-api') });
 
@@ -78,6 +78,16 @@ export const onboardingSchema = z
   })
   .strict();
 export type OnboardingInput = z.infer<typeof onboardingSchema>;
+export const profileLinkSchema = z
+  .object({
+    label: z.string().trim().min(1).max(40),
+    url: z
+      .url()
+      .max(500)
+      .refine((value) => value.startsWith('https://'), 'Use um endereço HTTPS'),
+  })
+  .strict();
+export type ProfileLink = z.infer<typeof profileLinkSchema>;
 export const preferencesPatchSchema = onboardingSchema
   .partial()
   .extend({
@@ -87,6 +97,12 @@ export const preferencesPatchSchema = onboardingSchema
     sidebarCollapsed: z.boolean().optional(),
     density: densitySchema.optional(),
     timezone: timezoneSchema.optional(),
+    showFavorites: z.boolean().optional(),
+    showStatistics: z.boolean().optional(),
+    showReviews: z.boolean().optional(),
+    showHistory: z.boolean().optional(),
+    showGoals: z.boolean().optional(),
+    links: z.array(profileLinkSchema).max(5).optional(),
   })
   .strict();
 export type PreferencesPatch = z.infer<typeof preferencesPatchSchema>;
@@ -100,6 +116,14 @@ export const currentUserSchema = z.object({
     username: z.string().nullable(),
     bio: z.string(),
     isPublic: z.boolean(),
+    avatarUrl: z.string().nullable(),
+    bannerUrl: z.string().nullable(),
+    showFavorites: z.boolean(),
+    showStatistics: z.boolean(),
+    showReviews: z.boolean(),
+    showHistory: z.boolean(),
+    showGoals: z.boolean(),
+    links: z.array(profileLinkSchema),
   }),
   preferences: z.object({
     theme: themeSchema,
@@ -124,6 +148,7 @@ export const instanceSettingsSchema = z
 export type InstanceSettings = z.infer<typeof instanceSettingsSchema>;
 export const publicInstanceSchema = instanceSettingsSchema.extend({
   version: z.string(),
+  uploadsEnabled: z.boolean(),
   publicUrl: z.url(),
 });
 export type PublicInstance = z.infer<typeof publicInstanceSchema>;
@@ -211,6 +236,8 @@ export const entryPatchSchema = z
     startedOn: isoDateSchema.nullable().optional(),
     completedOn: isoDateSchema.nullable().optional(),
     boardRank: z.number().finite().min(-1e9).max(1e9).optional(),
+    review: z.string().trim().max(5000).optional(),
+    reviewPublic: z.boolean().optional(),
   })
   .strict();
 export type EntryPatchInput = z.infer<typeof entryPatchSchema>;
@@ -282,6 +309,8 @@ export const libraryEntrySchema = z.object({
   rating: ratingSchema,
   favorite: z.boolean(),
   notes: z.string(),
+  review: z.string(),
+  reviewPublic: z.boolean(),
   tags: z.array(z.string()),
   metadata: mediaMetadataSchema,
   progress: entryProgressSchema,
@@ -402,9 +431,14 @@ export const collectionVisibilityLabels: Record<CollectionVisibility, string> = 
   public: 'Pública',
 };
 const httpsImageSchema = z
-  .url()
+  .string()
   .max(2000)
-  .refine((value) => value.startsWith('https://'), 'Use uma imagem HTTPS');
+  .refine(
+    (value) =>
+      /^\/api\/media\/[a-z0-9]+$/.test(value) ||
+      (URL.canParse(value) && value.startsWith('https://')),
+    'Use uma imagem HTTPS',
+  );
 const collectionFields = {
   name: z.string().trim().min(1, 'Dê um nome à coleção').max(80),
   description: z.string().trim().max(1000),
@@ -651,3 +685,68 @@ export const statisticsSchema = z.object({
   activity: z.array(z.object({ day: isoDateSchema, count: z.number() })),
 });
 export type Statistics = z.infer<typeof statisticsSchema>;
+
+const publicWorkSchema = z.object({
+  title: z.string(),
+  mediaType: mediaTypeSchema,
+  coverUrl: z.string().nullable(),
+  releaseYear: z.number().nullable(),
+  rating: ratingSchema,
+});
+export type PublicWork = z.infer<typeof publicWorkSchema>;
+export const publicCollectionSummarySchema = collectionSummarySchema
+  .omit({ id: true, visibility: true, contains: true })
+  .extend({ itemCount: z.number() });
+export const publicProfileSchema = z.object({
+  username: z.string(),
+  displayName: z.string(),
+  bio: z.string(),
+  avatarUrl: z.string().nullable(),
+  bannerUrl: z.string().nullable(),
+  title: z.string().nullable(),
+  memberSince: z.string(),
+  links: z.array(profileLinkSchema),
+  statistics: z
+    .object({
+      entries: z.number(),
+      completed: z.number(),
+      averageRating: z.number().nullable(),
+      byCategory: z.array(z.object({ mediaType: mediaTypeSchema, total: z.number() })),
+    })
+    .nullable(),
+  favorites: z.array(publicWorkSchema).nullable(),
+  collections: z.array(publicCollectionSummarySchema),
+  reviews: z
+    .array(publicWorkSchema.extend({ review: z.string(), updatedAt: z.string() }))
+    .nullable(),
+  history: z
+    .array(publicWorkSchema.extend({ status: statusSchema, updatedAt: z.string() }))
+    .nullable(),
+  goals: z
+    .array(
+      z.object({
+        name: z.string(),
+        metric: goalMetricSchema,
+        current: z.number(),
+        target: z.number(),
+        state: z.enum(goalStates),
+      }),
+    )
+    .nullable(),
+});
+export type PublicProfile = z.infer<typeof publicProfileSchema>;
+export const publicCollectionSchema = publicCollectionSummarySchema.extend({
+  ranked: z.boolean(),
+  unlisted: z.boolean(),
+  owner: z.object({
+    username: z.string(),
+    displayName: z.string(),
+    avatarUrl: z.string().nullable(),
+  }),
+  items: z.array(publicWorkSchema.extend({ note: z.string() })),
+});
+export type PublicCollection = z.infer<typeof publicCollectionSchema>;
+export const sitemapSchema = z.object({
+  profiles: z.array(z.object({ username: z.string(), updatedAt: z.string() })),
+  collections: z.array(z.object({ username: z.string(), slug: z.string(), updatedAt: z.string() })),
+});

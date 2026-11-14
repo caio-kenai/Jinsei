@@ -4,7 +4,7 @@ export default function Page() {
   return (
     <LegalLayout title="Política de privacidade" active="privacy">
       <p>
-        Atualizado em 13 de novembro de 2026. Este aviso descreve a versão inicial do projeto. Cada
+        Atualizado em 14 de novembro de 2026. Este aviso descreve a versão inicial do projeto. Cada
         responsável por uma instalação deve informar seu contato e suas condições operacionais antes
         de oferecer acesso público.
       </p>
@@ -30,6 +30,16 @@ export default function Page() {
         são enviados a esses provedores. Metadados autorizados podem integrar um catálogo
         compartilhado. Cadastros manuais e dados da biblioteca permanecem privados. Capas externas,
         quando autorizadas, são requisitadas pelo navegador ao provedor da imagem.
+      </p>
+      <h2>Perfil público e imagens</h2>
+      <p>
+        Seu perfil começa privado. Ao torná-lo público, ficam visíveis apenas o nome, o nome de
+        usuário, a biografia, os links, o avatar, o banner e as seções que você escolher, como
+        estatísticas, favoritos, resenhas marcadas como públicas, metas e atividade recente.
+        Anotações privadas e tags nunca são publicadas. Perfis privados respondem como inexistentes.
+        Coleções não listadas ficam acessíveis apenas por link e não são indexadas por buscadores.
+        Imagens enviadas são guardadas no armazenamento configurado pela instalação, têm o formato
+        verificado e são apagadas quando substituídas ou quando a conta é excluída.
       </p>
       <h2>Consultar, corrigir, exportar e excluir</h2>
       <p>

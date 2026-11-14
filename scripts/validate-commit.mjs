@@ -28,7 +28,7 @@ if (argument === '--self-test') {
 } else {
   const messages =
     argument === '--range'
-      ? execFileSync('git', ['log', '--format=%B%x00', range], { encoding: 'utf8' })
+      ? execFileSync('git', ['log', '--no-merges', '--format=%B%x00', range], { encoding: 'utf8' })
           .split('\0')
           .map((value) => value.trim())
           .filter(Boolean)

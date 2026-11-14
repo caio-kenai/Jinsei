@@ -71,7 +71,11 @@ As fontes públicas funcionam sem credenciais; consulte [Integrações](INTEGRAT
 
 O **Buy Me a Monster** já vem configurado com o Pix oficial do criador do Jinsei e não depende de variáveis de ambiente. Pelos [termos adicionais da licença](../ADDITIONAL_TERMS.md), toda instalação deve mantê-lo visível e funcional, sem trocar o destinatário. A aplicação não processa pagamentos nem confirma recebimentos.
 
-Não execute o seed de demonstração em produção. A pilha self-host não inclui MinIO: uploads ainda não estão disponíveis.
+Não execute o seed de demonstração em produção.
+
+## Imagens enviadas
+
+Avatar, banner e capas de coleção usam um armazenamento compatível com S3 (AWS S3, Cloudflare R2, Backblaze B2, MinIO e similares). Defina `S3_ENDPOINT`, `S3_BUCKET`, `S3_REGION`, `S3_ACCESS_KEY` e `S3_SECRET_KEY` em `.env.selfhost`; o bucket é criado na primeira imagem quando não existir. O bucket não precisa ser público: a API entrega as imagens em `/api/media/<id>`. Sem essas variáveis, o envio de imagens fica indisponível e o restante do Jinsei funciona normalmente. Inclua o bucket na sua rotina de backup.
 
 ## Backup e restauração
 
