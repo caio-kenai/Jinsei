@@ -22,6 +22,7 @@ import { StarRatingInput } from '@/components/shared/star-rating';
 import { ProgressFields } from './progress-fields';
 import { creditsLine, metadataFacts } from './progress-format';
 import { ViewingHistory } from './viewing-history';
+import { EntryCollections } from '@/features/collections/entry-collections';
 
 export function EntryDetails({ id, onClose }: { id: string; onClose: () => void }) {
   const result = useQuery({
@@ -227,6 +228,7 @@ function EntryForm({ entry, onClose }: { entry: LibraryEntry; onClose: () => voi
               </dl>
             </section>
           )}
+          <EntryCollections entryId={entry.id} />
           {entry.description && (
             <section className="details-section">
               <h3>SOBRE A OBRA</h3>
