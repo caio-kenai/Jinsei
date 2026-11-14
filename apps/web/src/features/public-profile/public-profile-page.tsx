@@ -30,6 +30,7 @@ import { NumberTicker } from '@/components/motion/number-ticker';
 import { MediaCover } from '@/features/library/media-cover';
 import { StatusBadge } from '@/features/library/status-badge';
 import { categoryColors, statusColors } from '@/lib/palette';
+import { FriendButton } from '@/features/community/friend-button';
 import { PublicWorkCard } from './public-work';
 
 type Category = NonNullable<PublicProfile['statistics']>['categories'][number];
@@ -121,7 +122,7 @@ function CategoryCard({ category, compact = false }: { category: Category; compa
 }
 
 export function PublicProfilePage({ profile }: { profile: PublicProfile }) {
-  const categories = profile.statistics?.categories ?? [];
+  const categories = useMemo(() => profile.statistics?.categories ?? [], [profile.statistics]);
   const present = useMemo(() => {
     const types = new Set<MediaType>([
       ...categories.map((row) => row.mediaType),
@@ -163,6 +164,7 @@ export function PublicProfilePage({ profile }: { profile: PublicProfile }) {
             @{profile.username}
             {profile.title && <span className="profile-title-chip">{profile.title}</span>}
           </p>
+          <FriendButton username={profile.username} />
           {profile.bio && <p className="profile-bio">{profile.bio}</p>}
           <dl className="profile-info">
             <div>

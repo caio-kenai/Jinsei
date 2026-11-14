@@ -14,7 +14,7 @@ import { GoalsService } from '../goals/goals.service';
 import { titleDefinitions } from '../progression/achievements';
 import { mediaUrl } from '../uploads/uploads.service';
 
-const workSelect = {
+export const workSelect = {
   ratingSteps: true,
   media: {
     select: {
@@ -29,7 +29,7 @@ const workSelect = {
 } satisfies Prisma.UserMediaEntrySelect;
 type WorkRow = Prisma.UserMediaEntryGetPayload<{ select: typeof workSelect }>;
 /** Only shared catalog data and the public rating leave the account; notes and tags never do. */
-const work = (row: WorkRow): PublicWork => ({
+export const work = (row: WorkRow): PublicWork => ({
   workId: row.media.ownerId === null ? row.media.id : null,
   title: row.media.title,
   mediaType: row.media.mediaTypeId as MediaType,
@@ -37,6 +37,23 @@ const work = (row: WorkRow): PublicWork => ({
   releaseYear: row.media.releaseYear,
   rating: row.ratingSteps === null ? null : row.ratingSteps / 4,
 });
+/** Timeline rows: the public work plus status and a progress summary. */
+export const historySelect = {
+  ...workSelect,
+  status: { select: { key: true } },
+  updatedAt: true,
+  gameProgress: true,
+  episodeProgress: true,
+  readingProgress: true,
+  _count: { select: { viewings: true } },
+  media: {
+    select: {
+      ...workSelect.media.select,
+      series: { select: { totalEpisodes: true } },
+      reading: { select: { totalChapters: true, totalPages: true } },
+    },
+  },
+} satisfies Prisma.UserMediaEntrySelect;
 const collectionInclude = {
   _count: { select: { items: true } },
   items: {
@@ -48,7 +65,7 @@ const collectionInclude = {
 
 const number = (value: number) => value.toLocaleString('pt-BR');
 /** Short progress line shown in the public timeline, without any private notes. */
-function progressOf(row: {
+export function progressOf(row: {
   gameProgress: { minutesPlayed: number; completion: number } | null;
   episodeProgress: { episodesWatched: number } | null;
   readingProgress: { chaptersRead: number; pagesRead: number } | null;
@@ -214,22 +231,7 @@ export class ProfilesService {
         profile.showHistory
           ? this.db.userMediaEntry.findMany({
               where: enabled,
-              select: {
-                ...workSelect,
-                status: { select: { key: true } },
-                updatedAt: true,
-                gameProgress: true,
-                episodeProgress: true,
-                readingProgress: true,
-                _count: { select: { viewings: true } },
-                media: {
-                  select: {
-                    ...workSelect.media.select,
-                    series: { select: { totalEpisodes: true } },
-                    reading: { select: { totalChapters: true, totalPages: true } },
-                  },
-                },
-              },
+              select: historySelect,
               orderBy: { updatedAt: 'desc' },
               take: 40,
             })

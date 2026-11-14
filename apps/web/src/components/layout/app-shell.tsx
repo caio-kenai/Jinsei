@@ -27,6 +27,7 @@ import {
   Sparkles,
   ChartColumn,
   Trophy,
+  Users,
 } from 'lucide-react';
 import { categoryLabels, mediaTypes, type CurrentUser } from '@jinsei/contracts';
 import { Brand } from '@/components/shared/brand';
@@ -40,6 +41,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useCurrentUser } from '@/features/auth/use-current-user';
+import { useCommunitySummary } from '@/features/community/use-community';
 import { usePreferences } from '@/features/auth/use-preferences';
 import { api } from '@/lib/api';
 import { cn } from '@/lib/utils';
@@ -99,6 +101,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- Runs only when the stored zone changes
   }, [savedZone]);
   useProgressionAnnouncements();
+  const community = useCommunitySummary().data;
+  const communityBadge = (community?.pendingRequests ?? 0) + (community?.unreadMessages ?? 0);
   if (!user) return null;
   const collapsed = user.preferences.sidebarCollapsed;
   const navigation = (close: () => void) => (
@@ -169,6 +173,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <Target size={17} />
           Metas
         </NavLink>
+        <NavLink href="/community" onClick={close} active={pathname.startsWith('/community')}>
+          <Users size={17} />
+          Comunidade
+          {communityBadge > 0 && (
+            <span className="community-badge nav-badge">{communityBadge}</span>
+          )}
+        </NavLink>
         <NavLink href="/discover" onClick={close} active={pathname === '/discover'}>
           <Compass size={17} />
           Descobrir
@@ -235,6 +246,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           { href: '/favorites', label: 'Favoritos', Icon: Heart },
           { href: '/collections', label: 'Coleções', Icon: FolderHeart },
           { href: '/goals', label: 'Metas', Icon: Target },
+          { href: '/community', label: 'Social', Icon: Users },
           { href: '/journey', label: 'Jornada', Icon: Sparkles },
           { href: '/discover', label: 'Descobrir', Icon: Compass },
         ].map(({ href, label, Icon }) => (
