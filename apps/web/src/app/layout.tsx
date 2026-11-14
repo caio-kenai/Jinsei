@@ -11,6 +11,7 @@ import './motion.css';
 import './landing.css';
 import './landing-sections.css';
 import './works.css';
+import './community.css';
 import './interactions.css';
 import { AppProviders } from '@/providers/app-providers';
 
