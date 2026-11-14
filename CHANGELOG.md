@@ -1,5 +1,12 @@
 # Histórico de versões
 
+## 0.0.6 — 2026-11-14
+
+- Temas visuais com efeitos: Clássico, Sakura, Aurora, Oceano, Floresta, Pôr do sol e Neon.
+- A cor de destaque passa a valer para navegação, abas, campos, barras de progresso e gráficos.
+- Estatísticas coloridas por status, categoria e nota, com indicadores de cor própria.
+- Início em formato de dashboard: destaque com o banner do perfil, indicadores com minigráficos, capas grandes em andamento e gráfico de rosca por status.
+
 ## 0.0.5 — 2026-11-14
 
 - Apresentação ampliada: faixa de categorias, grade de recursos com demonstrações animadas, passos para começar, pilares de código aberto e privacidade e perguntas frequentes.
