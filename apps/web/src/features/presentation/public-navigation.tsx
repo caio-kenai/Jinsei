@@ -3,11 +3,13 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Brand } from '@/components/shared/brand';
 import { SignupDialog } from '@/features/auth/signup-dialog';
+import { useCurrentUser } from '@/features/auth/use-current-user';
 import { creatorSupport } from '@jinsei/contracts';
 import { SupportDialog } from '@/features/support/support-dialog';
 
 export function PublicHeader({ onSignup }: { onSignup?: () => void }) {
   const [signup, setSignup] = useState(false);
+  const user = useCurrentUser().data;
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
     const update = () => setScrolled(window.scrollY > 8);
@@ -29,15 +31,23 @@ export function PublicHeader({ onSignup }: { onSignup?: () => void }) {
             <Link className="marketing-about-link" href="/rankings">
               Rankings
             </Link>
-            <Link className="public-button public-button-muted" href="/login">
-              Entrar
-            </Link>
-            <button
-              className="public-button"
-              onClick={() => (onSignup ? onSignup() : setSignup(true))}
-            >
-              Cadastre-se
-            </button>
+            {user ? (
+              <Link className="public-button" href="/home">
+                Abrir meu Jinsei
+              </Link>
+            ) : (
+              <>
+                <Link className="public-button public-button-muted" href="/login">
+                  Entrar
+                </Link>
+                <button
+                  className="public-button"
+                  onClick={() => (onSignup ? onSignup() : setSignup(true))}
+                >
+                  Cadastre-se
+                </button>
+              </>
+            )}
           </nav>
         </div>
       </header>
