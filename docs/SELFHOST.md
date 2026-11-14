@@ -2,7 +2,7 @@
 
 A versão inicial é **0.0.1**. Os pacotes oficiais são imagens Linux **amd64** para a API e o frontend, publicadas no [GitHub Packages](https://github.com/caio-kenai?tab=packages&repo_name=Jinsei). Use uma versão fixa ao atualizar. ARM64 ainda não foi validado.
 
-Você controla o banco, o domínio e as políticas da sua instalação. A administração da instância permite mudar nome, descrição e contato público, abrir ou fechar cadastros, permitir consultas externas e habilitar o apoio voluntário. Bibliotecas e anotações continuam privadas por usuário.
+Você controla o banco, o domínio e as políticas da sua instalação. A administração da instância permite mudar nome, descrição e contato público, abrir ou fechar cadastros, e permitir consultas externas. Bibliotecas e anotações continuam privadas por usuário.
 
 ## Requisitos
 
@@ -69,7 +69,7 @@ Configure DNS e firewall antes. Com um proxy próprio, encaminhe o domínio ao f
 
 As fontes públicas funcionam sem credenciais; consulte [Integrações](INTEGRATIONS.md). IGDB/Twitch e TMDB são opcionais. Segredos ficam somente em `.env.selfhost`; reinicie a API ao modificá-los. Desabilitar consultas externas impede novas buscas/importações externas, preservando os títulos já armazenados. Imagens externas existentes ainda podem ser requisitadas pelo navegador.
 
-Para oferecer **Buy Me a Monster**, configure `DONATION_PIX_PAYLOAD` e `DONATION_PIX_KEY`. Esses dados se tornam públicos pelo recurso de apoio quando habilitado; não coloque uma chave que você não queira divulgar. Use um payload Pix completo e válido. A aplicação não processa pagamentos nem confirma recebimentos.
+O **Buy Me a Monster** já vem configurado com o Pix oficial do criador do Jinsei e não depende de variáveis de ambiente. Pelos [termos adicionais da licença](../ADDITIONAL_TERMS.md), toda instalação deve mantê-lo visível e funcional, sem trocar o destinatário. A aplicação não processa pagamentos nem confirma recebimentos.
 
 Não execute o seed de demonstração em produção.
 

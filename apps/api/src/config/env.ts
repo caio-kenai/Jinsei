@@ -36,8 +36,6 @@ const schema = z.object({
   S3_SECRET_KEY: z.string().default(process.env.MINIO_ROOT_PASSWORD ?? ''),
   // Multiplies every rate limit; only raise it for automated test runs.
   THROTTLE_SCALE: z.coerce.number().int().min(1).max(1000).default(1),
-  DONATION_PIX_PAYLOAD: z.string().default(''),
-  DONATION_PIX_KEY: z.string().default(''),
 });
 const parsed = schema.safeParse(process.env);
 if (!parsed.success) {

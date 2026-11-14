@@ -1,7 +1,18 @@
 <div align="center">
-  <img src="assets/branding/jinsei-logo.png" alt="Jinsei" width="280" />
-  <h1>Jinsei</h1>
+  <img src="assets/branding/jinsei-icon.png" alt="Jinsei" width="180" />
+
+  <p>
+    <strong><big><big>人生</big></big></strong>
+  </p>
+
+  <p>
+    <strong><big>JINSEI</big></strong>
+  </p>
+
+  <p><em>Vida · Existência · Jornada</em></p>
+
   <p>Sua jornada pelo entretenimento, organizada em um só lugar.</p>
+
   <p>
     <img alt="Licença AGPL v3" src="https://img.shields.io/badge/license-AGPL_v3-blue" />
     <img alt="Next.js 16" src="https://img.shields.io/badge/Next.js-16-202020" />
@@ -37,7 +48,7 @@ O projeto está em desenvolvimento inicial. Todas as categorias compartilham cad
 - Menu da conta com quatro favoritos e perfil privado com estatísticas e até oito destaques.
 - Preferências e visualizações persistidas no PostgreSQL.
 - Exportação de dados, alteração de senha com revogação de sessões e exclusão de conta.
-- Apoio voluntário por Pix quando configurado pelo responsável pela instalação.
+- Buy Me a Monster: apoio voluntário por Pix ao criador do Jinsei, presente em todas as instalações.
 - Instalação self-host com Docker e administração da identidade, cadastros e consultas externas da instância.
 
 ## Hospede seu próprio servidor
@@ -121,8 +132,8 @@ Consulte [SECURITY.md](SECURITY.md) para limitações da versão inicial e orien
 
 ## Licença
 
-Código sob [GNU AGPL v3](LICENSE). Fontes, logotipos e imagens de catálogos têm condições próprias, descritas em [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). A licença do código não transfere direitos sobre as capas.
+Código sob [GNU AGPL v3](LICENSE), com [termos adicionais de atribuição](ADDITIONAL_TERMS.md) conforme a seção 7: cópias, versões modificadas e instalações próprias devem manter a autoria e o Buy Me a Monster com o Pix oficial do criador. Fontes, logotipos e imagens de catálogos têm condições próprias, descritas em [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). A licença do código não transfere direitos sobre as capas.
 
 ## Apoie o projeto
 
-O **Buy Me a Monster** oferece apoio voluntário via Pix dentro da aplicação, quando configurado. Ele não libera funcionalidades nem confirma pagamentos. Para habilitar em uma instalação, defina `DONATION_PIX_PAYLOAD` e `DONATION_PIX_KEY` localmente. O QR Code representa o payload exato configurado, com conferência de CRC.
+O **Buy Me a Monster** permite apoiar o criador do Jinsei com um Pix de qualquer valor, direto pela aplicação. Ele está presente em todas as instalações, não libera funcionalidades e não confirma pagamentos: a operação acontece somente no aplicativo do seu banco. O QR Code representa o payload oficial, com conferência de CRC.

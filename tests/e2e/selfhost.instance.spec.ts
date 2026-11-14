@@ -35,7 +35,6 @@ test('self-host mantém política administrativa e dados privados em containers'
     contactEmail: publicConfiguration.contactEmail,
     registrationsEnabled: publicConfiguration.registrationsEnabled,
     externalCatalogEnabled: publicConfiguration.externalCatalogEnabled,
-    supportEnabled: publicConfiguration.supportEnabled,
   });
   expect(publicConfiguration.version).toBe(appVersion);
   expect((await owner.post('/api/auth/register', { data: { email, password } })).status()).toBe(
@@ -88,7 +87,6 @@ test('self-host mantém política administrativa e dados privados em containers'
       name: 'Comunidade Jinsei de teste',
       registrationsEnabled: false,
       externalCatalogEnabled: false,
-      supportEnabled: false,
     };
     expect((await owner.patch('/api/instance', { data: changed })).status()).toBe(200);
     expect((await (await anonymous.get('/api/instance')).json()).name).toBe(changed.name);
@@ -99,7 +97,6 @@ test('self-host mantém política administrativa e dados privados em containers'
         })
       ).status(),
     ).toBe(403);
-    expect((await (await anonymous.get('/api/support')).json()).enabled).toBe(false);
     const created = await owner.post('/api/library/entries', {
       data: { media: { title: `Jogo privado ${id}`, mediaType: 'games' }, rating: 4.75 },
     });

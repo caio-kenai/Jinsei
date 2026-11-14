@@ -329,7 +329,6 @@ model InstanceSettings {
   contactEmail           String   @default("")
   registrationsEnabled   Boolean  @default(true)
   externalCatalogEnabled Boolean  @default(true)
-  supportEnabled         Boolean  @default(true)
   updatedAt              DateTime @updatedAt
 }
 

@@ -48,7 +48,6 @@ export function InstanceScreen() {
       contactEmail: fields.get('contactEmail'),
       registrationsEnabled: fields.get('registrationsEnabled') === 'on',
       externalCatalogEnabled: fields.get('externalCatalogEnabled') === 'on',
-      supportEnabled: fields.get('supportEnabled') === 'on',
     });
     if (!parsed.success) {
       setError(parsed.error.issues[0]?.message ?? 'Revise as configurações');
@@ -58,7 +57,6 @@ export function InstanceScreen() {
     try {
       const updated = await api('/instance', { method: 'PATCH', body: jsonBody(parsed.data) });
       client.setQueryData(['instance'], updated);
-      await client.invalidateQueries({ queryKey: ['support'] });
       toast.success('Configurações da instância salvas');
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Tente novamente');
@@ -111,17 +109,13 @@ export function InstanceScreen() {
             />
             Permitir novos cadastros
           </label>
-          <label className="checkbox-field" style={{ marginBottom: 18 }}>
+          <label className="checkbox-field">
             <input
               name="externalCatalogEnabled"
               type="checkbox"
               defaultChecked={settings.externalCatalogEnabled}
             />
             Permitir consultas aos catálogos externos
-          </label>
-          <label className="checkbox-field">
-            <input name="supportEnabled" type="checkbox" defaultChecked={settings.supportEnabled} />
-            Exibir o apoio voluntário quando o Pix estiver configurado
           </label>
         </section>
         <section className="settings-section">
@@ -130,8 +124,12 @@ export function InstanceScreen() {
             Jinsei {settings.version} · {settings.publicUrl}
           </p>
           <p>
-            Domínio, banco, chaves dos provedores e dados Pix são definidos pelo operador na
-            configuração do servidor.
+            Domínio, banco e chaves dos provedores são definidos pelo operador na configuração do
+            servidor.
+          </p>
+          <p>
+            O Buy Me a Monster direciona o apoio ao criador do Jinsei e permanece disponível em
+            todas as instalações, conforme os termos adicionais da licença.
           </p>
           <a
             href="https://github.com/caio-kenai/Jinsei/blob/main/docs/SELFHOST.md"

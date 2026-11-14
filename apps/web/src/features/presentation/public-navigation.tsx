@@ -3,6 +3,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { Brand } from '@/components/shared/brand';
 import { SignupDialog } from '@/features/auth/signup-dialog';
+import { creatorSupport } from '@jinsei/contracts';
 import { SupportDialog } from '@/features/support/support-dialog';
 
 export function PublicHeader({ onSignup }: { onSignup?: () => void }) {
@@ -43,7 +44,7 @@ export function PublicFooter() {
           <Link href="/" aria-label="Jinsei">
             <Brand />
           </Link>
-          <span>© 2026 Jinsei</span>
+          <span>© 2026 Jinsei · Criado por {creatorSupport.creator}</span>
           <nav aria-label="Informações do Jinsei">
             <a href="https://github.com/caio-kenai/Jinsei" target="_blank" rel="noreferrer">
               Código aberto
