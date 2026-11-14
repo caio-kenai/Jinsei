@@ -10,8 +10,6 @@ x-api-environment: &api-environment
   IGDB_CLIENT_ID: ${IGDB_CLIENT_ID:-}
   IGDB_CLIENT_SECRET: ${IGDB_CLIENT_SECRET:-}
   TMDB_READ_TOKEN: ${TMDB_READ_TOKEN:-}
-  DONATION_PIX_PAYLOAD: ${DONATION_PIX_PAYLOAD:-}
-  DONATION_PIX_KEY: ${DONATION_PIX_KEY:-}
 services:
   postgres:
     image: postgres:17-alpine

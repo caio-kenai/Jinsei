@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { crc16, validPixPayload } from '../../apps/api/src/modules/support/pix';
+import { creatorSupport, crc16, validPixPayload } from '../../packages/contracts/src/support';
 
 describe('integridade do payload Pix', () => {
   it('confere o vetor padrão CRC-16/CCITT-FALSE', () => {
@@ -11,5 +11,9 @@ describe('integridade do payload Pix', () => {
     expect(validPixPayload(payload)).toBe(true);
     expect(validPixPayload(payload.replace('2618', '2619'))).toBe(false);
     expect(validPixPayload('')).toBe(false);
+  });
+  it('mantém o Pix oficial do criador íntegro', () => {
+    expect(validPixPayload(creatorSupport.pixPayload)).toBe(true);
+    expect(creatorSupport.pixPayload).toContain(creatorSupport.pixKey);
   });
 });

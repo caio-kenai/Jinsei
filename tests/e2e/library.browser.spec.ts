@@ -164,15 +164,9 @@ test('capturas reais de lista, galeria, temas e mobile com conta de demonstraç�
   await expect(
     support.getByRole('heading', { name: 'Um Monster para o próximo capítulo?' }),
   ).toBeVisible();
-  const configuration = await (await page.request.get('/api/support')).json();
-  if (configuration.enabled)
-    await expect(
-      support.getByRole('img', { name: 'QR Code Pix para apoio voluntário' }),
-    ).toBeVisible();
-  else
-    await expect(
-      support.getByText('O apoio via Pix ainda não foi configurado nesta instalação.'),
-    ).toBeVisible();
+  await expect(
+    support.getByRole('img', { name: 'QR Code Pix para apoio voluntário' }),
+  ).toBeVisible();
   await support.getByRole('button', { name: 'Fechar', exact: true }).click();
   const saved = page.waitForResponse(
     (response) =>

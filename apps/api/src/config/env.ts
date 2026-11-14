@@ -28,8 +28,6 @@ const schema = z.object({
   IGDB_CLIENT_ID: z.string().default(''),
   IGDB_CLIENT_SECRET: z.string().default(''),
   TMDB_READ_TOKEN: z.string().default(''),
-  DONATION_PIX_PAYLOAD: z.string().default(''),
-  DONATION_PIX_KEY: z.string().default(''),
 });
 const parsed = schema.safeParse(process.env);
 if (!parsed.success) {
