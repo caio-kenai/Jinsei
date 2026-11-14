@@ -15,6 +15,7 @@ import { LibraryService } from '../library/library.service';
 
 /** Turns a user agent into a short "Chrome · Windows" style description. */
 export function describeAgent(agent: string) {
+  if (!agent) return { browser: 'Sessão anterior', system: 'sem detalhes', device: 'Computador' };
   const browser = /Edg\//.test(agent)
     ? 'Edge'
     : /OPR\//.test(agent)
