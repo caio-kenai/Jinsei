@@ -1654,7 +1654,7 @@ tr:hover .progress-increment,
 }
 .category-picker {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 9px;
 }
 .category-choice {
