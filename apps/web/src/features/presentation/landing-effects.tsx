@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import { ArrowRight } from 'lucide-react';
 import {
   AnimatePresence,
@@ -19,21 +19,28 @@ export function BlurText({ lines, delay = 0 }: { lines: string[]; delay?: number
     <>
       {lines.map((line, lineIndex) => (
         <span key={line} className="blur-line">
-          {line.split(' ').map((word) => {
+          {line.split(' ').map((word, wordIndex, words) => {
             const order = index++;
             return (
-              <motion.span
-                key={`${word}-${order}`}
-                className="blur-word"
-                initial={{ opacity: 0, filter: 'blur(12px)', y: 14 }}
-                animate={{ opacity: 1, filter: 'blur(0px)', y: 0 }}
-                transition={{ duration: 0.7, ease, delay: delay + order * 0.07 }}
-              >
-                {word}
-              </motion.span>
+              <Fragment key={`${word}-${order}`}>
+                <motion.span
+                  className="blur-word"
+                  initial={{ opacity: 0, filter: 'blur(12px)', y: 14 }}
+                  animate={{ opacity: 1, filter: 'blur(0px)', y: 0 }}
+                  transition={{ duration: 0.7, ease, delay: delay + order * 0.07 }}
+                >
+                  {word}
+                </motion.span>
+                {wordIndex < words.length - 1 && ' '}
+              </Fragment>
             );
           })}
-          {lineIndex < lines.length - 1 && <br />}
+          {lineIndex < lines.length - 1 && (
+            <>
+              {' '}
+              <br />
+            </>
+          )}
         </span>
       ))}
     </>
