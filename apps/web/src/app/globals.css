@@ -2837,3 +2837,151 @@ tr:hover .progress-increment,
     display: none;
   }
 }
+
+.goal-section + .goal-section,
+.home-goals {
+  margin-top: 26px;
+}
+.goal-section .section-title,
+.home-goals .section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.section-link {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--muted);
+  text-decoration: underline;
+}
+.goal-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+  margin-top: 10px;
+}
+.goal-card {
+  position: relative;
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  overflow: hidden;
+}
+.goal-card.state-achieved {
+  border-color: transparent;
+  background:
+    linear-gradient(var(--surface), var(--surface)) padding-box,
+    conic-gradient(
+        from var(--beam-angle, 0deg),
+        var(--border) 0 70%,
+        var(--success) 85%,
+        var(--border) 100%
+      )
+      border-box;
+  animation: goal-beam 5s linear infinite;
+}
+@property --beam-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+@keyframes goal-beam {
+  to {
+    --beam-angle: 360deg;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .goal-card.state-achieved {
+    animation: none;
+  }
+}
+.goal-card.state-archived,
+.goal-card.state-expired {
+  opacity: 0.72;
+}
+.goal-ring {
+  flex: none;
+}
+.goal-ring-track {
+  fill: none;
+  stroke: var(--hover);
+}
+.goal-ring-value {
+  fill: none;
+  stroke: var(--primary);
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.6s ease;
+}
+.state-achieved .goal-ring-value {
+  stroke: var(--success);
+}
+.goal-ring text {
+  font-size: 12px;
+  font-weight: 600;
+  fill: var(--foreground);
+}
+.goal-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  flex: 1;
+}
+.goal-card-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-right: 18px;
+}
+.goal-card-heading h3 {
+  font-size: 13px;
+  font-weight: 600;
+}
+.goal-state {
+  flex: none;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--hover);
+  color: var(--muted);
+  font-size: 10px;
+}
+.goal-state.state-achieved {
+  background: color-mix(in srgb, var(--success) 15%, transparent);
+  color: var(--success);
+}
+.goal-amount {
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.goal-meta,
+.goal-description {
+  font-size: 10px;
+  color: var(--muted);
+}
+.goal-menu {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+.goal-menu:hover,
+.goal-menu[data-state='open'] {
+  background: var(--hover);
+  color: var(--foreground);
+}
+.goal-presets {
+  display: flex;
+  gap: 6px;
+}

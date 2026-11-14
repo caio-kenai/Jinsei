@@ -11,6 +11,7 @@ import { AddEntryDialog } from '@/features/library/add-entry-dialog';
 import { EntryDetails } from '@/features/library/entry-details';
 import { MediaCover } from '@/features/library/media-cover';
 import { progressPercent, progressSummary } from '@/features/library/progress-format';
+import { ActiveGoals } from '@/features/goals/active-goals';
 import { StatusBadge } from '@/features/library/status-badge';
 import { StarRating } from '@/components/shared/star-rating';
 
@@ -139,6 +140,7 @@ export function HomeScreen() {
           </Button>
         </div>
       )}
+      <ActiveGoals />
       <div className="home-columns">
         <section>
           <div className="section-title">
