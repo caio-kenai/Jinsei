@@ -33,7 +33,8 @@ describe('Contratos da biblioteca', () => {
     for (const rating of [-1, 5.25, 4.3])
       expect(entryPatchSchema.safeParse({ rating }).success).toBe(false);
     expect(
-      entryPatchSchema.safeParse({ progress: { hoursPlayed: 1, completion: 101 } }).success,
+      entryPatchSchema.safeParse({ progress: { kind: 'game', hoursPlayed: 1, completion: 101 } })
+        .success,
     ).toBe(false);
   });
   it('versiona as visualizações e preserva a coluna de título', () => {
