@@ -13,6 +13,8 @@
 - Exportação de dados com coleções, metas e histórico de progresso.
 - Jornada com níveis, missões, sequência de dias no fuso do usuário, insígnias e títulos, sem prêmios repetidos ao recadastrar títulos.
 - Página de estatísticas e paleta de comandos com Ctrl+K.
+- Perfis públicos com seções configuráveis, resenhas públicas, coleções compartilháveis, SEO e sitemap.
+- Envio de avatar, banner e capas de coleção para armazenamento compatível com S3.
 
 ## 0.0.1 — 2026-11-13
 
