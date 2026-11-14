@@ -18,6 +18,7 @@ import {
   type MediaMetadata,
   type MediaType,
   type ProgressInput,
+  type Statistics,
   type StatusKey,
   type ViewingCreateInput,
 } from '@jinsei/contracts';
@@ -413,6 +414,91 @@ export class LibraryService {
     };
   }
 
+  /** Aggregates for the statistics page, limited to the categories the person uses. */
+  async statistics(userId: string): Promise<Statistics> {
+    const enabled: Prisma.UserMediaEntryWhereInput = {
+      userId,
+      media: { mediaType: { users: { some: { userId, enabled: true } } } },
+    };
+    const preference = await this.db.userPreference.findUnique({ where: { userId } });
+    const zone = preference?.timezone ?? 'UTC';
+    const since = new Date();
+    since.setUTCMonth(since.getUTCMonth() - 11, 1);
+    since.setUTCHours(0, 0, 0, 0);
+    const activitySince = new Date(Date.now() - 182 * 86400000);
+    const [summary, favorites, entries, ratings, months, activity] = await Promise.all([
+      this.summary(userId),
+      this.db.userMediaEntry.count({ where: { ...enabled, favorite: true } }),
+      this.db.userMediaEntry.findMany({
+        where: enabled,
+        select: { status: { select: { key: true } }, media: { select: { mediaTypeId: true } } },
+      }),
+      this.db.userMediaEntry.groupBy({
+        by: ['ratingSteps'],
+        where: { ...enabled, ratingSteps: { not: null } },
+        _count: true,
+      }),
+      this.db.$queryRaw<{ month: string; count: bigint }[]>`
+          SELECT to_char(e."completedOn", 'YYYY-MM') AS month, COUNT(*) AS count
+          FROM "UserMediaEntry" e
+          JOIN "MediaItem" m ON m."id" = e."mediaId"
+          JOIN "UserMediaType" t ON t."userId" = e."userId" AND t."mediaTypeId" = m."mediaTypeId"
+          WHERE e."userId" = ${userId} AND t."enabled" AND e."completedOn" >= ${since}
+          GROUP BY 1`,
+      this.db.$queryRaw<{ day: Date; count: bigint }[]>`
+          SELECT ("createdAt" AT TIME ZONE 'UTC' AT TIME ZONE ${zone})::date AS day, COUNT(*) AS count
+          FROM "ActivityLog"
+          WHERE "userId" = ${userId} AND "createdAt" >= ${activitySince}
+          GROUP BY 1`,
+    ]);
+    const byCategory = new Map<string, { total: number; completed: number }>();
+    for (const entry of entries) {
+      const row = byCategory.get(entry.media.mediaTypeId) ?? { total: 0, completed: 0 };
+      row.total += 1;
+      if (entry.status.key === 'completed') row.completed += 1;
+      byCategory.set(entry.media.mediaTypeId, row);
+    }
+    // Half-star buckets: 0.25 and 0.5 fall in 0.5, 0.75 and 1 in 1, and so on.
+    const ratingBuckets = new Map<number, number>();
+    for (const row of ratings) {
+      const bucket = Math.ceil(row.ratingSteps! / 2) / 2;
+      ratingBuckets.set(bucket, (ratingBuckets.get(bucket) ?? 0) + row._count);
+    }
+    const monthCounts = new Map(months.map((row) => [row.month, Number(row.count)]));
+    const monthList = Array.from({ length: 12 }, (_, index) => {
+      const date = new Date(since);
+      date.setUTCMonth(since.getUTCMonth() + index);
+      const month = date.toISOString().slice(0, 7);
+      return { month, count: monthCounts.get(month) ?? 0 };
+    });
+    return {
+      totals: {
+        entries: summary.total,
+        completed: summary.byStatus.completed ?? 0,
+        favorites,
+        averageRating: summary.averageRating,
+        hoursPlayed: summary.hoursPlayed,
+        episodesWatched: summary.episodesWatched,
+        chaptersRead: summary.chaptersRead,
+        pagesRead: summary.pagesRead,
+        timesWatched: summary.timesWatched,
+      },
+      byStatus: (['planned', 'in_progress', 'paused', 'completed', 'dropped'] as const).map(
+        (status) => ({ status, count: summary.byStatus[status] ?? 0 }),
+      ),
+      byCategory: [...byCategory].map(([mediaType, row]) => ({
+        mediaType: mediaType as MediaType,
+        ...row,
+      })),
+      ratings: Array.from({ length: 10 }, (_, index) => (index + 1) / 2).map((rating) => ({
+        rating,
+        count: ratingBuckets.get(rating) ?? 0,
+      })),
+      completionsByMonth: monthList,
+      activity: activity.map((row) => ({ day: isoDay(row.day), count: Number(row.count) })),
+    };
+  }
+
   async summary(userId: string) {
     const where: Prisma.UserMediaEntryWhereInput = {
       userId,
@@ -445,7 +531,7 @@ export class LibraryService {
       }),
       this.db.readingProgress.aggregate({
         where: { entry: where },
-        _sum: { chaptersRead: true },
+        _sum: { chaptersRead: true, pagesRead: true },
       }),
       this.db.entryViewing.count({ where: { entry: where } }),
     ]);
@@ -456,6 +542,7 @@ export class LibraryService {
       hoursPlayed: (hours._sum.minutesPlayed ?? 0) / 60,
       episodesWatched: episodes._sum.episodesWatched ?? 0,
       chaptersRead: chapters._sum.chaptersRead ?? 0,
+      pagesRead: chapters._sum.pagesRead ?? 0,
       timesWatched: viewings,
     };
   }
