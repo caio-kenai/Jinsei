@@ -4,14 +4,15 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import {
-  UserRound,
-  Settings,
-  LogOut,
+  ChevronRight,
+  CupSoda,
   Heart,
-  ArrowUpRight,
-  LockKeyhole,
   LoaderCircle,
+  LogOut,
   Server,
+  Settings,
+  UserRound,
+  Users,
 } from 'lucide-react';
 import type { CurrentUser, LibraryResponse } from '@jinsei/contracts';
 import { api } from '@/lib/api';
@@ -24,9 +25,33 @@ import {
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { MediaCover } from '@/features/library/media-cover';
+import { useCommunitySummary } from '@/features/community/use-community';
 
-export function UserMenu({ user, onLogout }: { user: CurrentUser; onLogout: () => Promise<void> }) {
+function Avatar({ user, className }: { user: CurrentUser; className?: string }) {
+  return (
+    <span className={`avatar ${className ?? ''}`}>
+      {user.profile.avatarUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={user.profile.avatarUrl} alt="" />
+      ) : (
+        initials(user.profile.displayName)
+      )}
+    </span>
+  );
+}
+
+export function UserMenu({
+  user,
+  onLogout,
+  onSupport,
+}: {
+  user: CurrentUser;
+  onLogout: () => Promise<void>;
+  onSupport?: () => void;
+}) {
   const [open, setOpen] = useState(false);
+  const community = useCommunitySummary().data;
+  const pending = (community?.pendingRequests ?? 0) + (community?.unreadMessages ?? 0);
   const favorites = useQuery({
     queryKey: ['library', 'menu-favorites'],
     queryFn: () => api<LibraryResponse>('/library/entries?favorite=true&limit=4'),
@@ -36,36 +61,30 @@ export function UserMenu({ user, onLogout }: { user: CurrentUser; onLogout: () =
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
-        <button className="avatar profile-trigger" aria-label="Menu da conta">
-          {initials(user.profile.displayName)}
+        <button className="profile-trigger" aria-label="Menu da conta">
+          <Avatar user={user} />
+          <span className="profile-trigger-status" aria-hidden />
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="user-menu">
+      <DropdownMenuContent className="user-menu" align="end">
         <DropdownMenuItem className="user-menu-identity" asChild>
           <Link href="/profile">
-            <span className="avatar">{initials(user.profile.displayName)}</span>
+            <Avatar user={user} />
             <span>
               <strong>{user.profile.displayName}</strong>
-              <small>@{user.profile.username ?? 'meu-perfil'}</small>
+              <small title={user.email}>{user.email}</small>
             </span>
-            <ArrowUpRight size={15} />
           </Link>
         </DropdownMenuItem>
-        <p className="user-menu-email" title={user.email}>
-          {user.email}
-        </p>
-        <span className="user-menu-private">
-          <LockKeyhole size={12} />
-          Seu espaço privado
-        </span>
         <DropdownMenuSeparator />
-        <div className="user-menu-favorites-heading">
-          <span>
-            <Heart size={13} />
-            Seus favoritos
-          </span>
-          <span>{favorites.data?.total ?? '—'}</span>
-        </div>
+        <DropdownMenuItem asChild className="user-menu-favorites-heading">
+          <Link href="/favorites">
+            <Heart size={16} />
+            Favoritos
+            <span className="user-menu-count">{favorites.data?.total ?? '—'}</span>
+            <ChevronRight size={14} />
+          </Link>
+        </DropdownMenuItem>
         {favorites.isPending ? (
           <div className="user-menu-loading">
             <LoaderCircle className="spin" size={16} />
@@ -76,23 +95,25 @@ export function UserMenu({ user, onLogout }: { user: CurrentUser; onLogout: () =
           <div className="user-menu-favorites">
             {favorites.data.items.map((entry) => (
               <DropdownMenuItem key={entry.id} asChild className="user-menu-cover">
-                <Link href={`/library?entry=${entry.id}`} aria-label={`Abrir ${entry.title}`}>
+                <Link
+                  href={`/library?entry=${entry.id}`}
+                  aria-label={`Abrir ${entry.title}`}
+                  title={entry.title}
+                >
                   <MediaCover
                     title={entry.title}
                     url={entry.coverUrl}
                     layout={entry.coverAttribution?.layout}
                     large
                   />
-                  <span>{entry.title}</span>
                 </Link>
               </DropdownMenuItem>
             ))}
           </div>
         ) : (
-          <p className="user-menu-empty">
-            Marque as histórias que mais te representam com um coração.
-          </p>
+          <p className="user-menu-empty">Marque suas histórias preferidas com um coração.</p>
         )}
+        <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
           <Link href="/profile">
             <UserRound size={16} />
@@ -100,16 +121,16 @@ export function UserMenu({ user, onLogout }: { user: CurrentUser; onLogout: () =
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <Link href="/favorites">
-            <Heart size={16} />
-            Todos os favoritos
+          <Link href="/community">
+            <Users size={16} />
+            Comunidade
+            {pending > 0 && <span className="community-badge user-menu-badge">{pending}</span>}
           </Link>
         </DropdownMenuItem>
-        <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
           <Link href="/settings">
             <Settings size={16} />
-            Configurações da conta
+            Configurações
           </Link>
         </DropdownMenuItem>
         {user.isAdmin && (
@@ -120,9 +141,16 @@ export function UserMenu({ user, onLogout }: { user: CurrentUser; onLogout: () =
             </Link>
           </DropdownMenuItem>
         )}
-        <DropdownMenuItem onSelect={() => void onLogout()}>
+        {onSupport && (
+          <DropdownMenuItem onSelect={onSupport}>
+            <CupSoda size={16} />
+            Buy Me a Monster
+          </DropdownMenuItem>
+        )}
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onSelect={() => void onLogout()} className="user-menu-logout">
           <LogOut size={16} />
-          Sair do Jinsei
+          Sair
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
