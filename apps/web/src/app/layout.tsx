@@ -12,6 +12,7 @@ import './landing.css';
 import './landing-sections.css';
 import './works.css';
 import './community.css';
+import './settings.css';
 import './interactions.css';
 import { AppProviders } from '@/providers/app-providers';
 

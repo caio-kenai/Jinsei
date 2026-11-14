@@ -1,8 +1,8 @@
 'use client';
-import { useState } from 'react';
+import { useState, type CSSProperties } from 'react';
 import Link from 'next/link';
 import { useQueryClient } from '@tanstack/react-query';
-import { ExternalLink, ImageUp, LoaderCircle, Plus, Trash2, X } from 'lucide-react';
+import { ExternalLink, ImageUp, LoaderCircle, Plus, Trash2, UsersRound, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { preferencesPatchSchema, type CurrentUser, type ProfileLink } from '@jinsei/contracts';
 import { api, jsonBody } from '@/lib/api';
@@ -120,20 +120,30 @@ export function PublicProfileSettings({ user }: { user: CurrentUser }) {
     }
   }
   return (
-    <section className="settings-section">
-      <h2>Perfil público</h2>
-      <p>
-        Escolha o que outras pessoas podem ver. Anotações privadas, tags e títulos fora das seções
-        escolhidas nunca são publicados.
-        {user.profile.isPublic && user.profile.username && (
-          <>
-            {' '}
-            <Link href={`/u/${user.profile.username}`} target="_blank" className="inline-link">
-              Ver meu perfil público <ExternalLink size={11} />
-            </Link>
-          </>
-        )}
-      </p>
+    <section
+      className="settings-section settings-card"
+      style={{ '--section-color': '#f7832b' } as CSSProperties}
+    >
+      <header className="settings-card-header">
+        <span className="settings-card-icon">
+          <UsersRound size={17} />
+        </span>
+        <div>
+          <h2>Perfil público</h2>
+          <p>
+            Escolha o que outras pessoas podem ver. Anotações privadas, tags e títulos fora das
+            seções escolhidas nunca são publicados.
+            {user.profile.isPublic && user.profile.username && (
+              <>
+                {' '}
+                <Link href={`/u/${user.profile.username}`} target="_blank" className="inline-link">
+                  Ver meu perfil público <ExternalLink size={11} />
+                </Link>
+              </>
+            )}
+          </p>
+        </div>
+      </header>
       {instance.data?.uploadsEnabled ? (
         <div className="form-grid">
           <ImageField
