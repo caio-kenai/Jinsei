@@ -49,6 +49,22 @@ import { AboutDialog } from '@/features/about/about-dialog';
 import { categoryIcons } from '@/components/shared/category-icons';
 import { useProgressionAnnouncements } from '@/features/progression/use-progression';
 import { CommandPalette } from '@/features/command/command-palette';
+import { LayoutGroup, motion } from 'motion/react';
+
+/** Sidebar link whose selected background glides to the active page. */
+function NavLink({
+  active,
+  className,
+  children,
+  ...props
+}: React.ComponentProps<typeof Link> & { active: boolean }) {
+  return (
+    <Link {...props} className={cn('nav-link', active && 'active', className)}>
+      {active && <motion.span layoutId="nav-active" className="nav-active-bg" aria-hidden="true" />}
+      {children}
+    </Link>
+  );
+}
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const { data: user } = useCurrentUser();
@@ -90,22 +106,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <ChevronDown size={14} />
       </div>
       <nav className="sidebar-navigation" aria-label="Navegação principal">
-        <Link
-          href="/home"
-          onClick={close}
-          className={cn('nav-link', pathname === '/home' && 'active')}
-        >
+        <NavLink href="/home" onClick={close} active={pathname === '/home'}>
           <Home size={17} />
           Início
-        </Link>
-        <Link
-          href="/library"
-          onClick={close}
-          className={cn('nav-link', pathname === '/library' && 'active')}
-        >
+        </NavLink>
+        <NavLink href="/library" onClick={close} active={pathname === '/library'}>
           <Library size={17} />
           Minha biblioteca
-        </Link>
+        </NavLink>
         <button
           className="sidebar-section"
           onClick={() => setLibraryOpen(!libraryOpen)}
@@ -121,16 +129,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               .map((type) => {
                 const Icon = categoryIcons[type];
                 return (
-                  <Link
+                  <NavLink
                     key={type}
                     href={`/library/${type}`}
                     onClick={close}
-                    className={cn('nav-link', pathname === `/library/${type}` && 'active')}
+                    active={pathname === `/library/${type}`}
                   >
                     <Icon size={16} />
                     {categoryLabels[type]}
                     {pathname === `/library/${type}` && <span className="nav-active-dot" />}
-                  </Link>
+                  </NavLink>
                 );
               })}
             <Link href="/settings" onClick={close} className="nav-link nav-add">
@@ -139,64 +147,36 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </div>
         )}
         <div className="sidebar-divider" />
-        <Link
-          href="/favorites"
-          onClick={close}
-          className={cn('nav-link', pathname === '/favorites' && 'active')}
-        >
+        <NavLink href="/favorites" onClick={close} active={pathname === '/favorites'}>
           <Heart size={17} />
           Favoritos
-        </Link>
-        <Link
-          href="/collections"
-          onClick={close}
-          className={cn('nav-link', pathname.startsWith('/collections') && 'active')}
-        >
+        </NavLink>
+        <NavLink href="/collections" onClick={close} active={pathname.startsWith('/collections')}>
           <FolderHeart size={17} />
           Coleções
-        </Link>
-        <Link
-          href="/statistics"
-          onClick={close}
-          className={cn('nav-link', pathname === '/statistics' && 'active')}
-        >
+        </NavLink>
+        <NavLink href="/statistics" onClick={close} active={pathname === '/statistics'}>
           <ChartColumn size={17} />
           Estatísticas
-        </Link>
-        <Link
-          href="/journey"
-          onClick={close}
-          className={cn('nav-link', pathname === '/journey' && 'active')}
-        >
+        </NavLink>
+        <NavLink href="/journey" onClick={close} active={pathname === '/journey'}>
           <Sparkles size={17} />
           Jornada
-        </Link>
-        <Link
-          href="/goals"
-          onClick={close}
-          className={cn('nav-link', pathname === '/goals' && 'active')}
-        >
+        </NavLink>
+        <NavLink href="/goals" onClick={close} active={pathname === '/goals'}>
           <Target size={17} />
           Metas
-        </Link>
-        <Link
-          href="/discover"
-          onClick={close}
-          className={cn('nav-link', pathname === '/discover' && 'active')}
-        >
+        </NavLink>
+        <NavLink href="/discover" onClick={close} active={pathname === '/discover'}>
           <Compass size={17} />
           Descobrir
-        </Link>
+        </NavLink>
       </nav>
       <div className="sidebar-bottom">
-        <Link
-          href="/settings"
-          onClick={close}
-          className={cn('nav-link', pathname === '/settings' && 'active')}
-        >
+        <NavLink href="/settings" onClick={close} active={pathname === '/settings'}>
           <Settings size={17} />
           Configurações
-        </Link>
+        </NavLink>
         <button className="nav-link support-nav" onClick={() => setSupportOpen(true)}>
           <CupSoda size={17} />
           Buy Me a Monster
@@ -259,6 +239,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             title={label}
             aria-label={label}
           >
+            {pathname.startsWith(href) && (
+              <motion.span layoutId="rail-active" className="rail-active-bg" aria-hidden="true" />
+            )}
             <Icon size={20} />
             <small>{label}</small>
           </Link>
@@ -273,7 +256,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <Settings size={20} />
         </Link>
       </aside>
-      <aside className="main-sidebar">{navigation(() => undefined)}</aside>
+      <aside className="main-sidebar">
+        <LayoutGroup id="sidebar">{navigation(() => undefined)}</LayoutGroup>
+      </aside>
       <div className="app-workspace">
         <header className="global-header">
           <Link href="/home" className="global-brand" aria-label="Jinsei início">
@@ -347,7 +332,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <DialogDescription className="sr-only">
             Acesse sua biblioteca e as configurações
           </DialogDescription>
-          {navigation(() => setMobileOpen(false))}
+          <LayoutGroup id="drawer">{navigation(() => setMobileOpen(false))}</LayoutGroup>
         </DialogContent>
       </Dialog>
       <SupportDialog open={supportOpen} onOpenChange={setSupportOpen} />

@@ -8,6 +8,7 @@ import { api } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { categoryIcons } from '@/components/shared/category-icons';
 import { StatusBadge } from '@/features/library/status-badge';
+import { NumberTicker } from '@/components/motion/number-ticker';
 import { ActivityHeatmap, BarList, ColumnChart } from './charts';
 
 const number = (value: number) => value.toLocaleString('pt-BR');
@@ -50,30 +51,34 @@ export function StatisticsScreen() {
 
 function StatisticsContent({ statistics }: { statistics: Statistics }) {
   const { totals } = statistics;
-  const tiles = [
-    ['Títulos', number(totals.entries)],
-    ['Concluídos', number(totals.completed)],
-    ['Favoritos', number(totals.favorites)],
-    [
-      'Nota média',
-      totals.averageRating === null
-        ? '—'
-        : `${totals.averageRating.toLocaleString('pt-BR', { maximumFractionDigits: 2 })} ★`,
-    ],
-    ['Horas jogadas', number(Math.round(totals.hoursPlayed))],
-    ['Episódios', number(totals.episodesWatched)],
-    ['Capítulos', number(totals.chaptersRead)],
-    ['Páginas', number(totals.pagesRead)],
-    ['Sessões de filmes', number(totals.timesWatched)],
-  ] as const;
+  const tiles: { label: string; value: number | null; decimals?: number; suffix?: string }[] = [
+    { label: 'Títulos', value: totals.entries },
+    { label: 'Concluídos', value: totals.completed },
+    { label: 'Favoritos', value: totals.favorites },
+    { label: 'Nota média', value: totals.averageRating, decimals: 2, suffix: ' ★' },
+    { label: 'Horas jogadas', value: Math.round(totals.hoursPlayed) },
+    { label: 'Episódios', value: totals.episodesWatched },
+    { label: 'Capítulos', value: totals.chaptersRead },
+    { label: 'Páginas', value: totals.pagesRead },
+    { label: 'Sessões de filmes', value: totals.timesWatched },
+  ];
   const completedThisYear = statistics.completionsByMonth.reduce((sum, row) => sum + row.count, 0);
   return (
     <>
       <div className="stat-tiles">
-        {tiles.map(([label, value]) => (
+        {tiles.map(({ label, value, decimals, suffix }) => (
           <div className="stat-tile" key={label}>
             <span>{label}</span>
-            <strong>{value}</strong>
+            <strong>
+              {value === null ? (
+                '—'
+              ) : (
+                <>
+                  <NumberTicker value={value} decimals={decimals} />
+                  {suffix}
+                </>
+              )}
+            </strong>
           </div>
         ))}
       </div>

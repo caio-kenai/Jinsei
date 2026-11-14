@@ -22,6 +22,7 @@ export function GoalRing({ value, size = 56 }: { value: number; size?: number })
       />
       <circle
         className="goal-ring-value"
+        style={{ '--circumference': circumference } as React.CSSProperties}
         cx={size / 2}
         cy={size / 2}
         r={radius}

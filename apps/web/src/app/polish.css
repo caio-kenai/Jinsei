@@ -1,0 +1,70 @@
+/*
+ * Visual refinements on top of the base styles: consistent status pills,
+ * breathing room on dashboard pages and calmer secondary text.
+ */
+
+/* Status pills behave the same in every row, like the group headers. */
+.inline-control.status-badge {
+  border-radius: 4px;
+  letter-spacing: 0.2px;
+  transition:
+    filter 140ms ease,
+    box-shadow 140ms ease;
+}
+.inline-control.status-badge:hover,
+.inline-control.status-badge:focus-visible {
+  border-color: transparent;
+  filter: brightness(0.96);
+  box-shadow: 0 0 0 2px color-mix(in srgb, currentColor 18%, transparent);
+}
+.inline-control.status-planned {
+  color: #697183;
+  background: #edf0f5;
+}
+.inline-control.status-in_progress {
+  color: #fff;
+  background: #7050cf;
+}
+.inline-control.status-paused {
+  color: #9b711e;
+  background: #fcf2dc;
+}
+.inline-control.status-completed {
+  color: #258367;
+  background: #e5f3ec;
+}
+.inline-control.status-dropped {
+  color: #bf4960;
+  background: #fbe9ee;
+}
+.dark .inline-control.status-planned {
+  color: #b1b7c5;
+  background: #34363e;
+}
+.dark .inline-control.status-paused {
+  color: #dfc083;
+  background: #423a28;
+}
+.dark .inline-control.status-completed {
+  color: #8dd4b8;
+  background: #263d34;
+}
+.dark .inline-control.status-dropped {
+  color: #efa3b1;
+  background: #482c34;
+}
+
+/* Dashboard-style pages get the same top and bottom spacing as the home page. */
+.journey-page,
+.statistics-page {
+  padding-top: 18px;
+  padding-bottom: 36px;
+}
+
+/* Rows highlight softly under the pointer, as in list views of task tools. */
+.library-table tbody tr:not(.group-row) {
+  transition: background 120ms ease;
+}
+.library-table tbody tr:not(.group-row):hover {
+  background: var(--hover);
+}

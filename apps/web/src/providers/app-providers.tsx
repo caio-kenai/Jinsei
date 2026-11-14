@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider } from 'next-themes';
 import { Toaster } from 'sonner';
 import { SignupDraftProvider } from '@/features/auth/signup-draft';
+import { MotionProvider } from '@/components/motion/motion-provider';
 
 export function AppProviders({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -16,7 +17,9 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-        <SignupDraftProvider>{children}</SignupDraftProvider>
+        <MotionProvider>
+          <SignupDraftProvider>{children}</SignupDraftProvider>
+        </MotionProvider>
         <Toaster richColors position="bottom-right" />
       </ThemeProvider>
     </QueryClientProvider>

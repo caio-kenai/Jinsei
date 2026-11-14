@@ -1,7 +1,7 @@
 {
   "name": "@jinsei/web",
   "private": true,
-  "version": "0.0.2",
+  "version": "0.0.3",
   "scripts": {
     "dev": "node ../../scripts/sync-branding.mjs && next dev --hostname 127.0.0.1",
     "build": "node ../../scripts/sync-branding.mjs && next build",
@@ -22,6 +22,7 @@
     "clsx": "2.1.1",
     "date-fns": "4.4.0",
     "lucide-react": "1.72.0",
+    "motion": "^14.13.0",
     "next": "16.4.6",
     "next-themes": "0.4.6",
     "qrcode.react": "4.2.0",
