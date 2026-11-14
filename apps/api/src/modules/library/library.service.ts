@@ -59,6 +59,8 @@ export function entryResult(entry: Entry) {
     notes: entry.notes,
     review: entry.review,
     reviewPublic: entry.reviewPublic,
+    recommendation: entry.recommendation,
+    publicWork: entry.media.ownerId === null,
     tags: entry.tags.map(({ tag }) => tag.name),
     progress: progressResult(entry, entry.media.mediaTypeId as MediaType),
     startedOn: entry.startedOn ? isoDay(entry.startedOn) : null,
@@ -141,6 +143,13 @@ export class LibraryService {
       limit: query.limit,
       pages: Math.max(1, Math.ceil(total / query.limit)),
     };
+  }
+
+  byMedia(userId: string, mediaId: string) {
+    return this.db.userMediaEntry.findUnique({
+      where: { userId_mediaId: { userId, mediaId } },
+      include: entryInclude,
+    });
   }
 
   async get(userId: string, id: string) {
@@ -256,6 +265,7 @@ export class LibraryService {
           boardRank: input.boardRank,
           review: input.review,
           reviewPublic: input.reviewPublic,
+          recommendation: input.recommendation,
           updatedAt: new Date(),
           ...entryDates(existing, statusKey, input),
           ...(input.progress ? progressUpdate(input.progress) : {}),

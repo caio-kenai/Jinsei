@@ -1,5 +1,12 @@
 # Histórico de versões
 
+## 0.0.7 — 2026-11-14
+
+- Páginas públicas das obras com ficha, sinopse, gêneros, personagens e dubladores, equipe e links, a partir do AniList, do TVmaze e do Open Library.
+- Nota média, membros, favoritos, distribuição por status, ranking e popularidade da comunidade em cartões coloridos.
+- Reviews com Recomendo, Sentimentos mistos ou Não recomendo, publicadas na página da obra.
+- Rankings por categoria, ordenados por nota ponderada ou por popularidade.
+
 ## 0.0.6 — 2026-11-14
 
 - Temas visuais com efeitos: Clássico, Sakura, Aurora, Oceano, Floresta, Pôr do sol e Neon.

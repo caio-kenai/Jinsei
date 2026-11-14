@@ -26,6 +26,9 @@ export function PublicHeader({ onSignup }: { onSignup?: () => void }) {
             <Link className="marketing-about-link" href="/#como-funciona">
               Conheça o Jinsei
             </Link>
+            <Link className="marketing-about-link" href="/rankings">
+              Rankings
+            </Link>
             <Link className="public-button public-button-muted" href="/login">
               Entrar
             </Link>

@@ -26,6 +26,7 @@ import {
   Target,
   Sparkles,
   ChartColumn,
+  Trophy,
 } from 'lucide-react';
 import { categoryLabels, mediaTypes, type CurrentUser } from '@jinsei/contracts';
 import { Brand } from '@/components/shared/brand';
@@ -171,6 +172,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <NavLink href="/discover" onClick={close} active={pathname === '/discover'}>
           <Compass size={17} />
           Descobrir
+        </NavLink>
+        <NavLink href="/rankings" onClick={close} active={false}>
+          <Trophy size={17} />
+          Rankings
         </NavLink>
       </nav>
       <div className="sidebar-bottom">
