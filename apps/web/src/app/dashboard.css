@@ -460,3 +460,113 @@
     animation: none;
   }
 }
+
+/* Private profile: the four totals become colorful cards. */
+section.profile-stats {
+  gap: 12px;
+  padding: 18px 0;
+  border: 0;
+}
+section.profile-stats > div[data-stat] {
+  --stat-color: #7050cf;
+  position: relative;
+  overflow: hidden;
+  justify-content: flex-start;
+  gap: 4px 10px;
+  padding: 16px 18px;
+  border: 1px solid color-mix(in srgb, var(--stat-color) 22%, var(--border));
+  border-radius: 14px;
+  background:
+    radial-gradient(
+      circle at 100% 0%,
+      color-mix(in srgb, var(--stat-color) 16%, transparent),
+      transparent 62%
+    ),
+    var(--surface);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+section.profile-stats > div[data-stat]:last-child {
+  border: 1px solid color-mix(in srgb, var(--stat-color) 22%, var(--border));
+}
+section.profile-stats > div[data-stat]:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 26px color-mix(in srgb, var(--stat-color) 16%, transparent);
+}
+section.profile-stats > div[data-stat='completed'] {
+  --stat-color: #15936a;
+}
+section.profile-stats > div[data-stat='hours'] {
+  --stat-color: #2f7bff;
+}
+section.profile-stats > div[data-stat='rating'] {
+  --stat-color: #f7832b;
+}
+section.profile-stats > div[data-stat] > svg {
+  width: 34px;
+  height: 34px;
+  padding: 8px;
+  border-radius: 10px;
+  background: var(--stat-color);
+  color: #fff;
+}
+section.profile-stats strong {
+  font-size: 26px;
+  font-weight: 750;
+}
+section.profile-stats .star-rating {
+  justify-content: flex-start;
+  width: 100%;
+}
+main .profile-avatar {
+  background: linear-gradient(135deg, #7050cf, #e5306f);
+  color: #fff;
+  box-shadow: 0 12px 30px #7050cf33;
+}
+
+/* Journey: missions grouped by period colors and a vivid level badge. */
+.mission-card {
+  --period-color: #15936a;
+  border-top: 3px solid var(--period-color);
+}
+.mission-card[data-period='weekly'] {
+  --period-color: #2f7bff;
+}
+.mission-card[data-period='monthly'] {
+  --period-color: #7050cf;
+}
+.mission-card .journey-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--period-color);
+}
+.mission-card .journey-section-title::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--period-color);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--period-color) 18%, transparent);
+}
+.mission-card .mission-track > span {
+  background: var(--period-color);
+}
+.mission-card .mission-xp {
+  color: var(--period-color);
+  font-weight: 650;
+}
+.level-badge {
+  background: linear-gradient(135deg, #7050cf, #e5306f) !important;
+  color: #fff !important;
+  box-shadow: 0 12px 26px #7050cf40;
+}
+.streak-flame {
+  color: #f7832b;
+}
+@media (max-width: 760px) {
+  section.profile-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

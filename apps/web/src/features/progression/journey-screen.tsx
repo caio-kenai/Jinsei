@@ -46,7 +46,7 @@ export function JourneyScreen() {
         </div>
         <div className="mission-columns">
           {missionPeriods.map((period) => (
-            <section key={period} className="journey-card">
+            <section key={period} className="journey-card mission-card" data-period={period}>
               <h2 className="journey-section-title">{missionPeriodLabels[period]}</h2>
               <MissionList
                 missions={progression.missions.filter((mission) => mission.period === period)}

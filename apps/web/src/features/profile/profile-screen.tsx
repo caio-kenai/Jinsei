@@ -84,22 +84,22 @@ export function ProfileScreen() {
         </Button>
       </header>
       <section className="profile-stats" aria-label="Estatísticas da sua biblioteca">
-        <div>
+        <div data-stat="titles">
           <Library size={17} />
           <strong>{summary.data?.total ?? '—'}</strong>
           <span>Títulos</span>
         </div>
-        <div>
+        <div data-stat="completed">
           <CircleCheck size={17} />
           <strong>{summary.data?.byStatus.completed ?? '—'}</strong>
           <span>Concluídos</span>
         </div>
-        <div>
+        <div data-stat="hours">
           <Clock3 size={17} />
           <strong>{summary.data?.hoursPlayed.toLocaleString('pt-BR') ?? '—'}</strong>
           <span>Horas de jogo</span>
         </div>
-        <div>
+        <div data-stat="rating">
           <StarRating value={summary.data?.averageRating ?? null} size={15} />
           <strong>
             {summary.data?.averageRating?.toLocaleString('pt-BR', { maximumFractionDigits: 2 }) ??
