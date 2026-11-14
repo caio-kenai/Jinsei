@@ -33,6 +33,13 @@ export const layoutIcons: Record<Layout, LucideIcon> = {
   board: Columns3,
   calendar: CalendarDays,
 };
+/** Each layout keeps its own icon color, like ClickUp's view tabs. */
+export const layoutColors: Record<Layout, string> = {
+  list: '#4f6bed',
+  gallery: '#e5306f',
+  board: '#7050cf',
+  calendar: '#f7832b',
+};
 /** Layouts that can be chosen for a view. */
 export const availableLayouts: Layout[] = ['list', 'gallery', 'board', 'calendar'];
 
@@ -65,7 +72,8 @@ export function ViewTabs({
     <div className="view-tabs" role="tablist" aria-label="Visualizações da biblioteca">
       {views.map((view) => {
         const active = view.id === activeId;
-        const Icon = layoutIcons[active ? activeLayout : view.config.layout];
+        const layout = active ? activeLayout : view.config.layout;
+        const Icon = layoutIcons[layout];
         return (
           <div className={`view-tab-wrapper ${active ? 'active' : ''}`} key={view.id}>
             <button
@@ -74,7 +82,7 @@ export function ViewTabs({
               className={`view-tab ${active ? 'active' : ''}`}
               onClick={() => onActivate(view)}
             >
-              <Icon size={14} />
+              <Icon size={14} style={{ color: layoutColors[layout] }} />
               {view.name}
               {active && (
                 <motion.span
@@ -97,7 +105,7 @@ export function ViewTabs({
                     const LayoutIcon = layoutIcons[layout];
                     return (
                       <DropdownMenuItem key={layout} onSelect={() => onLayout(layout)}>
-                        <LayoutIcon size={13} />
+                        <LayoutIcon size={13} style={{ color: layoutColors[layout] }} />
                         {layoutLabels[layout]}
                         {layout === activeLayout ? ' ✓' : ''}
                       </DropdownMenuItem>
@@ -140,7 +148,7 @@ export function ViewTabs({
             const LayoutIcon = layoutIcons[layout];
             return (
               <DropdownMenuItem key={layout} onSelect={() => onCreate(layout)}>
-                <LayoutIcon size={13} />
+                <LayoutIcon size={13} style={{ color: layoutColors[layout] }} />
                 {layoutLabels[layout]}
               </DropdownMenuItem>
             );
