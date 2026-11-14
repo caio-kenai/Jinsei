@@ -6,6 +6,7 @@
 - Botão Comece agora com borda arco-íris giratória, aura e brilho; destaques semelhantes no onboarding e na vitrine final.
 - Troca de tema com revelação circular a partir do botão usado e ícones de sol e lua animados.
 - Onboarding em cascata, com escolhas que reagem ao ponteiro, e hover em todos os botões da aplicação.
+- Status com cores vivas e texto branco e ícone maior na aba do navegador.
 
 ## 0.0.3 — 2026-11-14
 
