@@ -8,7 +8,7 @@ import { statusLabels, type LibraryEntry, type Viewing } from '@jinsei/contracts
 import { api, jsonBody } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { shortDate } from './progress-format';
+import { useDateFormat } from '@/lib/date-format';
 
 /**
  * Viewing history of a film. It keeps its own list so that recording a session does not reset
@@ -21,6 +21,7 @@ export function ViewingHistory({
   entry: LibraryEntry;
   onStatusChange: (status: LibraryEntry['status']) => void;
 }) {
+  const formatDate = useDateFormat().date;
   const initial = entry.progress.kind === 'film' ? entry.progress : null;
   const [viewings, setViewings] = useState<Viewing[]>(initial?.viewings ?? []);
   const [total, setTotal] = useState(initial?.timesWatched ?? 0);
@@ -96,11 +97,11 @@ export function ViewingHistory({
         <ul className="viewing-list">
           {viewings.map((viewing) => (
             <li key={viewing.id}>
-              {shortDate(viewing.watchedOn)}
+              {formatDate(viewing.watchedOn)}
               <button
                 type="button"
                 className="viewing-remove"
-                aria-label={`Remover sessão de ${shortDate(viewing.watchedOn)}`}
+                aria-label={`Remover sessão de ${formatDate(viewing.watchedOn)}`}
                 disabled={remove.isPending}
                 onClick={() => remove.mutate(viewing.id)}
               >

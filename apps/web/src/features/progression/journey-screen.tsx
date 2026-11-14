@@ -1,6 +1,5 @@
 'use client';
-import { format, parseISO } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { useDateFormat } from '@/lib/date-format';
 import { Check, LoaderCircle, Lock, Sparkles } from 'lucide-react';
 import { missionPeriodLabels, missionPeriods } from '@jinsei/contracts';
 import { Button } from '@/components/ui/button';
@@ -9,6 +8,7 @@ import { LevelCard, MissionList, StreakCard } from './journey-widgets';
 import { useActiveTitle, useProgression } from './use-progression';
 
 export function JourneyScreen() {
+  const formatDate = useDateFormat().date;
   const result = useProgression();
   const title = useActiveTitle();
   if (result.isPending)
@@ -75,9 +75,7 @@ export function JourneyScreen() {
                   <strong>{badge.label}</strong>
                   <small>{badge.description}</small>
                   {badge.unlockedAt ? (
-                    <small className="badge-date">
-                      {format(parseISO(badge.unlockedAt), 'd MMM yyyy', { locale: ptBR })}
-                    </small>
+                    <small className="badge-date">{formatDate(badge.unlockedAt)}</small>
                   ) : (
                     <span className="badge-track">
                       <span style={{ width: `${(badge.progress / badge.target) * 100}%` }} />
