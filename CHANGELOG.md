@@ -1,5 +1,12 @@
 # Histórico de versões
 
+## 0.0.4 — 2026-11-14
+
+- Apresentação reformulada: título revelado palavra por palavra, categorias alternando no subtítulo, auroras em movimento, prévia que se inclina durante a rolagem e cartões com luz que segue o ponteiro.
+- Botão Comece agora com borda arco-íris giratória, aura e brilho; destaques semelhantes no onboarding e na vitrine final.
+- Troca de tema com revelação circular a partir do botão usado e ícones de sol e lua animados.
+- Onboarding em cascata, com escolhas que reagem ao ponteiro, e hover em todos os botões da aplicação.
+
 ## 0.0.3 — 2026-11-14
 
 - Animações fluidas na área de trabalho: destaque deslizante na navegação, nas abas e na paleta de comandos, entrada suave das telas e cascata em listas, cartões e seções.

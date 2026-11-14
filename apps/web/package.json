@@ -1,7 +1,7 @@
 {
   "name": "@jinsei/web",
   "private": true,
-  "version": "0.0.3",
+  "version": "0.0.4",
   "scripts": {
     "dev": "node ../../scripts/sync-branding.mjs && next dev --hostname 127.0.0.1",
     "build": "node ../../scripts/sync-branding.mjs && next build",
