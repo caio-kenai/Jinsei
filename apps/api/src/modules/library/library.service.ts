@@ -10,6 +10,8 @@ import {
   progressKinds,
   progressLimitError,
   statusForProgress,
+  type CalendarEvent,
+  type CalendarQuery,
   type EntryCreateInput,
   type EntryPatchInput,
   type LibraryQuery,
@@ -335,6 +337,62 @@ export class LibraryService {
     await this.get(userId, id);
     await this.db.userMediaEntry.delete({ where: { id, userId } });
     return { deleted: true };
+  }
+
+  async calendar(userId: string, query: CalendarQuery): Promise<{ events: CalendarEvent[] }> {
+    const range = { gte: day(query.from), lte: day(query.to) };
+    const scope: Prisma.UserMediaEntryWhereInput = {
+      userId,
+      media: {
+        mediaType: { users: { some: { userId, enabled: true } } },
+        ...(query.mediaType ? { mediaTypeId: query.mediaType } : {}),
+      },
+      ...(query.favorite ? { favorite: query.favorite === 'true' } : {}),
+    };
+    const select = {
+      id: true,
+      startedOn: true,
+      completedOn: true,
+      status: { select: { key: true } },
+      media: { select: { title: true, mediaTypeId: true, coverUrl: true } },
+    } satisfies Prisma.UserMediaEntrySelect;
+    const [entries, viewings] = await this.db.$transaction([
+      this.db.userMediaEntry.findMany({
+        where: { ...scope, OR: [{ startedOn: range }, { completedOn: range }] },
+        select,
+        take: 1000,
+      }),
+      this.db.entryViewing.findMany({
+        where: { watchedOn: range, entry: scope },
+        select: { watchedOn: true, entry: { select } },
+        take: 1000,
+      }),
+    ]);
+    const event = (
+      entry: Prisma.UserMediaEntryGetPayload<{ select: typeof select }>,
+      kind: CalendarEvent['kind'],
+      date: Date,
+    ): CalendarEvent => ({
+      date: isoDay(date),
+      kind,
+      entryId: entry.id,
+      title: entry.media.title,
+      mediaType: entry.media.mediaTypeId as MediaType,
+      status: entry.status.key as StatusKey,
+      coverUrl: entry.media.coverUrl,
+    });
+    const inRange = (date: Date | null): date is Date =>
+      Boolean(date && date >= range.gte && date <= range.lte);
+    const events = [
+      ...entries.flatMap((entry) => [
+        ...(inRange(entry.startedOn) ? [event(entry, 'started', entry.startedOn)] : []),
+        ...(inRange(entry.completedOn) ? [event(entry, 'completed', entry.completedOn)] : []),
+      ]),
+      ...viewings.map((viewing) => event(viewing.entry, 'viewed', viewing.watchedOn)),
+    ];
+    return {
+      events: events.sort((a, b) => a.date.localeCompare(b.date) || a.title.localeCompare(b.title)),
+    };
   }
 
   async summary(userId: string) {

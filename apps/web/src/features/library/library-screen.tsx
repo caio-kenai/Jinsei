@@ -52,6 +52,7 @@ import { StatusBadge } from './status-badge';
 import { StarRating } from '@/components/shared/star-rating';
 import { ViewTabs, type Layout } from './view-tabs';
 import { LibraryBoard } from './library-board';
+import { LibraryCalendar } from './library-calendar';
 
 type Props = {
   mediaType?: MediaType;
@@ -525,6 +526,12 @@ function LibraryWorkspace({
               Adicionar meu primeiro título
             </Button>
           </div>
+        ) : config.layout === 'calendar' ? (
+          <LibraryCalendar
+            mediaType={mediaType}
+            favorite={favorites || config.filters.favorite}
+            onOpen={setDetailId}
+          />
         ) : board ? (
           <LibraryBoard entries={result.data.items} onOpen={setDetailId} onPatch={onPatch} />
         ) : config.layout === 'list' ? (

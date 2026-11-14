@@ -347,3 +347,33 @@ export const defaultViewConfig: SavedViewConfig = {
   sort: 'updatedAt',
   order: 'desc',
 };
+
+export const calendarQuerySchema = z
+  .object({
+    from: isoDateSchema,
+    to: isoDateSchema,
+    mediaType: mediaTypeSchema.optional(),
+    favorite: z.enum(['true', 'false']).optional(),
+  })
+  .strict()
+  .refine((query) => {
+    const days = (Date.parse(query.to) - Date.parse(query.from)) / 86400000;
+    return days >= 0 && days <= 62;
+  }, 'Consulte no máximo 62 dias por vez');
+export type CalendarQuery = z.infer<typeof calendarQuerySchema>;
+export const calendarEventKinds = ['started', 'completed', 'viewed'] as const;
+export const calendarEventLabels: Record<(typeof calendarEventKinds)[number], string> = {
+  started: 'Início',
+  completed: 'Conclusão',
+  viewed: 'Sessão',
+};
+export const calendarEventSchema = z.object({
+  date: isoDateSchema,
+  kind: z.enum(calendarEventKinds),
+  entryId: z.string(),
+  title: z.string(),
+  mediaType: mediaTypeSchema,
+  status: statusSchema,
+  coverUrl: z.string().nullable(),
+});
+export type CalendarEvent = z.infer<typeof calendarEventSchema>;

@@ -3,8 +3,10 @@ import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
 import {
   entryCreateSchema,
   entryPatchSchema,
+  calendarQuerySchema,
   libraryQuerySchema,
   viewingCreateSchema,
+  type CalendarQuery,
   type EntryCreateInput,
   type EntryPatchInput,
   type LibraryQuery,
@@ -24,6 +26,12 @@ export class LibraryController {
     @Query(new ZodPipe(libraryQuerySchema)) query: LibraryQuery,
   ) {
     return this.library.list(userId, query);
+  }
+  @Get('calendar') calendar(
+    @CurrentUserId() userId: string,
+    @Query(new ZodPipe(calendarQuerySchema)) query: CalendarQuery,
+  ) {
+    return this.library.calendar(userId, query);
   }
   @Get('summary') summary(@CurrentUserId() userId: string) {
     return this.library.summary(userId);
