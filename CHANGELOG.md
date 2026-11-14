@@ -1,5 +1,12 @@
 # Histórico de versões
 
+## 0.0.5 — 2026-11-14
+
+- Apresentação ampliada: faixa de categorias, grade de recursos com demonstrações animadas, passos para começar, pilares de código aberto e privacidade e perguntas frequentes.
+- Prévia do produto entra suavemente, sem começar inclinada.
+- Hover em todos os links, menus, opções e controles, incluindo o rodapé e as categorias da demonstração.
+- Pacote self-host e SHA256SUMS anexados automaticamente a cada release.
+
 ## 0.0.4 — 2026-11-14
 
 - Apresentação reformulada: título revelado palavra por palavra, categorias alternando no subtítulo, auroras em movimento, prévia que se inclina durante a rolagem e cartões com luz que segue o ponteiro.

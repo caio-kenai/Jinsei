@@ -6,6 +6,8 @@ import './public.css';
 import './polish.css';
 import './motion.css';
 import './landing.css';
+import './landing-sections.css';
+import './interactions.css';
 import { AppProviders } from '@/providers/app-providers';
 
 export const metadata: Metadata = {

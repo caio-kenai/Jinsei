@@ -355,11 +355,8 @@
   }
 }
 
-/* Product preview tilts into place while scrolling. */
-.scroll-tilt {
-  perspective: 1400px;
-}
-.scroll-tilt-inner {
+/* Product preview rises on load and grows a little while scrolling. */
+.scroll-lift-inner {
   transform-origin: 50% 0;
   will-change: transform;
 }

@@ -1,0 +1,198 @@
+/*
+ * Pointer feedback for every interactive element that had none: links get an
+ * animated underline, list options slide and take color, icon controls lift.
+ */
+:root {
+  --hover-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Shared transitions for anything clickable. */
+:where(
+  a,
+  button,
+  summary,
+  [role='button'],
+  [role='menuitem'],
+  [role='option'],
+  label.checkbox-field
+) {
+  transition:
+    color 160ms ease,
+    background-color 160ms ease,
+    border-color 160ms ease,
+    box-shadow 200ms ease,
+    opacity 160ms ease,
+    transform 200ms var(--hover-ease);
+}
+
+/* Text links: underline grows from the left. */
+.marketing-footer nav a,
+.public-footer-link,
+.inline-link,
+.manual-link,
+.section-link,
+.source-link,
+.public-collection-link,
+.legal-article a,
+.auth-footer a,
+.auth-switch a,
+.breadcrumb a,
+.section-title a {
+  position: relative;
+  text-decoration: none;
+  background: linear-gradient(currentColor, currentColor) 0 100% / 0 1px no-repeat;
+  transition:
+    color 160ms ease,
+    background-size 260ms var(--hover-ease);
+}
+.marketing-footer nav a:hover,
+.public-footer-link:hover,
+.inline-link:hover,
+.manual-link:hover,
+.section-link:hover,
+.source-link:hover,
+.public-collection-link:hover,
+.legal-article a:hover,
+.auth-footer a:hover,
+.auth-switch a:hover,
+.breadcrumb a:hover,
+.section-title a:hover {
+  color: var(--foreground, #111);
+  background-size: 100% 1px;
+}
+.public-footer-link {
+  border: 0;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+.marketing-footer .brand,
+.global-brand .brand {
+  transition: transform 260ms cubic-bezier(0.34, 1.36, 0.64, 1);
+}
+.marketing-footer a:hover .brand,
+.global-brand:hover .brand {
+  transform: scale(1.04) rotate(-1deg);
+}
+
+/* Option lists (demo categories, sidebar sections, support links). */
+.demo-categories > button {
+  border-radius: 8px;
+  padding-left: 0;
+  padding-right: 0;
+  cursor: pointer;
+  transition:
+    color 160ms ease,
+    padding 220ms var(--hover-ease),
+    background-color 160ms ease;
+}
+.demo-categories > button:hover {
+  color: #111;
+  padding-left: 6px;
+  background: linear-gradient(90deg, #1090f314, transparent 80%);
+}
+.demo-categories > button.active:hover {
+  color: #1090f3;
+}
+.demo-categories > button:hover > span {
+  color: #1090f3;
+  transform: rotate(90deg);
+}
+.demo-categories > button > span,
+.demo-category-icon {
+  transition:
+    transform 260ms cubic-bezier(0.34, 1.36, 0.64, 1),
+    color 160ms ease;
+}
+.demo-categories > button:hover .demo-category-icon {
+  transform: scale(1.18) rotate(-8deg);
+  color: #1090f3;
+}
+.sidebar-section:hover,
+.support-nav:hover,
+.nav-add:hover {
+  color: var(--foreground);
+}
+.nav-link svg {
+  transition: transform 220ms cubic-bezier(0.34, 1.36, 0.64, 1);
+}
+.nav-link:hover svg {
+  transform: scale(1.12);
+}
+.view-tab:hover {
+  color: var(--foreground);
+}
+.view-tab-add:hover {
+  color: var(--foreground);
+}
+.view-tab-add:hover svg {
+  transform: rotate(90deg);
+}
+.view-tab-add svg {
+  transition: transform 240ms cubic-bezier(0.34, 1.36, 0.64, 1);
+}
+
+/* Menu items: highlighted row slides its icon. */
+.menu-item {
+  transition:
+    background-color 120ms ease,
+    color 120ms ease;
+}
+.menu-item svg {
+  transition: transform 200ms cubic-bezier(0.34, 1.36, 0.64, 1);
+}
+.menu-item[data-highlighted] svg {
+  transform: translateX(2px) scale(1.08);
+}
+.command-item:hover .command-label {
+  color: var(--foreground);
+}
+
+/* Icon controls lift or pop. */
+.favorite-button:hover,
+.gallery-favorite:hover {
+  transform: scale(1.18);
+}
+.favorite-button:active,
+.gallery-favorite:active {
+  transform: scale(0.9);
+}
+.collection-grip:hover {
+  color: var(--foreground);
+  transform: scale(1.12);
+}
+.chart-toggle:hover {
+  color: var(--foreground);
+}
+.profile-trigger:hover,
+.avatar:hover {
+  transform: scale(1.06);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 18%, transparent);
+}
+.user-menu-identity:hover,
+.user-menu-cover:hover {
+  opacity: 0.9;
+}
+
+/* Choice tiles in settings and the journey. */
+.accent-choice:hover {
+  transform: translateY(-2px) scale(1.06);
+  box-shadow: 0 6px 14px #0000001f;
+}
+.title-option:hover {
+  border-color: color-mix(in srgb, var(--primary) 40%, var(--border));
+  background: var(--hover);
+}
+.checkbox-field:hover {
+  color: var(--foreground);
+}
+.inline-control:hover {
+  filter: brightness(0.98);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .demo-categories > button:hover {
+    padding-left: 0;
+  }
+}

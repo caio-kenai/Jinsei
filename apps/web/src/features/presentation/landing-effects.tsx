@@ -99,17 +99,21 @@ export function GlowButton({
   );
 }
 
-/** The product preview tilts back and settles flat as it scrolls into view. */
-export function ScrollTilt({ children }: { children: React.ReactNode }) {
+/** The product preview rises into place on load and grows slightly while scrolling. */
+export function ScrollLift({ children }: { children: React.ReactNode }) {
   const ref = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'start 0.35'] });
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'start 0.2'] });
   const progress = useSpring(scrollYProgress, { stiffness: 140, damping: 26 });
-  const rotateX = useTransform(progress, [0, 1], [18, 0]);
-  const scale = useTransform(progress, [0, 1], [0.93, 1]);
-  const y = useTransform(progress, [0, 1], [40, 0]);
+  const scale = useTransform(progress, [0, 1], [0.97, 1]);
   return (
-    <div ref={ref} className="scroll-tilt">
-      <motion.div style={{ rotateX, scale, y }} className="scroll-tilt-inner">
+    <div ref={ref} className="scroll-lift">
+      <motion.div
+        className="scroll-lift-inner"
+        style={{ scale }}
+        initial={{ opacity: 0, y: 48 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.9, delay: 0.45, ease }}
+      >
         {children}
       </motion.div>
     </div>
