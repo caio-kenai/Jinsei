@@ -1,5 +1,11 @@
 # Histórico de versões
 
+## 0.1.1 — 2026-11-14
+
+- Totais do perfil em cartões coloridos; missões da Jornada com cores por período e selo de nível em gradiente.
+- Páginas públicas mostram Abrir meu Jinsei para quem já entrou.
+- README com galeria de dezesseis capturas de tela, geradas por um teste dedicado.
+
 ## 0.1.0 — 2026-11-14
 
 - Botão de tema alterna claro e escuro com um clique, com a revelação partindo do próprio botão.
