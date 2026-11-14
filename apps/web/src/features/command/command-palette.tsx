@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import { motion } from 'motion/react';
 import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -233,6 +234,14 @@ export function CommandPalette({
                     onMouseEnter={() => setActive(index)}
                     onClick={command.run}
                   >
+                    {index === current && (
+                      <motion.span
+                        layoutId="command-active"
+                        className="command-active-bg"
+                        transition={{ type: 'spring', stiffness: 700, damping: 46 }}
+                        aria-hidden="true"
+                      />
+                    )}
                     {command.cover ? (
                       <MediaCover title={command.cover.title} url={command.cover.url} />
                     ) : (

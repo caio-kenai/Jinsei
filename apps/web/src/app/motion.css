@@ -86,6 +86,25 @@
   background: var(--foreground);
 }
 
+/* Command palette: the highlight follows the keyboard and the pointer. */
+.command-palette .dialog-close {
+  display: none;
+}
+.command-item {
+  position: relative;
+  isolation: isolate;
+}
+.command-item.active {
+  background: transparent;
+}
+.command-active-bg {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: var(--hover);
+}
+
 /* Press feedback on every button-like control. */
 .button,
 .toolbar-button,
@@ -422,6 +441,102 @@
 }
 .level-badge {
   animation: level-glow 3.2s ease-in-out infinite;
+}
+
+/* Empty states: the icon floats over soft ripples (Magic UI's Ripple, reduced to three rings). */
+.empty-state-icon {
+  position: relative;
+  isolation: isolate;
+  animation: float 4.5s ease-in-out infinite;
+}
+.empty-state-icon::before,
+.empty-state-icon::after {
+  content: '';
+  position: absolute;
+  inset: -14px;
+  z-index: -1;
+  border-radius: 22px;
+  border: 1px solid color-mix(in srgb, var(--primary) 22%, transparent);
+  animation: ripple 3.6s var(--ease-out) infinite;
+}
+.empty-state-icon::after {
+  animation-delay: 1.8s;
+}
+@keyframes ripple {
+  from {
+    opacity: 0.9;
+    transform: scale(0.72);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.45);
+  }
+}
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+.empty-state > * {
+  animation: rise-in 420ms var(--ease-out) backwards;
+}
+.empty-state > :nth-child(2) {
+  animation-delay: 60ms;
+}
+.empty-state > :nth-child(3) {
+  animation-delay: 120ms;
+}
+.empty-state > :nth-child(n + 4) {
+  animation-delay: 180ms;
+}
+
+/* Sign-in and sign-up: the halo drifts like an aurora over a faint dot grid. */
+.auth-halo {
+  background-size: 140% 140%;
+  animation: aurora 16s ease-in-out infinite alternate;
+}
+@keyframes aurora {
+  from {
+    background-position: 0% 0%;
+    filter: hue-rotate(0deg);
+  }
+  to {
+    background-position: 100% 30%;
+    filter: hue-rotate(-18deg);
+  }
+}
+.auth-halo::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(
+    color-mix(in srgb, var(--foreground) 14%, transparent) 1px,
+    transparent 1px
+  );
+  background-size: 18px 18px;
+  mask-image: radial-gradient(ellipse 70% 100% at 50% 0%, #000 0, transparent 80%);
+}
+.auth-box > * {
+  animation: rise-in 460ms var(--ease-out) backwards;
+}
+.auth-box > :nth-child(2) {
+  animation-delay: 60ms;
+}
+.auth-box > :nth-child(3) {
+  animation-delay: 110ms;
+}
+.auth-box > :nth-child(n + 4) {
+  animation-delay: 160ms;
+}
+.auth-box .brand {
+  transition: transform 300ms var(--ease-spring);
+}
+.auth-box > a:hover .brand {
+  transform: scale(1.04) rotate(-1deg);
 }
 
 @media (prefers-reduced-motion: reduce) {
