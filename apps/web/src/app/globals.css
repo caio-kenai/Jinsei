@@ -2150,19 +2150,25 @@ tr:hover .progress-increment,
   max-width: 440px;
 }
 .donation-logo {
-  width: 230px;
+  display: block;
+  width: 240px;
   height: auto;
+  margin: 4px auto 14px;
+}
+/* On dark surfaces the logo sits on a light card with even breathing room. */
+.dark .donation-dialog:not(.public-surface) .donation-logo {
+  box-sizing: content-box;
+  padding: 14px 22px;
+  border-radius: 14px;
   background: #fff;
-  border-radius: 7px;
-  margin: 0 auto 20px;
-  padding: 12px;
 }
 .qr-surface {
   display: inline-flex;
-  padding: 17px;
+  padding: 16px;
   background: #fff;
-  border-radius: 9px;
-  margin: 7px auto 18px;
+  border-radius: 14px;
+  margin: 18px auto 20px;
+  border: 1px solid #ececf0;
 }
 .donation-dialog .dialog-title {
   padding: 0;
