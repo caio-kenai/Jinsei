@@ -44,7 +44,7 @@ test('jornada completa no navegador persiste edições, visualização e tema', 
   await expect(
     page.getByRole('button', { name: `Jogo de teste ${id}`, exact: true }),
   ).toBeVisible();
-  await expect(page.getByText('65%', { exact: true })).toBeVisible();
+  await expect(page.getByText('12,5 h · 65%', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: `Nota de Jogo de teste ${id}`, exact: true }).click();
   const ratingPopover = page.getByRole('dialog', {
     name: `Nota de Jogo de teste ${id}`,
@@ -69,8 +69,8 @@ test('jornada completa no navegador persiste edições, visualização e tema', 
       response.request().method() === 'POST' &&
       response.status() === 201,
   );
-  await page.getByRole('tab', { name: 'Galeria', exact: true }).click();
-  await page.getByRole('button', { name: 'Salvar alterações', exact: true }).click();
+  await page.getByRole('button', { name: 'Visualização', exact: true }).click();
+  await page.getByRole('menuitem', { name: 'Galeria', exact: true }).click();
   await saved;
   await page.reload();
   await expect(page.getByRole('tab', { name: 'Galeria', exact: true })).toHaveAttribute(
