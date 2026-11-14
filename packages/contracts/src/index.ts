@@ -287,7 +287,7 @@ export type LibraryResponse = z.infer<typeof libraryResponseSchema>;
 export const savedViewConfigSchema = z
   .object({
     version: z.literal(1),
-    layout: z.enum(['list', 'gallery']),
+    layout: z.enum(['list', 'gallery', 'board', 'calendar']),
     groupBy: z.enum(['status', 'none']).default('status'),
     density: densitySchema.default('comfortable'),
     columns: z
@@ -307,9 +307,34 @@ export const savedViewConfigSchema = z
   })
   .strict();
 export type SavedViewConfig = z.infer<typeof savedViewConfigSchema>;
-export const saveViewSchema = z
-  .object({ mediaType: mediaTypeSchema, config: savedViewConfigSchema })
+export const viewScopeSchema = z.union([mediaTypeSchema, z.enum(['library', 'favorites'])]);
+export type ViewScope = z.infer<typeof viewScopeSchema>;
+export const viewNameSchema = z.string().trim().min(1).max(40);
+export const savedViewSchema = z.object({
+  id: z.string(),
+  scope: viewScopeSchema,
+  name: z.string(),
+  position: z.number(),
+  config: savedViewConfigSchema,
+});
+export type SavedView = z.infer<typeof savedViewSchema>;
+export const savedViewCreateSchema = z
+  .object({ scope: viewScopeSchema, name: viewNameSchema, config: savedViewConfigSchema })
   .strict();
+export const savedViewPatchSchema = z
+  .object({
+    name: viewNameSchema.optional(),
+    config: savedViewConfigSchema.optional(),
+    position: z.number().int().min(0).max(1000).optional(),
+  })
+  .strict();
+export type SavedViewPatch = z.infer<typeof savedViewPatchSchema>;
+export const layoutLabels: Record<SavedViewConfig['layout'], string> = {
+  list: 'Lista',
+  gallery: 'Galeria',
+  board: 'Quadro',
+  calendar: 'Calendário',
+};
 export const defaultViewConfig: SavedViewConfig = {
   version: 1,
   layout: 'list',

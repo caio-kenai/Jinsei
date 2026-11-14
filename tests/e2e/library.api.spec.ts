@@ -79,17 +79,34 @@ test('biblioteca isola usuários e persiste nota, progresso, tags, filtros e vis
   ).json();
   expect(filtered.total).toBe(1);
   expect(filtered.items[0].rating).toBe(4.75);
+  const view = {
+    scope: 'games',
+    name: 'Galeria',
+    config: { ...defaultViewConfig, layout: 'gallery' },
+  };
+  const createdView = await owner.post('/api/saved-views', { data: view });
+  expect(createdView.status()).toBe(201);
+  const savedView = await createdView.json();
+  expect((await owner.post('/api/saved-views', { data: view })).status()).toBe(409);
   expect(
     (
-      await owner.put('/api/saved-views', {
-        data: { mediaType: 'games', config: { ...defaultViewConfig, layout: 'gallery' } },
+      await owner.post('/api/saved-views', {
+        data: { ...view, name: 'Quadro', config: { ...defaultViewConfig, layout: 'board' } },
       })
     ).status(),
+  ).toBe(201);
+  const views = (await (await owner.get('/api/saved-views?scope=games')).json()).views;
+  expect(views.map((item: { name: string }) => item.name)).toEqual(['Galeria', 'Quadro']);
+  expect(views[0].config.layout).toBe('gallery');
+  expect((await (await other.get('/api/saved-views?scope=games')).json()).views).toHaveLength(0);
+  expect(
+    (await other.patch(`/api/saved-views/${savedView.id}`, { data: { name: 'Minha' } })).status(),
+  ).toBe(404);
+  expect((await other.delete(`/api/saved-views/${savedView.id}`)).status()).toBe(404);
+  expect(
+    (await owner.patch(`/api/saved-views/${savedView.id}`, { data: { name: 'Capas' } })).status(),
   ).toBe(200);
-  expect((await (await owner.get('/api/saved-views?mediaType=games')).json()).config.layout).toBe(
-    'gallery',
-  );
-  expect((await (await other.get('/api/saved-views?mediaType=games')).json()).config).toBeNull();
+  expect((await owner.delete(`/api/saved-views/${savedView.id}`)).status()).toBe(200);
   await owner.patch('/api/users/me/preferences', { data: { categories: ['movies'] } });
   expect((await (await owner.get('/api/library/entries')).json()).total).toBe(0);
   expect((await (await owner.get('/api/library/summary')).json()).total).toBe(0);

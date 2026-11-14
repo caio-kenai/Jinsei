@@ -972,6 +972,7 @@ kbd {
   display: flex;
   align-items: center;
   gap: 20px;
+  overflow-x: auto;
   min-height: 39px;
   padding: 0 25px;
   border-bottom: 1px solid var(--border);
@@ -998,6 +999,38 @@ kbd {
   color: var(--foreground);
   border-bottom-color: var(--foreground);
   font-weight: 600;
+}
+.view-tab-wrapper {
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.view-tab-menu {
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+.view-tab-menu:hover,
+.view-tab-menu[data-state='open'] {
+  background: var(--hover);
+  color: var(--foreground);
+}
+.view-tab-add {
+  font-weight: 400;
+}
+.has-changes::after {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--warning);
 }
 .view-count {
   margin-left: auto;

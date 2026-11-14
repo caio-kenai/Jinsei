@@ -1,7 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { randomUUID } from 'node:crypto';
 import { mkdirSync } from 'node:fs';
-import { defaultViewConfig } from '../../packages/contracts/src';
 
 test('jornada completa no navegador persiste edições, visualização e tema', async ({ page }) => {
   test.setTimeout(60000);
@@ -67,10 +66,11 @@ test('jornada completa no navegador persiste edições, visualização e tema', 
   const saved = page.waitForResponse(
     (response) =>
       response.url().includes('/api/saved-views') &&
-      response.request().method() === 'PUT' &&
-      response.status() === 200,
+      response.request().method() === 'POST' &&
+      response.status() === 201,
   );
   await page.getByRole('tab', { name: 'Galeria', exact: true }).click();
+  await page.getByRole('button', { name: 'Salvar alterações', exact: true }).click();
   await saved;
   await page.reload();
   await expect(page.getByRole('tab', { name: 'Galeria', exact: true })).toHaveAttribute(
@@ -130,10 +130,11 @@ test('capturas reais de lista, galeria, temas e mobile com conta de demonstraç�
   await page.goto('/home');
   await expect(page.locator('html')).toHaveClass(/dark/);
   await page.screenshot({ path: 'assets/screenshots/dashboard-dark.png' });
-  await page.request.put('/api/saved-views', {
-    headers: { Origin: 'http://localhost:3000' },
-    data: { mediaType: 'games', config: defaultViewConfig },
-  });
+  const gameViews = await (await page.request.get('/api/saved-views?scope=games')).json();
+  for (const view of gameViews.views)
+    await page.request.delete(`/api/saved-views/${view.id}`, {
+      headers: { Origin: 'http://localhost:3000' },
+    });
   await page.goto('/library/games');
   await expect(page.getByRole('button', { name: 'Hollow Knight', exact: true })).toBeVisible();
   await expect
@@ -174,12 +175,7 @@ test('capturas reais de lista, galeria, temas e mobile com conta de demonstraç�
       support.getByText('O apoio via Pix ainda não foi configurado nesta instalação.'),
     ).toBeVisible();
   await support.getByRole('button', { name: 'Fechar', exact: true }).click();
-  const saved = page.waitForResponse(
-    (response) =>
-      response.url().includes('/api/saved-views') && response.request().method() === 'PUT',
-  );
   await page.getByRole('tab', { name: 'Galeria', exact: true }).click();
-  await saved;
   await expect
     .poll(
       () =>

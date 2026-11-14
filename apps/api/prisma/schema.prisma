@@ -69,7 +69,6 @@ model MediaType {
   users     UserMediaType[]
   statuses  UserStatus[]
   items     MediaItem[]
-  views     SavedView[]
 }
 
 model UserMediaType {
@@ -283,17 +282,18 @@ model ActivityLog {
 }
 
 model SavedView {
-  id          String    @id @default(cuid())
-  userId      String
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  mediaTypeId String
-  mediaType   MediaType @relation(fields: [mediaTypeId], references: [id])
-  name        String    @default("Minha visualização")
-  config      Json
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  scope     String
+  name      String
+  position  Int      @default(0)
+  config    Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  @@unique([userId, mediaTypeId])
+  @@unique([userId, scope, name])
+  @@index([userId, scope, position])
 }
 
 model InstanceSettings {

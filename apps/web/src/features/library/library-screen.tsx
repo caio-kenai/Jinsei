@@ -1,13 +1,11 @@
 'use client';
 import { useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { keepPreviousData, useMutation, useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Library,
   Heart,
   Plus,
-  List,
-  LayoutGrid,
   SlidersHorizontal,
   Columns3,
   ArrowDownUp,
@@ -24,10 +22,13 @@ import {
   statusKeys,
   statusLabels,
   defaultViewConfig,
+  layoutLabels,
   type EntryPatchInput,
   type LibraryResponse,
   type MediaType,
+  type SavedView,
   type SavedViewConfig,
+  type ViewScope,
 } from '@jinsei/contracts';
 import { api, jsonBody } from '@/lib/api';
 import { categoryIcons } from '@/components/shared/category-icons';
@@ -49,6 +50,7 @@ import { EntryDetails } from './entry-details';
 import { MediaCover } from './media-cover';
 import { StatusBadge } from './status-badge';
 import { StarRating } from '@/components/shared/star-rating';
+import { ViewTabs, type Layout } from './view-tabs';
 
 type Props = {
   mediaType?: MediaType;
@@ -56,13 +58,43 @@ type Props = {
   initialQuery?: string;
   initialEntry?: string;
 };
+const defaultViews = (scope: ViewScope): SavedView[] =>
+  (['list', 'gallery'] as const).map((layout, position) => ({
+    id: `default:${layout}`,
+    scope,
+    name: layoutLabels[layout],
+    position,
+    config: { ...defaultViewConfig, layout },
+  }));
+const isSaved = (view: SavedView) => !view.id.startsWith('default:');
+// The last active view is a light per-browser convenience; the views themselves live in the API.
+const rememberedView = (scope: ViewScope) => {
+  try {
+    return window.localStorage.getItem(`jinsei:view:${scope}`);
+  } catch {
+    return null;
+  }
+};
+const rememberView = (scope: ViewScope, id: string) => {
+  try {
+    window.localStorage.setItem(`jinsei:view:${scope}`, id);
+  } catch {
+    // Storage may be unavailable; the first view is used instead.
+  }
+};
+function uniqueName(views: SavedView[], base: string) {
+  const names = new Set(views.filter(isSaved).map((view) => view.name.toLowerCase()));
+  if (!names.has(base.toLowerCase())) return base;
+  let index = 2;
+  while (names.has(`${base} ${index}`.toLowerCase())) index += 1;
+  return `${base} ${index}`;
+}
+
 export function LibraryScreen(props: Props) {
+  const scope: ViewScope = props.favorites ? 'favorites' : (props.mediaType ?? 'library');
   const result = useQuery({
-    queryKey: ['saved-view', props.mediaType ?? 'games'],
-    queryFn: () =>
-      api<{ config: SavedViewConfig | null }>(
-        `/saved-views?mediaType=${props.mediaType ?? 'games'}`,
-      ),
+    queryKey: ['saved-views', scope],
+    queryFn: () => api<{ views: SavedView[] }>(`/saved-views?scope=${scope}`),
   });
   if (result.isPending)
     return (
@@ -81,7 +113,8 @@ export function LibraryScreen(props: Props) {
     <LibraryWorkspace
       key={`${props.mediaType ?? 'all'}:${props.favorites ?? false}:${props.initialQuery ?? ''}:${props.initialEntry ?? ''}`}
       {...props}
-      initialConfig={result.data.config ?? defaultViewConfig}
+      scope={scope}
+      initialViews={result.data.views.length ? result.data.views : defaultViews(scope)}
     />
   );
 }
@@ -90,14 +123,23 @@ function LibraryWorkspace({
   favorites,
   initialQuery,
   initialEntry,
-  initialConfig,
-}: Props & { initialConfig: SavedViewConfig }) {
+  scope,
+  initialViews,
+}: Props & { scope: ViewScope; initialViews: SavedView[] }) {
   const router = useRouter();
   const pathname = usePathname();
-  const [config, setConfig] = useState<SavedViewConfig>({
-    ...initialConfig,
-    filters: { ...initialConfig.filters, ...(initialQuery ? { q: initialQuery } : {}) },
+  const client = useQueryClient();
+  const [views, setViews] = useState(initialViews);
+  const [activeId, setActiveId] = useState(() => {
+    const remembered = rememberedView(scope);
+    return initialViews.find((view) => view.id === remembered)?.id ?? initialViews[0].id;
   });
+  const active = views.find((view) => view.id === activeId) ?? views[0];
+  const [config, setConfig] = useState<SavedViewConfig>({
+    ...active.config,
+    filters: { ...active.config.filters, ...(initialQuery ? { q: initialQuery } : {}) },
+  });
+  const dirty = JSON.stringify(config) !== JSON.stringify(active.config);
   const [page, setPage] = useState(1);
   const [selected, setSelected] = useState<Record<string, boolean>>({});
   const [filterOpen, setFilterOpen] = useState(false);
@@ -105,12 +147,76 @@ function LibraryWorkspace({
   const [detailId, setDetailId] = useState<string | null>(initialEntry ?? null);
   const debounced = useDebouncedValue(config.filters.q);
   const patch = useEntryMutation();
+  function replaceViews(next: SavedView[]) {
+    const list = next.length ? next : initialViews.filter((view) => !isSaved(view));
+    setViews(list.length ? list : [active]);
+    void client.invalidateQueries({ queryKey: ['saved-views', scope] });
+  }
+  function activate(view: SavedView) {
+    setActiveId(view.id);
+    setConfig({ ...view.config, filters: { ...view.config.filters } });
+    setPage(1);
+    setSelected({});
+    if (isSaved(view)) rememberView(scope, view.id);
+  }
   const save = useMutation({
     mutationFn: (value: SavedViewConfig) =>
-      api('/saved-views', {
-        method: 'PUT',
-        body: jsonBody({ mediaType: mediaType ?? 'games', config: value }),
-      }),
+      isSaved(active)
+        ? api<SavedView>(`/saved-views/${active.id}`, {
+            method: 'PATCH',
+            body: jsonBody({ config: value }),
+          })
+        : api<SavedView>('/saved-views', {
+            method: 'POST',
+            body: jsonBody({ scope, name: uniqueName(views, active.name), config: value }),
+          }),
+    onSuccess: (saved) => {
+      replaceViews(views.map((view) => (view.id === active.id ? saved : view)));
+      setActiveId(saved.id);
+      rememberView(scope, saved.id);
+      toast.success('Visualização salva');
+    },
+    onError: (error) => toast.error(error.message),
+  });
+  const create = useMutation({
+    mutationFn: (input: { name: string; config: SavedViewConfig }) =>
+      api<SavedView>('/saved-views', { method: 'POST', body: jsonBody({ scope, ...input }) }),
+    onSuccess: (created) => {
+      replaceViews([...views.filter(isSaved), created]);
+      activate(created);
+    },
+    onError: (error) => toast.error(error.message),
+  });
+  const rename = useMutation({
+    mutationFn: ({ view, name }: { view: SavedView; name: string }) =>
+      isSaved(view)
+        ? api<SavedView>(`/saved-views/${view.id}`, { method: 'PATCH', body: jsonBody({ name }) })
+        : api<SavedView>('/saved-views', {
+            method: 'POST',
+            body: jsonBody({ scope, name, config }),
+          }),
+    onSuccess: (saved, { view }) => {
+      replaceViews(views.map((item) => (item.id === view.id ? saved : item)));
+      if (view.id === activeId) {
+        setActiveId(saved.id);
+        rememberView(scope, saved.id);
+      }
+    },
+    onError: (error) => toast.error(error.message),
+  });
+  const remove = useMutation({
+    mutationFn: (view: SavedView) =>
+      isSaved(view)
+        ? api(`/saved-views/${view.id}`, { method: 'DELETE' })
+        : Promise.resolve({ deleted: true }),
+    onSuccess: (_result, view) => {
+      const remaining = views.filter((item) => item.id !== view.id);
+      const next = remaining.length ? remaining : defaultViews(scope);
+      setViews(next);
+      void client.invalidateQueries({ queryKey: ['saved-views', scope] });
+      if (view.id === activeId) activate(next[0]);
+      toast.success('Visualização excluída');
+    },
     onError: (error) => toast.error(error.message),
   });
   const parameters = new URLSearchParams({
@@ -140,10 +246,8 @@ function LibraryWorkspace({
     setPage(1);
     setSelected({});
   }
-  function layout(next: SavedViewConfig['layout']) {
-    const value = { ...config, layout: next };
-    setConfig(value);
-    save.mutate(value);
+  function layout(next: Layout) {
+    setConfig({ ...config, layout: next });
   }
   function onPatch(id: string, changes: EntryPatchInput) {
     patch.mutate({ id, changes });
@@ -179,13 +283,12 @@ function LibraryWorkspace({
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => {
-              save.mutate(config, { onSuccess: () => toast.success('Visualização salva') });
-            }}
+            onClick={() => save.mutate(config)}
             disabled={save.isPending}
+            className={dirty ? 'has-changes' : undefined}
           >
             <Save size={13} />
-            Salvar visualização
+            {dirty ? 'Salvar alterações' : 'Salvar visualização'}
           </Button>
           <Button size="sm" onClick={() => setAddOpen(true)}>
             <Plus size={14} />
@@ -193,27 +296,28 @@ function LibraryWorkspace({
           </Button>
         </div>
       </header>
-      <div className="view-tabs" role="tablist" aria-label="Visualização da biblioteca">
-        <button
-          role="tab"
-          aria-selected={config.layout === 'list'}
-          className={`view-tab ${config.layout === 'list' ? 'active' : ''}`}
-          onClick={() => layout('list')}
-        >
-          <List size={14} />
-          Lista
-        </button>
-        <button
-          role="tab"
-          aria-selected={config.layout === 'gallery'}
-          className={`view-tab ${config.layout === 'gallery' ? 'active' : ''}`}
-          onClick={() => layout('gallery')}
-        >
-          <LayoutGrid size={14} />
-          Galeria
-        </button>
-        <span className="view-count">{result.data?.total ?? 0} títulos</span>
-      </div>
+      <ViewTabs
+        views={views}
+        activeId={active.id}
+        activeLayout={config.layout}
+        count={result.data?.total ?? 0}
+        onActivate={activate}
+        onLayout={layout}
+        onCreate={(next) =>
+          create.mutate({
+            name: uniqueName(views, layoutLabels[next]),
+            config: { ...config, layout: next },
+          })
+        }
+        onDuplicate={(view) =>
+          create.mutate({
+            name: uniqueName(views, `${view.name} (cópia)`.slice(0, 40)),
+            config: view.id === active.id ? config : view.config,
+          })
+        }
+        onRename={(view, name) => rename.mutate({ view, name })}
+        onDelete={(view) => remove.mutate(view)}
+      />
       <div className="toolbar">
         <div className="toolbar-group">
           <button
@@ -463,8 +567,8 @@ function LibraryWorkspace({
       </div>
       <footer className="pagination">
         <span>
-          {result.data?.total ?? 0} títulos · {config.layout === 'list' ? 'Lista' : 'Galeria'}
-          {save.isPending ? ' · Salvando visualização…' : ''}
+          {result.data?.total ?? 0} títulos · {active.name}
+          {save.isPending ? ' · Salvando visualização…' : dirty ? ' · Alterações não salvas' : ''}
         </span>
         <div className="pagination-actions">
           <span>
