@@ -7,7 +7,7 @@ import {
 } from './progress';
 export * from './progress';
 export * from './support';
-export const appVersion = '0.0.9';
+export const appVersion = '0.1.0';
 
 export const healthSchema = z.object({ status: z.literal('ok'), service: z.literal('jinsei-api') });
 
