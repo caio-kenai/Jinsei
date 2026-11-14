@@ -10,7 +10,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { Throttle } from '@nestjs/throttler';
+import { RateLimit } from '../../common/rate-limit';
 import { ApiConsumes, ApiTags } from '@nestjs/swagger';
 import type { Response } from 'express';
 import { CurrentUserId, Public } from '../auth/session.guard';
@@ -18,7 +18,7 @@ import { UploadsService, type UploadedImage } from './uploads.service';
 
 // Files stay in memory and are capped before the service validates their real type.
 const upload = FileInterceptor('file', { limits: { fileSize: 5 * 1024 * 1024, files: 1 } });
-const throttle = Throttle({ default: { limit: 20, ttl: 60000 } });
+const throttle = RateLimit(20);
 
 @ApiTags('Imagens')
 @Controller()

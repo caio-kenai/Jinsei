@@ -1,6 +1,6 @@
 import { Body, Controller, HttpCode, Inject, Post, Req, Res } from '@nestjs/common';
 import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
-import { Throttle } from '@nestjs/throttler';
+import { RateLimit } from '../../common/rate-limit';
 import {
   credentialsSchema,
   registrationSchema,
@@ -31,7 +31,7 @@ export class AuthController {
 
   @Public()
   @Post('register')
-  @Throttle({ default: { limit: 5, ttl: 60000 } })
+  @RateLimit(5)
   @ApiZodBody(registrationSchema)
   async register(
     @Body(new ZodPipe(registrationSchema)) input: RegistrationInput,
@@ -48,7 +48,7 @@ export class AuthController {
   @Public()
   @Post('login')
   @HttpCode(200)
-  @Throttle({ default: { limit: 10, ttl: 60000 } })
+  @RateLimit(10)
   @ApiZodBody(credentialsSchema)
   async login(
     @Body(new ZodPipe(credentialsSchema)) input: Credentials,

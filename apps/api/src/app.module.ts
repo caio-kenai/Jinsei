@@ -15,6 +15,7 @@ import { GoalsModule } from './modules/goals/goals.module';
 import { ProgressionModule } from './modules/progression/progression.module';
 import { UploadsModule } from './modules/uploads/uploads.module';
 import { ProfilesModule } from './modules/profiles/profiles.module';
+import { perMinute } from './common/rate-limit';
 
 @Controller('health')
 class HealthController {
@@ -40,7 +41,7 @@ class HealthController {
     PrismaModule,
     AuthModule,
     UsersModule,
-    ThrottlerModule.forRoot([{ ttl: 60000, limit: 180 }]),
+    ThrottlerModule.forRoot([perMinute(180)]),
   ],
   controllers: [HealthController, ViewsController, SupportController],
   providers: [
