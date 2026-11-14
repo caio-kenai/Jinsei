@@ -28,6 +28,9 @@
   text-transform: none;
 }
 .section-title .group-number {
+  width: auto;
+  min-width: 18px;
+  padding: 0 6px;
   white-space: nowrap;
 }
 
