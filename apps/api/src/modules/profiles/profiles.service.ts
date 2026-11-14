@@ -1,4 +1,5 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { statusKeys } from '@jinsei/contracts';
 import type {
   MediaType,
   PublicCollection,
@@ -15,11 +16,21 @@ import { mediaUrl } from '../uploads/uploads.service';
 
 const workSelect = {
   ratingSteps: true,
-  media: { select: { title: true, mediaTypeId: true, coverUrl: true, releaseYear: true } },
+  media: {
+    select: {
+      id: true,
+      ownerId: true,
+      title: true,
+      mediaTypeId: true,
+      coverUrl: true,
+      releaseYear: true,
+    },
+  },
 } satisfies Prisma.UserMediaEntrySelect;
 type WorkRow = Prisma.UserMediaEntryGetPayload<{ select: typeof workSelect }>;
 /** Only shared catalog data and the public rating leave the account; notes and tags never do. */
 const work = (row: WorkRow): PublicWork => ({
+  workId: row.media.ownerId === null ? row.media.id : null,
   title: row.media.title,
   mediaType: row.media.mediaTypeId as MediaType,
   coverUrl: row.media.coverUrl,
@@ -35,12 +46,129 @@ const collectionInclude = {
   },
 } satisfies Prisma.CollectionInclude;
 
+const number = (value: number) => value.toLocaleString('pt-BR');
+/** Short progress line shown in the public timeline, without any private notes. */
+function progressOf(row: {
+  gameProgress: { minutesPlayed: number; completion: number } | null;
+  episodeProgress: { episodesWatched: number } | null;
+  readingProgress: { chaptersRead: number; pagesRead: number } | null;
+  _count: { viewings: number };
+  media: {
+    mediaTypeId: string;
+    series: { totalEpisodes: number | null } | null;
+    reading: { totalChapters: number | null; totalPages: number | null } | null;
+  };
+}) {
+  const percent = (value: number, total: number | null | undefined) =>
+    total ? Math.min(100, Math.round((value / total) * 100)) : null;
+  if (row.gameProgress)
+    return {
+      progressLabel: `${number(Math.round((row.gameProgress.minutesPlayed / 60) * 10) / 10)} h · ${row.gameProgress.completion}%`,
+      progressPercent: row.gameProgress.completion,
+    };
+  if (row.episodeProgress) {
+    const total = row.media.series?.totalEpisodes;
+    return {
+      progressLabel: `${number(row.episodeProgress.episodesWatched)}/${total ? number(total) : '?'} ep.`,
+      progressPercent: percent(row.episodeProgress.episodesWatched, total),
+    };
+  }
+  if (row.readingProgress) {
+    const books = row.media.mediaTypeId === 'books';
+    const value = books ? row.readingProgress.pagesRead : row.readingProgress.chaptersRead;
+    const total = books ? row.media.reading?.totalPages : row.media.reading?.totalChapters;
+    return {
+      progressLabel: `${number(value)}/${total ? number(total) : '?'} ${books ? 'pág.' : 'cap.'}`,
+      progressPercent: percent(value, total),
+    };
+  }
+  if (row.media.mediaTypeId === 'movies' && row._count.viewings)
+    return {
+      progressLabel: `${row._count.viewings} ${row._count.viewings === 1 ? 'sessão' : 'sessões'}`,
+      progressPercent: null,
+    };
+  return { progressLabel: null, progressPercent: null };
+}
+
 @Injectable()
 export class ProfilesService {
   constructor(
     @Inject(PrismaService) private readonly db: PrismaService,
     @Inject(GoalsService) private readonly goals: GoalsService,
   ) {}
+
+  /** Per-category status counts, ratings and consumption totals for the profile tabs. */
+  private async categoryBreakdown(userId: string) {
+    const rows = await this.db.$queryRaw<
+      {
+        type: string;
+        status: string;
+        count: bigint;
+        votes: bigint;
+        steps: bigint | null;
+        favorites: bigint;
+        minutes: bigint;
+        episodes: bigint;
+        chapters: bigint;
+        volumes: bigint;
+        pages: bigint;
+        viewings: bigint;
+      }[]
+    >`
+      SELECT m."mediaTypeId" AS type, s."key" AS status, COUNT(*) AS count,
+             COUNT(e."ratingSteps") AS votes, SUM(e."ratingSteps") AS steps,
+             COUNT(*) FILTER (WHERE e."favorite") AS favorites,
+             COALESCE(SUM(g."minutesPlayed"), 0) AS minutes,
+             COALESCE(SUM(ep."episodesWatched"), 0) AS episodes,
+             COALESCE(SUM(r."chaptersRead"), 0) AS chapters,
+             COALESCE(SUM(r."volumesRead"), 0) AS volumes,
+             COALESCE(SUM(r."pagesRead"), 0) AS pages,
+             COALESCE(SUM((SELECT COUNT(*) FROM "EntryViewing" v WHERE v."entryId" = e."id")), 0) AS viewings
+      FROM "UserMediaEntry" e
+      JOIN "MediaItem" m ON m."id" = e."mediaId"
+      JOIN "UserStatus" s ON s."id" = e."statusId"
+      JOIN "UserMediaType" t ON t."userId" = e."userId" AND t."mediaTypeId" = m."mediaTypeId" AND t."enabled"
+      LEFT JOIN "GameProgress" g ON g."entryId" = e."id"
+      LEFT JOIN "EpisodeProgress" ep ON ep."entryId" = e."id"
+      LEFT JOIN "ReadingProgress" r ON r."entryId" = e."id"
+      WHERE e."userId" = ${userId}
+      GROUP BY m."mediaTypeId", s."key"`;
+    const byType = new Map<string, typeof rows>();
+    for (const row of rows) byType.set(row.type, [...(byType.get(row.type) ?? []), row]);
+    return [...byType.entries()].map(([type, list]) => {
+      const sum = (key: Exclude<keyof (typeof list)[number], 'type' | 'status'>) =>
+        list.reduce((total, row) => total + Number(row[key] ?? 0), 0);
+      const statuses = Object.fromEntries(statusKeys.map((key) => [key, 0])) as Record<
+        StatusKey,
+        number
+      >;
+      for (const row of list)
+        if ((statusKeys as readonly string[]).includes(row.status))
+          statuses[row.status as StatusKey] = Number(row.count);
+      const votes = sum('votes');
+      const units: { label: string; value: number }[] =
+        type === 'games'
+          ? [{ label: 'Horas jogadas', value: Math.round(sum('minutes') / 6) / 10 }]
+          : type === 'anime' || type === 'series'
+            ? [{ label: 'Episódios', value: sum('episodes') }]
+            : type === 'manga'
+              ? [
+                  { label: 'Capítulos', value: sum('chapters') },
+                  { label: 'Volumes', value: sum('volumes') },
+                ]
+              : type === 'books'
+                ? [{ label: 'Páginas', value: sum('pages') }]
+                : [{ label: 'Sessões', value: sum('viewings') }];
+      return {
+        mediaType: type as MediaType,
+        total: sum('count'),
+        favorites: sum('favorites'),
+        averageRating: votes ? Math.round((sum('steps') / votes / 4) * 100) / 100 : null,
+        statuses,
+        units,
+      };
+    });
+  }
 
   /** Private profiles answer exactly like missing ones, so their existence is not revealed. */
   private async publicProfile(username: string) {
@@ -86,9 +214,24 @@ export class ProfilesService {
         profile.showHistory
           ? this.db.userMediaEntry.findMany({
               where: enabled,
-              select: { ...workSelect, status: { select: { key: true } }, updatedAt: true },
+              select: {
+                ...workSelect,
+                status: { select: { key: true } },
+                updatedAt: true,
+                gameProgress: true,
+                episodeProgress: true,
+                readingProgress: true,
+                _count: { select: { viewings: true } },
+                media: {
+                  select: {
+                    ...workSelect.media.select,
+                    series: { select: { totalEpisodes: true } },
+                    reading: { select: { totalChapters: true, totalPages: true } },
+                  },
+                },
+              },
               orderBy: { updatedAt: 'desc' },
-              take: 12,
+              take: 40,
             })
           : null,
         this.db.userMediaEntry.aggregate({
@@ -103,6 +246,7 @@ export class ProfilesService {
           _count: true,
         }),
       ]);
+    const breakdown = profile.showStatistics ? await this.categoryBreakdown(userId) : [];
     const goals = profile.showGoals
       ? (await this.goals.list(userId)).goals
           .filter((goal) => goal.state !== 'archived')
@@ -126,6 +270,7 @@ export class ProfilesService {
               mediaType: row.mediaTypeId as MediaType,
               total: row._count,
             })),
+            categories: breakdown,
           }
         : null,
       favorites: favorites?.map(work) ?? null,
@@ -153,6 +298,7 @@ export class ProfilesService {
           ...work(row),
           status: row.status.key as StatusKey,
           updatedAt: row.updatedAt.toISOString(),
+          ...progressOf(row),
         })) ?? null,
       goals:
         goals?.map(({ name, metric, current, target, state }) => ({

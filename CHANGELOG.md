@@ -1,5 +1,12 @@
 # Histórico de versões
 
+## 0.0.8 — 2026-11-14
+
+- Perfil público reorganizado: banner, avatar e informações na lateral, com abas Visão geral, Jogos, Animes, Mangás, Filmes, Séries e Livros.
+- Estatísticas por categoria com barra de status animada, favoritos, nota média e horas, episódios, capítulos, páginas ou sessões.
+- Últimas atualizações com capa, barra de progresso e status, ligadas às páginas públicas das obras.
+- Favoritos e reviews do perfil levam à página de cada obra.
+
 ## 0.0.7 — 2026-11-14
 
 - Páginas públicas das obras com ficha, sinopse, gêneros, personagens e dubladores, equipe e links, a partir do AniList, do TVmaze e do Open Library.

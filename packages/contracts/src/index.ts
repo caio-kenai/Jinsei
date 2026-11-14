@@ -7,7 +7,7 @@ import {
 } from './progress';
 export * from './progress';
 export * from './support';
-export const appVersion = '0.0.7';
+export const appVersion = '0.0.8';
 
 export const healthSchema = z.object({ status: z.literal('ok'), service: z.literal('jinsei-api') });
 
@@ -722,6 +722,8 @@ export const statisticsSchema = z.object({
 export type Statistics = z.infer<typeof statisticsSchema>;
 
 const publicWorkSchema = z.object({
+  /** Public page of the work, when it comes from the shared catalog. */
+  workId: z.string().nullable().default(null),
   title: z.string(),
   mediaType: mediaTypeSchema,
   coverUrl: z.string().nullable(),
@@ -747,6 +749,18 @@ export const publicProfileSchema = z.object({
       completed: z.number(),
       averageRating: z.number().nullable(),
       byCategory: z.array(z.object({ mediaType: mediaTypeSchema, total: z.number() })),
+      categories: z
+        .array(
+          z.object({
+            mediaType: mediaTypeSchema,
+            total: z.number(),
+            favorites: z.number(),
+            averageRating: z.number().nullable(),
+            statuses: z.record(statusSchema, z.number()),
+            units: z.array(z.object({ label: z.string(), value: z.number() })),
+          }),
+        )
+        .default([]),
     })
     .nullable(),
   favorites: z.array(publicWorkSchema).nullable(),
@@ -755,7 +769,14 @@ export const publicProfileSchema = z.object({
     .array(publicWorkSchema.extend({ review: z.string(), updatedAt: z.string() }))
     .nullable(),
   history: z
-    .array(publicWorkSchema.extend({ status: statusSchema, updatedAt: z.string() }))
+    .array(
+      publicWorkSchema.extend({
+        status: statusSchema,
+        updatedAt: z.string(),
+        progressLabel: z.string().nullable().default(null),
+        progressPercent: z.number().nullable().default(null),
+      }),
+    )
     .nullable(),
   goals: z
     .array(

@@ -67,6 +67,16 @@ test('publica somente o que o perfil permite', async ({ playwright }) => {
   expect(profile.favorites[0]).toMatchObject({ title: `Obra ${id}`, rating: 4 });
   expect(profile.reviews[0].review).toBe('Resenha aberta');
   expect(profile.history).toBeNull();
+  expect(profile.statistics.categories).toEqual([
+    expect.objectContaining({
+      mediaType: 'games',
+      total: 1,
+      favorites: 1,
+      averageRating: 4,
+      statuses: expect.objectContaining({ planned: 1 }),
+      units: [{ label: 'Horas jogadas', value: 0 }],
+    }),
+  ]);
   expect(profile.links).toEqual([{ label: 'Site', url: 'https://example.com' }]);
   expect(profile.collections.map((item: { slug: string }) => item.slug)).toEqual([
     publicCollection.slug,
@@ -83,8 +93,12 @@ test('publica somente o que o perfil permite', async ({ playwright }) => {
     .map((item: { slug: string }) => item.slug);
   expect(slugs).toEqual([publicCollection.slug]);
 
-  await owner.patch('/api/users/me/preferences', { data: { showReviews: false } });
-  expect((await (await anonymous.get(`/api/profiles/${username}`)).json()).reviews).toBeNull();
+  await owner.patch('/api/users/me/preferences', {
+    data: { showReviews: false, showHistory: true },
+  });
+  const updated = await (await anonymous.get(`/api/profiles/${username}`)).json();
+  expect(updated.reviews).toBeNull();
+  expect(updated.history[0]).toMatchObject({ title: `Obra ${id}`, status: 'planned' });
   await owner.dispose();
   await anonymous.dispose();
 });
