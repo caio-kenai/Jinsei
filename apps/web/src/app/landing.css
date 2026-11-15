@@ -9,43 +9,6 @@
   initial-value: 0deg;
 }
 
-/* Header gains depth once the page scrolls. */
-.marketing-header {
-  transition:
-    box-shadow 240ms ease,
-    background 240ms ease;
-}
-.marketing-header.is-scrolled {
-  background: #ffffffd9;
-  box-shadow:
-    0 1px 0 #0000000d,
-    0 8px 30px #0000000a;
-}
-.marketing-about-link {
-  position: relative;
-  transition: color 160ms ease;
-}
-.marketing-about-link::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -3px;
-  height: 1.5px;
-  border-radius: 2px;
-  background: currentColor;
-  transform: scaleX(0);
-  transform-origin: right;
-  transition: transform 260ms var(--ease-out);
-}
-.marketing-about-link:hover {
-  color: #111;
-}
-.marketing-about-link:hover::after {
-  transform: scaleX(1);
-  transform-origin: left;
-}
-
 /* Every public button responds to the pointer. */
 .public-button {
   transition:

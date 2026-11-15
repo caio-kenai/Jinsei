@@ -198,7 +198,7 @@
 }
 
 /* Text links: an underline that grows from the left on hover. */
-a:not([class]),
+a:not([class]):not(:has(img, svg)),
 .text-link {
   text-decoration: none;
   background-image:
@@ -219,13 +219,13 @@ a:not([class]),
     color 160ms ease,
     opacity 160ms ease;
 }
-:where(nav, .legal-navigation, .marketing-footer, .about-links) a:not([class]) {
+:where(nav, .legal-navigation, .marketing-footer, .about-links) a:not([class]):not(:has(img, svg)) {
   background-size:
     0% 1.5px,
     0% 1px;
 }
-a:not([class]):hover,
-a:not([class]):focus-visible,
+a:not([class]):not(:has(img, svg)):hover,
+a:not([class]):not(:has(img, svg)):focus-visible,
 .text-link:hover,
 .text-link:focus-visible {
   background-size:
@@ -233,7 +233,7 @@ a:not([class]):focus-visible,
     100% 1px;
 }
 @media (prefers-reduced-motion: reduce) {
-  a:not([class]),
+  a:not([class]):not(:has(img, svg)),
   .text-link {
     transition: color 160ms ease;
   }
@@ -533,4 +533,9 @@ a:not([class]):focus-visible,
 .dark .view-tab.active:hover,
 .dark .toolbar-button.selected:hover {
   filter: brightness(1.15);
+}
+
+.select-item:focus-visible,
+.select-trigger:focus-visible {
+  text-decoration: none;
 }

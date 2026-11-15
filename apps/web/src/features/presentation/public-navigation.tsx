@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { motion } from 'motion/react';
 import { Brand } from '@/components/shared/brand';
 import { SignupDialog } from '@/features/auth/signup-dialog';
 import { useCurrentUser } from '@/features/auth/use-current-user';
@@ -14,6 +15,7 @@ export function PublicHeader({ onSignup }: { onSignup?: () => void }) {
   const [signup, setSignup] = useState(false);
   const user = useCurrentUser().data;
   const [scrolled, setScrolled] = useState(false);
+  const [hovered, setHovered] = useState<string | null>(null);
   useEffect(() => {
     const update = () => setScrolled(window.scrollY > 8);
     update();
@@ -28,12 +30,30 @@ export function PublicHeader({ onSignup }: { onSignup?: () => void }) {
             <Brand />
           </Link>
           <nav aria-label={t('Navegação do site')}>
-            <Link className="marketing-about-link" href="/#como-funciona">
-              {t('Conheça o Jinsei')}
-            </Link>
-            <Link className="marketing-about-link" href="/rankings">
-              {t('Rankings')}
-            </Link>
+            <div className="marketing-nav-links" onMouseLeave={() => setHovered(null)}>
+              {[
+                { href: '/#como-funciona', label: t('Conheça o Jinsei') },
+                { href: '/rankings', label: t('Rankings') },
+                { href: '/download', label: t('Apps') },
+              ].map(({ href, label }) => (
+                <Link
+                  key={href}
+                  className="marketing-about-link"
+                  href={href}
+                  onMouseEnter={() => setHovered(href)}
+                  onFocus={() => setHovered(href)}
+                >
+                  {hovered === href && (
+                    <motion.span
+                      layoutId="marketing-nav-highlight"
+                      className="marketing-nav-highlight"
+                      transition={{ type: 'spring', stiffness: 520, damping: 40 }}
+                    />
+                  )}
+                  <span>{label}</span>
+                </Link>
+              ))}
+            </div>
             <LanguageSwitcher />
             {user ? (
               <Link className="public-button" href="/home">
@@ -55,6 +75,7 @@ export function PublicHeader({ onSignup }: { onSignup?: () => void }) {
           </nav>
         </div>
       </header>
+      <div className="marketing-header-spacer" aria-hidden="true" />
       {!onSignup && <SignupDialog open={signup} onOpenChange={setSignup} />}
     </>
   );
