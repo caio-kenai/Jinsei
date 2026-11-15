@@ -5,6 +5,7 @@ export class ApiError extends Error {
     message: string,
   ) {
     super(message);
+    this.name = 'ApiError';
   }
 }
 
@@ -19,7 +20,7 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
     throw new ApiError(
       response.status,
       typeof result.message === 'string'
-        ? result.message
+        ? translate(result.message)
         : translate('Não foi possível concluir a operação'),
     );
   return result as T;

@@ -66,7 +66,7 @@ export function LibraryTable({
         <input
           type="checkbox"
           className="row-check"
-          aria-label={`Selecionar ${row.original.title}`}
+          aria-label={t('Selecionar {title}', { title: row.original.title })}
           checked={row.getIsSelected()}
           onChange={row.getToggleSelectedHandler()}
         />

@@ -65,7 +65,7 @@ export function ProfileScreen() {
           </div>
           <p className="profile-username">
             @{user.profile.username}
-            {activeTitle && <span className="profile-title-chip">{activeTitle}</span>}
+            {activeTitle && <span className="profile-title-chip">{t(activeTitle)}</span>}
           </p>
           <p className="profile-bio">
             {user.profile.bio || t('Suas histórias favoritas dizem um pouco sobre você.')}

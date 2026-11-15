@@ -1,4 +1,5 @@
 'use client';
+import { issueMessage } from '@/i18n/config';
 import { useT } from '@/i18n/provider';
 import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
@@ -52,7 +53,7 @@ export function InstanceScreen() {
       externalCatalogEnabled: fields.get('externalCatalogEnabled') === 'on',
     });
     if (!parsed.success) {
-      setError(parsed.error.issues[0]?.message ?? t('Revise as configurações'));
+      setError(issueMessage(parsed.error) ?? t('Revise as configurações'));
       return;
     }
     setBusy(true);

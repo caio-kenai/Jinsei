@@ -74,8 +74,8 @@ export function JourneyScreen() {
                   <span className="badge-icon">
                     {badge.unlockedAt ? <Icon size={20} /> : <Lock size={16} />}
                   </span>
-                  <strong>{badge.label}</strong>
-                  <small>{badge.description}</small>
+                  <strong>{t(badge.label)}</strong>
+                  <small>{t(badge.description)}</small>
                   {badge.unlockedAt ? (
                     <small className="badge-date">{formatDate(badge.unlockedAt)}</small>
                   ) : (
@@ -108,8 +108,8 @@ export function JourneyScreen() {
                 >
                   {item.unlocked ? active ? <Check size={13} /> : null : <Lock size={12} />}
                   <span>
-                    <strong>{item.label}</strong>
-                    <small>{item.requirement}</small>
+                    <strong>{t(item.label)}</strong>
+                    <small>{t(item.requirement)}</small>
                   </span>
                 </button>
               );

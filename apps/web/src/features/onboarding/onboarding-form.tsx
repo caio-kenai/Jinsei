@@ -1,4 +1,5 @@
 'use client';
+import { issueMessage } from '@/i18n/config';
 import { transitionTheme } from '@/lib/theme-transition';
 
 import { useState } from 'react';
@@ -51,7 +52,7 @@ export function OnboardingForm() {
       locale,
     });
     if (!parsed.success) {
-      setError(parsed.error.issues[0]?.message ?? t('Revise seus dados'));
+      setError(issueMessage(parsed.error) ?? t('Revise seus dados'));
       return;
     }
     setSaving(true);

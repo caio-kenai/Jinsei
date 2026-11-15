@@ -1,5 +1,5 @@
 'use client';
-import { msg } from '@/i18n/config';
+import { issueMessage, msg } from '@/i18n/config';
 import { useState, type CSSProperties } from 'react';
 import Link from 'next/link';
 import { useQueryClient } from '@tanstack/react-query';
@@ -107,7 +107,7 @@ export function PublicProfileSettings({ user }: { user: CurrentUser }) {
       links: links.filter((link) => link.label.trim() || link.url.trim()),
     });
     if (!parsed.success) {
-      setError(parsed.error.issues[0]?.message ?? t('Revise os links do perfil'));
+      setError(issueMessage(parsed.error) ?? t('Revise os links do perfil'));
       return;
     }
     setError('');

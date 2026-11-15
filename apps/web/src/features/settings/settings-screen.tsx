@@ -1,5 +1,5 @@
 'use client';
-import { msg, translator } from '@/i18n/config';
+import { issueMessage, msg, translator } from '@/i18n/config';
 import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -352,7 +352,7 @@ function SettingsForm({ user }: { user: CurrentUser }) {
       bio: values.get('bio'),
     });
     if (!parsed.success) {
-      toast.error(parsed.error.issues[0]?.message ?? t('Revise os dados'));
+      toast.error(issueMessage(parsed.error) ?? t('Revise os dados'));
       return;
     }
     preferences.mutate(parsed.data, { onSuccess: () => toast.success(t('Perfil salvo')) });

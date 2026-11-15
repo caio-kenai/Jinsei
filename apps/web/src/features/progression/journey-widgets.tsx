@@ -19,7 +19,7 @@ export function LevelCard({ progression }: { progression: Progression }) {
         <span className="eyebrow">
           {t('Nível')} {progression.level}
         </span>
-        <h2>{title?.label ?? t('Sua jornada')}</h2>
+        <h2>{title ? t(title.label) : t('Sua jornada')}</h2>
         <div
           className="xp-track"
           role="progressbar"
@@ -90,7 +90,7 @@ export function MissionList({ missions }: { missions: Mission[] }) {
             {mission.completed && <Check size={12} />}
           </span>
           <span className="mission-body">
-            <span className="mission-label">{mission.label}</span>
+            <span className="mission-label">{t(mission.label)}</span>
             <span className="mission-track">
               <span style={{ width: `${(mission.progress / mission.target) * 100}%` }} />
             </span>

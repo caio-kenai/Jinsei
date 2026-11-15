@@ -3,6 +3,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { randomBytes } from 'node:crypto';
 import { createTransport, type Transporter } from 'nodemailer';
+import { translator, type Locale } from '@jinsei/contracts';
 import { env } from '../../config/env';
 
 /** E-mail can be sent when an SMTP server is configured (or captured in development). */
@@ -19,15 +20,19 @@ export type MailContent = {
   paragraphs: string[];
   action?: { label: string; url: string };
   footnote?: string;
+  /** Language of the fixed parts of the message (the caller translates its own text). */
+  locale?: Locale;
 };
 
 /** Builds the HTML and plain text versions of a branded message. */
 export function renderMail(content: MailContent) {
+  const locale = content.locale ?? 'pt-BR';
+  const t = translator(locale);
   const button = content.action
     ? `<p style="margin:28px 0"><a href="${escape(content.action.url)}" style="display:inline-block;padding:12px 22px;border-radius:10px;background:#202020;color:#ffffff;font-weight:600;text-decoration:none">${escape(content.action.label)}</a></p>
-       <p style="color:#8a8a93;font-size:12px;line-height:18px">Se o botão não funcionar, copie este endereço no navegador:<br><span style="color:#55555f;word-break:break-all">${escape(content.action.url)}</span></p>`
+       <p style="color:#8a8a93;font-size:12px;line-height:18px">${escape(t('Se o botão não funcionar, copie este endereço no navegador:'))}<br><span style="color:#55555f;word-break:break-all">${escape(content.action.url)}</span></p>`
     : '';
-  const html = `<!doctype html><html lang="pt-BR"><body style="margin:0;background:#f5f5f7;font-family:Inter,Segoe UI,Arial,sans-serif;color:#29292f">
+  const html = `<!doctype html><html lang="${locale}"><body style="margin:0;background:#f5f5f7;font-family:Inter,Segoe UI,Arial,sans-serif;color:#29292f">
   <span style="display:none">${escape(content.preview)}</span>
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="padding:32px 12px"><tr><td align="center">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#ffffff;border-radius:16px;border:1px solid #ececf0">

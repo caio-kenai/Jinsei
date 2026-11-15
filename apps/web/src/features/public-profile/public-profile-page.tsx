@@ -166,7 +166,7 @@ export function PublicProfilePage({ profile }: { profile: PublicProfile }) {
           <h1>{profile.displayName}</h1>
           <p className="public-username">
             @{profile.username}
-            {profile.title && <span className="profile-title-chip">{profile.title}</span>}
+            {profile.title && <span className="profile-title-chip">{t(profile.title)}</span>}
           </p>
           <FriendButton username={profile.username} />
           {profile.bio && <p className="profile-bio">{profile.bio}</p>}

@@ -28,8 +28,8 @@ export function useProgressionAnnouncements() {
     for (const key of data.unlocked) {
       const badge = data.badges.find((item) => item.key === key);
       if (badge) {
-        toast.success(t('Nova insígnia: {label}', { label: badge.label }), {
-          description: badge.description,
+        toast.success(t('Nova insígnia: {label}', { label: t(badge.label) }), {
+          description: t(badge.description),
         });
         party = true;
       }

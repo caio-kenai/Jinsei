@@ -1,4 +1,5 @@
 'use client';
+import { issueMessage } from '@/i18n/config';
 import { useT } from '@/i18n/provider';
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -107,7 +108,7 @@ function AddEntryContent({
     };
     const parsed = entryCreateSchema.safeParse(input);
     if (!parsed.success) {
-      setError(parsed.error.issues[0]?.message ?? t('Revise os dados'));
+      setError(issueMessage(parsed.error) ?? t('Revise os dados'));
       return;
     }
     create.mutate(parsed.data);

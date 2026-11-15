@@ -1,5 +1,5 @@
 'use client';
-import { msg } from '@/i18n/config';
+import { issueMessage, msg } from '@/i18n/config';
 import { useT } from '@/i18n/provider';
 import { useState } from 'react';
 import {
@@ -57,7 +57,7 @@ export function CollectionFormDialog({
               coverUrl: fields.get('coverUrl') ? String(fields.get('coverUrl')) : null,
             });
             if (!parsed.success) {
-              setError(parsed.error.issues[0]?.message ?? t('Revise os dados da coleção'));
+              setError(issueMessage(parsed.error) ?? t('Revise os dados da coleção'));
               return;
             }
             setError('');

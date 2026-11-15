@@ -1,5 +1,5 @@
 'use client';
-import { msg } from '@/i18n/config';
+import { issueMessage, msg } from '@/i18n/config';
 import { useT } from '@/i18n/provider';
 import { useState } from 'react';
 import { endOfMonth, endOfYear, format, startOfMonth, startOfYear } from 'date-fns';
@@ -81,7 +81,7 @@ export function GoalFormDialog({
               endsOn: endsOn || null,
             });
             if (!parsed.success) {
-              setError(parsed.error.issues[0]?.message ?? t('Revise os dados da meta'));
+              setError(issueMessage(parsed.error) ?? t('Revise os dados da meta'));
               return;
             }
             setError('');
