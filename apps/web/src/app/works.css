@@ -803,7 +803,7 @@
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(180deg, rgb(0 0 0 / 0.35), transparent 30%),
+    linear-gradient(180deg, rgb(0 0 0 / 0.6), rgb(0 0 0 / 0.28) 20%, transparent 42%),
     linear-gradient(
       0deg,
       var(--background) 0%,
