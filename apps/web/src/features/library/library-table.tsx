@@ -1,4 +1,5 @@
 'use client';
+import { Select } from '@/components/ui/select';
 import { currentDateLocale, msg } from '@/i18n/config';
 import { useT } from '@/i18n/provider';
 import { Fragment } from 'react';
@@ -101,7 +102,7 @@ export function LibraryTable({
           );
         if (key === 'status')
           return (
-            <select
+            <Select
               aria-label={t('Status de {title}', { title: item.title })}
               value={item.status}
               className={`inline-control status-badge status-${item.status}`}
@@ -112,7 +113,7 @@ export function LibraryTable({
                   {t(statusLabels[status])}
                 </option>
               ))}
-            </select>
+            </Select>
           );
         if (key === 'rating')
           return (

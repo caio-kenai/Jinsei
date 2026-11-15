@@ -1,4 +1,5 @@
 'use client';
+import { cn } from '@/lib/utils';
 import { currentDateLocale, currentLocale, msg } from '@/i18n/config';
 import { useT } from '@/i18n/provider';
 import { useCurrentUser } from '@/features/auth/use-current-user';
@@ -224,16 +225,29 @@ export function WorkPage({ work }: { work: PublicWorkPage }) {
   ];
   return (
     <div
-      className="public-surface work-surface"
+      className={cn('public-surface work-surface', detail.banner && 'has-banner')}
       style={{ '--work-color': color } as React.CSSProperties}
     >
       <PublicHeader />
-      <div className="work-backdrop" aria-hidden="true">
-        {work.coverUrl && (
-          // eslint-disable-next-line @next/next/no-img-element -- Decorative blurred cover
-          <img src={work.coverUrl} alt="" referrerPolicy="no-referrer" />
-        )}
-      </div>
+      {detail.banner ? (
+        <motion.div
+          className="work-banner"
+          aria-hidden="true"
+          initial={{ opacity: 0, scale: 1.04 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element -- Decorative artwork from the source */}
+          <img src={detail.banner} alt="" referrerPolicy="no-referrer" />
+        </motion.div>
+      ) : (
+        <div className="work-backdrop" aria-hidden="true">
+          {work.coverUrl && (
+            // eslint-disable-next-line @next/next/no-img-element -- Decorative blurred cover
+            <img src={work.coverUrl} alt="" referrerPolicy="no-referrer" />
+          )}
+        </div>
+      )}
       <main className="marketing-container work-page">
         <aside className="work-aside">
           <motion.div
@@ -259,8 +273,8 @@ export function WorkPage({ work }: { work: PublicWorkPage }) {
               </div>
               {detail.facts.map((fact) => (
                 <div key={fact.label}>
-                  <dt>{fact.label}</dt>
-                  <dd>{fact.value}</dd>
+                  <dt>{t(fact.label)}</dt>
+                  <dd>{t(fact.value)}</dd>
                 </div>
               ))}
             </dl>

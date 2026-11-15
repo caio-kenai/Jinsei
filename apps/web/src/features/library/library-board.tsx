@@ -1,4 +1,5 @@
 'use client';
+import { Select } from '@/components/ui/select';
 import { useT } from '@/i18n/provider';
 import { useState } from 'react';
 import {
@@ -299,7 +300,7 @@ function CardContent({
           <span className="muted">{t('Sem nota')}</span>
         )}
         {!overlay && (
-          <select
+          <Select
             className="inline-control board-move"
             aria-label={t('Mover {title} para', { title: entry.title })}
             value={entry.status}
@@ -312,7 +313,7 @@ function CardContent({
                 {t(statusLabels[key])}
               </option>
             ))}
-          </select>
+          </Select>
         )}
       </div>
     </>

@@ -389,12 +389,40 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  width: 100%;
   padding: 10px 12px;
   border-radius: 12px;
   border: 1px solid var(--border);
+  background: transparent;
+  color: var(--foreground);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
   transition:
     border-color 0.2s ease,
-    background 0.2s ease;
+    background 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.settings-category:hover {
+  border-color: color-mix(in srgb, var(--cat) 55%, var(--border));
+  background: color-mix(in srgb, var(--cat) 9%, transparent);
+  box-shadow: 0 8px 22px color-mix(in srgb, var(--cat) 16%, transparent);
+  transform: translateY(-1px);
+}
+.settings-category:hover .settings-category-icon {
+  transform: scale(1.08) rotate(-4deg);
+}
+.settings-category:active {
+  transform: translateY(0) scale(0.99);
+}
+.settings-category:focus-visible {
+  outline: 2px solid var(--cat);
+  outline-offset: 2px;
+}
+.settings-category .settings-switch[data-checked='true'] {
+  justify-content: flex-end;
+  background: var(--cat);
 }
 .settings-category.enabled {
   border-color: color-mix(in srgb, var(--cat) 35%, var(--border));
@@ -415,7 +443,8 @@
   color: var(--cat);
   transition:
     background 0.2s ease,
-    color 0.2s ease;
+    color 0.2s ease,
+    transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .settings-category.enabled .settings-category-icon {
   background: var(--cat);

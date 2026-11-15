@@ -1,4 +1,5 @@
 'use client';
+import { KpiCard } from '@/components/shared/kpi-card';
 import { currentDateLocale, msg } from '@/i18n/config';
 import { useT } from '@/i18n/provider';
 import { useDeferredValue, useState, type CSSProperties } from 'react';
@@ -530,19 +531,13 @@ export function ModerationScreen() {
         <div className="moderation-page">
           <div className="community-stats">
             {cards.map(({ label, value, Icon, color }) => (
-              <div
+              <KpiCard
                 key={label}
-                className="community-stat"
-                style={{ '--stat-color': color } as CSSProperties}
-              >
-                <span className="community-stat-icon">
-                  <Icon size={17} />
-                </span>
-                <span>
-                  <strong>{value ?? '—'}</strong>
-                  <small>{label}</small>
-                </span>
-              </div>
+                label={label}
+                value={value ?? '—'}
+                color={color}
+                icon={<Icon size={16} />}
+              />
             ))}
           </div>
           {tab === 'reports' ? <Reports /> : tab === 'people' ? <People /> : <Log />}

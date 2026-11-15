@@ -299,11 +299,6 @@ select:focus-visible {
 .global-brand .brand img {
   margin-top: -3px;
 }
-.dark .global-brand {
-  background: transparent;
-  width: 60px;
-  color: var(--muted);
-}
 .brand.brand-compact {
   width: 44px;
   height: 44px;
@@ -316,15 +311,13 @@ select:focus-visible {
   object-fit: contain;
   margin: 0;
 }
-.global-brand .global-app-icon {
-  display: none;
-  width: 38px;
-  height: 38px;
-}
-.dark .global-brand .global-wordmark {
+.brand-adaptive .brand-dark {
   display: none;
 }
-.dark .global-brand .global-app-icon {
+.dark .brand-adaptive .brand-light {
+  display: none;
+}
+.dark .brand-adaptive .brand-dark {
   display: block;
 }
 .rail-button small {
@@ -3620,4 +3613,143 @@ tr:hover .progress-increment,
   align-items: center;
   gap: 3px;
   text-decoration: underline;
+}
+
+/* Select (Radix) */
+.select-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-align: left;
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.2;
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease,
+    box-shadow 160ms ease;
+}
+.select-trigger:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--foreground) 22%, var(--border));
+  background: color-mix(in srgb, var(--hover) 55%, var(--surface));
+}
+.select-trigger:focus-visible,
+.select-trigger[data-state='open'] {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 18%, transparent);
+}
+.select-trigger:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+.select-value {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.select-chevron {
+  flex: none;
+  color: var(--muted);
+  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.select-trigger[data-state='open'] .select-chevron {
+  transform: rotate(180deg);
+}
+.select-content {
+  z-index: 80;
+  min-width: var(--radix-select-trigger-width);
+  max-height: min(var(--radix-select-content-available-height), 340px);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--elevated);
+  box-shadow: var(--shadow);
+  transform-origin: var(--radix-select-content-transform-origin);
+  animation: select-in 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.select-content[data-state='closed'] {
+  animation: select-out 110ms ease-in forwards;
+}
+.select-viewport {
+  padding: 5px;
+}
+.select-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  padding: 7px 32px 7px 10px;
+  border-radius: 7px;
+  color: var(--foreground);
+  font-size: 13px;
+  cursor: pointer;
+  outline: none;
+  user-select: none;
+  transition:
+    background-color 120ms ease,
+    padding-left 160ms cubic-bezier(0.16, 1, 0.3, 1),
+    color 120ms ease;
+}
+.select-item[data-highlighted] {
+  padding-left: 13px;
+  background: var(--hover);
+}
+.select-item[data-state='checked'] {
+  color: var(--primary);
+  font-weight: 600;
+}
+.select-item[data-disabled] {
+  cursor: default;
+  opacity: 0.45;
+}
+.select-check {
+  position: absolute;
+  right: 10px;
+  display: inline-flex;
+  animation: select-check-in 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes select-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.97);
+  }
+}
+@keyframes select-out {
+  to {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+}
+@keyframes select-check-in {
+  from {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .select-content,
+  .select-content[data-state='closed'],
+  .select-check {
+    animation: none;
+  }
+  .select-item {
+    transition: background-color 120ms ease;
+  }
+  .select-item[data-highlighted] {
+    padding-left: 10px;
+  }
+}
+/* Inline status pickers in the table and board keep their badge look. */
+.select-trigger.inline-control {
+  width: auto;
+  min-height: 0;
+  gap: 5px;
+}
+.select-trigger.inline-control .select-chevron {
+  width: 12px;
+  height: 12px;
 }

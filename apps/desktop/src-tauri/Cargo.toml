@@ -1,8 +1,8 @@
 [package]
 name = "jinsei-desktop"
-version = "0.1.8"
+version = "0.1.9"
 description = "Jinsei para Windows, macOS e Linux"
-authors = ["Caio Pacifico"]
+authors = ["Caio Oliveira Pacifico"]
 license = "AGPL-3.0-only"
 repository = "https://github.com/caio-kenai/Jinsei"
 edition = "2021"
@@ -19,6 +19,7 @@ tauri-build = { version = "2", features = [] }
 tauri = { version = "2.12", features = [] }
 tauri-plugin-opener = "2"
 sys-locale = "0.3"
+ureq = "3"
 
 [profile.release]
 codegen-units = 1

@@ -18,6 +18,7 @@ import {
   localFacts,
   openLibraryDetail,
   tvmazeDetail,
+  wikipediaDetail,
   type DetailPart,
 } from './enrichers';
 
@@ -44,7 +45,10 @@ export class WorksService {
   /** Detail from the cache, refreshed from free catalogs every two weeks. */
   async detail(media: MediaWithMetadata): Promise<WorkDetail> {
     const cached = await this.db.mediaDetail.findUnique({ where: { mediaId: media.id } });
-    if (cached && cached.fetchedAt.getTime() > Date.now() - FRESH_FOR) {
+    // Details cached before artwork existed are refreshed once to look for it.
+    const current =
+      cached && typeof cached.data === 'object' && cached.data !== null && 'poster' in cached.data;
+    if (cached && current && cached.fetchedAt.getTime() > Date.now() - FRESH_FOR) {
       const parsed = workDetailSchema.safeParse(cached.data);
       if (parsed.success) return parsed.data;
     }
@@ -58,6 +62,8 @@ export class WorksService {
     if (tvmaze) sources.push(() => tvmazeDetail(tvmaze));
     const openLibrary = external('openlibrary');
     if (openLibrary) sources.push(() => openLibraryDetail(openLibrary));
+    const wikidata = external('wikidata');
+    if (wikidata) sources.push(() => wikipediaDetail(wikidata, type));
     const parts: DetailPart[] = [];
     let failed = false;
     for (const source of sources) {
@@ -87,17 +93,75 @@ export class WorksService {
       externalScore: (first('externalScore') as WorkDetail['externalScore'] | undefined) ?? null,
       links: parts.flatMap((part) => part.links ?? []),
       source: (first('source') as WorkDetail['source'] | undefined) ?? null,
+      poster: (first('poster') as string | null | undefined) ?? null,
+      banner: (first('banner') as string | null | undefined) ?? null,
     };
     const data = workDetailSchema.parse(detail);
     // A failed lookup is retried the next day instead of two weeks later.
     const fetchedAt = new Date(failed ? Date.now() - FRESH_FOR + DAY : Date.now());
     const source = parts.map((part) => part.sourceId).join(',') || 'catalog';
+    await this.saveArtwork(media, data, parts);
     await this.db.mediaDetail.upsert({
       where: { mediaId: media.id },
       create: { mediaId: media.id, source, data, fetchedAt },
       update: { source, data, fetchedAt },
     });
     return data;
+  }
+
+  /** Keeps the vertical cover and the banner on the work, so every list can use them. */
+  private async saveArtwork(media: MediaWithMetadata, detail: WorkDetail, parts: DetailPart[]) {
+    if (detail.poster === media.posterUrl && detail.banner === media.bannerUrl) return;
+    const origin = parts.find((part) => part.poster === detail.poster)?.sourceId.split(':')[0];
+    const providers: Record<string, { provider: string; sourceUrl: string; license: string }> = {
+      wikipedia: {
+        provider: 'Steam',
+        sourceUrl: 'https://store.steampowered.com',
+        license: 'Arte oficial exibida pela Steam; direitos dos respectivos titulares',
+      },
+      anilist: {
+        provider: 'AniList',
+        sourceUrl: 'https://anilist.co',
+        license: 'Imagem exibida pelo AniList; direitos dos respectivos titulares',
+      },
+      tvmaze: {
+        provider: 'TVmaze',
+        sourceUrl: 'https://www.tvmaze.com',
+        license: 'Imagem exibida pelo TVmaze; direitos dos respectivos titulares',
+      },
+    };
+    const attribution = detail.poster && origin ? providers[origin] : undefined;
+    await this.db.mediaItem.update({
+      where: { id: media.id },
+      data: {
+        posterUrl: attribution ? detail.poster : null,
+        posterAttribution: attribution
+          ? { ...attribution, licenseUrl: null, artist: null, layout: 'portrait' }
+          : Prisma.DbNull,
+        bannerUrl: detail.banner,
+      },
+    });
+  }
+
+  /** Looks up details for ranked works that were never opened, a few at a time. */
+  /** Works being enriched right now, so repeated ranking visits don't fetch them twice. */
+  private readonly enriching = new Set<string>();
+
+  private enrichInBackground(ids: string[]) {
+    const pending = ids.filter((id) => !this.enriching.has(id)).slice(0, 6);
+    pending.forEach((id) => this.enriching.add(id));
+    void (async () => {
+      for (const id of pending) {
+        try {
+          const media = await this.db.mediaItem.findUnique({ where: { id }, include: catalogInclude });
+          if (media) await this.detail(media);
+        } catch (error) {
+          this.logger.warn(`Enriquecimento adiado para ${id}: ${String(error)}`);
+        } finally {
+          this.enriching.delete(id);
+        }
+      }
+    })();
   }
 
   private async community(media: MediaWithMetadata) {
@@ -208,7 +272,7 @@ export class WorksService {
       title: media.title,
       mediaType: media.mediaTypeId,
       releaseYear: media.releaseYear,
-      coverUrl: media.coverUrl,
+      coverUrl: detail.poster ?? media.posterUrl ?? media.coverUrl,
       coverAttribution: result.coverAttribution,
       description: media.description,
       attribution: result.attribution,
@@ -232,10 +296,13 @@ export class WorksService {
         votes: bigint;
         average: number | null;
         score: number | null;
+        enriched: boolean;
       }[]
     >`
       WITH stats AS (
-        SELECT m."id", m."title", m."mediaTypeId", m."releaseYear", m."coverUrl",
+        SELECT m."id", m."title", m."mediaTypeId", m."releaseYear",
+               COALESCE(m."posterUrl", m."coverUrl") AS "coverUrl",
+               EXISTS (SELECT 1 FROM "MediaDetail" d WHERE d."mediaId" = m."id") AS "enriched",
                COUNT(e."id") AS members, COUNT(e."ratingSteps") AS votes,
                AVG(e."ratingSteps") / 4.0 AS average
         FROM "MediaItem" m JOIN "UserMediaEntry" e ON e."mediaId" = m."id"
@@ -250,6 +317,7 @@ export class WorksService {
         CASE WHEN ${query.sort} = 'popular' THEN s.members END DESC NULLS LAST,
         score DESC NULLS LAST, s.members DESC, s."title" ASC
       LIMIT ${PAGE_SIZE + 1} OFFSET ${offset}`;
+    this.enrichInBackground(rows.filter((row) => !row.enriched).map((row) => row.id));
     return rankingResponseSchema.parse({
       page: query.page,
       hasMore: rows.length > PAGE_SIZE,

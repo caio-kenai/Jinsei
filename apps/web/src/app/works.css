@@ -782,3 +782,91 @@
 .recommendation-choice.is-not_recommended[aria-checked='true'] {
   background: #d93a50;
 }
+
+/* Wide artwork behind the cover, like AniList's banner. */
+.work-banner {
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: -1;
+  height: 400px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--work-color) 30%, #111);
+}
+.work-banner img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 30%;
+}
+.work-banner::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgb(0 0 0 / 0.35), transparent 30%),
+    linear-gradient(
+      0deg,
+      var(--background) 0%,
+      color-mix(in srgb, var(--background) 55%, transparent) 18%,
+      transparent 52%
+    );
+}
+.work-surface.has-banner .work-page {
+  padding-top: 150px;
+}
+.work-surface.has-banner .work-main {
+  padding-top: 118px;
+}
+.work-surface.has-banner .work-cover .cover {
+  box-shadow:
+    0 0 0 4px var(--background),
+    0 28px 60px #0000004d;
+}
+@media (max-width: 860px) {
+  .work-banner {
+    height: 260px;
+  }
+  .work-surface.has-banner .work-page {
+    padding-top: 110px;
+  }
+  .work-surface.has-banner .work-main {
+    padding-top: 0;
+  }
+}
+.rankings-list {
+  transition: opacity 180ms ease;
+}
+.rankings-list.is-loading {
+  opacity: 0.55;
+}
+
+/* Over a work banner the transparent header switches to light ink until it turns to glass. */
+body:has(.work-banner) .marketing-header:not(.is-scrolled) {
+  & .brand-adaptive .brand-light {
+    display: none;
+  }
+  & .brand-adaptive .brand-dark {
+    display: block;
+  }
+  & .marketing-about-link {
+    color: rgb(255 255 255 / 0.88);
+    text-shadow: 0 1px 8px rgb(0 0 0 / 0.35);
+  }
+  & .marketing-about-link:hover {
+    color: #fff;
+  }
+  & .marketing-nav-highlight {
+    background: rgb(255 255 255 / 0.16);
+  }
+  & .select-trigger {
+    color: #fff;
+    border-color: rgb(255 255 255 / 0.3);
+    background: rgb(0 0 0 / 0.18);
+    backdrop-filter: blur(8px);
+  }
+  & .public-button-muted {
+    color: #fff;
+    background: rgb(255 255 255 / 0.16);
+    backdrop-filter: blur(8px);
+  }
+}

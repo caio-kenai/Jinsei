@@ -1,4 +1,5 @@
 'use client';
+import { KpiCard } from '@/components/shared/kpi-card';
 import { useT } from '@/i18n/provider';
 import type { CSSProperties } from 'react';
 import Link from 'next/link';
@@ -24,6 +25,7 @@ export function ActivityScreen() {
   const stats = [
     {
       label: t('Amigos'),
+      caption: t('Ver amigos'),
       value: friends?.friends.length ?? 0,
       Icon: UsersRound,
       color: '#2f7bff',
@@ -31,6 +33,7 @@ export function ActivityScreen() {
     },
     {
       label: t('Pedidos'),
+      caption: t('Responder pedidos'),
       value: summary?.pendingRequests ?? 0,
       Icon: UserPlus,
       color: '#e5306f',
@@ -38,6 +41,7 @@ export function ActivityScreen() {
     },
     {
       label: t('Não lidas'),
+      caption: t('Abrir conversas'),
       value: summary?.unreadMessages ?? 0,
       Icon: MessageCircle,
       color: '#15936a',
@@ -45,6 +49,7 @@ export function ActivityScreen() {
     },
     {
       label: t('Clubes'),
+      caption: t('Ver clubes'),
       value: clubs.length,
       Icon: Tent,
       color: '#f7832b',
@@ -54,26 +59,21 @@ export function ActivityScreen() {
   return (
     <div className="community-activity">
       <div className="community-stats">
-        {stats.map(({ label, value, Icon, color, href }, index) => (
+        {stats.map(({ label, value, Icon, color, href, caption }, index) => (
           <motion.div
             key={label}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.05, duration: 0.45, ease }}
           >
-            <Link
+            <KpiCard
               href={href}
-              className="community-stat"
-              style={{ '--stat-color': color } as CSSProperties}
-            >
-              <span className="community-stat-icon">
-                <Icon size={17} />
-              </span>
-              <span>
-                <strong>{value}</strong>
-                <small>{label}</small>
-              </span>
-            </Link>
+              label={label}
+              value={value}
+              color={color}
+              caption={caption}
+              icon={<Icon size={16} />}
+            />
           </motion.div>
         ))}
       </div>

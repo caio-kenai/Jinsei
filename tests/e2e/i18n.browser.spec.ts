@@ -10,7 +10,8 @@ test.describe('idioma pelo navegador', () => {
     await expect(page.getByRole('heading', { name: 'Welcome back!' })).toBeVisible();
     await expect(page.locator('html')).toHaveAttribute('lang', 'en');
     await page.waitForLoadState('networkidle');
-    await page.getByRole('combobox', { name: 'Language' }).selectOption('es');
+    await page.getByRole('combobox', { name: 'Language' }).click();
+    await page.getByRole('option', { name: 'Español' }).click();
     await expect(page.getByRole('heading', { name: '¡Bienvenido de nuevo!' })).toBeVisible();
     await page.reload();
     await expect(page.getByRole('heading', { name: '¡Bienvenido de nuevo!' })).toBeVisible();
@@ -30,7 +31,8 @@ test.describe('idioma pelo navegador', () => {
     await expect(page.getByRole('heading', { name: 'Continúa tu trayectoria' })).toBeVisible();
 
     await page.goto('/settings');
-    await page.getByRole('combobox', { name: 'Idioma' }).selectOption('en');
+    await page.getByRole('combobox', { name: 'Idioma' }).click();
+    await page.getByRole('option', { name: 'English' }).click();
     await expect(page.getByText('Language updated')).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Your way' })).toBeVisible();
 

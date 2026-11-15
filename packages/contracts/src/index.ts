@@ -9,7 +9,7 @@ import {
 export * from './progress';
 export * from './support';
 export * from './i18n';
-export const appVersion = '0.1.8';
+export const appVersion = '0.1.9';
 
 export const healthSchema = z.object({ status: z.literal('ok'), service: z.literal('jinsei-api') });
 
@@ -885,6 +885,10 @@ export const workDetailSchema = z.object({
   source: z
     .object({ label: z.string(), url: z.string().nullable(), license: z.string() })
     .nullable(),
+  /** Official vertical cover (Steam, AniList, TVmaze), when a source has one. */
+  poster: z.string().nullable().default(null),
+  /** Wide artwork shown behind the cover, like a banner. */
+  banner: z.string().nullable().default(null),
 });
 export type WorkDetail = z.infer<typeof workDetailSchema>;
 

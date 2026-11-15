@@ -62,6 +62,8 @@ const anilistSchema = z.object({
           siteUrl: z.string(),
           title: z.object({ romaji: z.string().nullable(), english: z.string().nullable() }),
           description: z.string().nullable(),
+          bannerImage: z.string().nullable().catch(null),
+          coverImage: z.object({ extraLarge: z.string().nullable() }).nullable().catch(null),
           genres: z.array(z.string()).catch([]),
           averageScore: z.number().nullable(),
           episodes: z.number().nullable(),
@@ -110,7 +112,8 @@ const anilistSchema = z.object({
 const anilistQuery = `query ($search: String, $type: MediaType) {
   Page(perPage: 5) {
     media(search: $search, type: $type, sort: SEARCH_MATCH, isAdult: false) {
-      id siteUrl title { romaji english } description(asHtml: false) genres averageScore
+      id siteUrl title { romaji english } description(asHtml: false) bannerImage
+      coverImage { extraLarge } genres averageScore
       episodes chapters volumes duration status format source season seasonYear
       startDate { year month day } endDate { year month day }
       studios(isMain: true) { nodes { name } }
@@ -230,6 +233,8 @@ export async function anilistDetail(
     ),
     genres: match.genres,
     facts,
+    poster: match.coverImage?.extraLarge ?? null,
+    banner: match.bannerImage,
     externalScore: match.averageScore
       ? { value: match.averageScore / 10, max: 10, source: 'AniList' }
       : null,
@@ -292,6 +297,13 @@ const tvmazeSchema = z.object({
     .optional()
     .catch(undefined),
 });
+const tvmazeImages = z.array(
+  z.object({
+    type: z.string().nullable(),
+    main: z.boolean().catch(false),
+    resolutions: z.object({ original: z.object({ url: z.string() }).optional() }),
+  }),
+);
 const tvmazeStatus: Record<string, string> = {
   Running: 'Em exibição',
   Ended: 'Finalizada',
@@ -315,9 +327,18 @@ const brDate = (value: string | null) => (value ? value.split('-').reverse().joi
 export async function tvmazeDetail(externalId: string): Promise<DetailPart | null> {
   const id = externalId.split(':')[1];
   if (!id || !/^\d+$/.test(id)) return null;
-  const show = tvmazeSchema.parse(
-    await providerFetch(`https://api.tvmaze.com/shows/${id}?embed[]=cast&embed[]=crew`),
-  );
+  const [show, images] = await Promise.all([
+    providerFetch(`https://api.tvmaze.com/shows/${id}?embed[]=cast&embed[]=crew`).then((body) =>
+      tvmazeSchema.parse(body),
+    ),
+    providerFetch(`https://api.tvmaze.com/shows/${id}/images`)
+      .then((body) => tvmazeImages.parse(body))
+      .catch(() => []),
+  ]);
+  const image = (type: string) =>
+    images
+      .filter((item) => item.type === type)
+      .sort((a, b) => Number(b.main) - Number(a.main))[0]?.resolutions.original?.url ?? null;
   const facts: WorkDetail['facts'] = [];
   const add = (label: string, value: string | null | undefined) => {
     if (value) facts.push({ label, value });
@@ -333,6 +354,8 @@ export async function tvmazeDetail(externalId: string): Promise<DetailPart | nul
   return {
     sourceId: `tvmaze:${id}`,
     synopsis: plainText(show.summary ?? ''),
+    poster: image('poster'),
+    banner: image('background') ?? image('banner'),
     genres: show.genres,
     facts,
     externalScore: show.rating.average
@@ -397,5 +420,124 @@ export async function openLibraryDetail(externalId: string): Promise<DetailPart 
       : [],
     links: [{ label: 'Open Library', url }],
     source: { label: 'Open Library', url, license: 'CC0 1.0' },
+  };
+}
+
+const wikidataLinks = z.object({
+  entities: z.record(
+    z.string(),
+    z.object({
+      sitelinks: z.record(z.string(), z.object({ title: z.string() })).catch({}),
+      claims: z
+        .record(
+          z.string(),
+          z.array(z.object({ mainsnak: z.object({ datavalue: z.object({ value: z.unknown() }).optional() }) })),
+        )
+        .catch({}),
+    }),
+  ),
+});
+const wikipediaExtract = z.object({
+  query: z.object({
+    pages: z.array(z.object({ extract: z.string().optional(), missing: z.boolean().optional() })),
+  }),
+});
+const STEAM_ASSETS = 'https://shared.fastly.steamstatic.com/store_item_assets/steam/apps';
+
+/** Keeps the first paragraphs of an introduction, cut at a sentence end. */
+function summary(text: string, limit = 1400) {
+  const clean = text.replace(/\n{3,}/g, '\n\n').trim();
+  if (clean.length <= limit) return clean;
+  const cut = clean.slice(0, limit);
+  const end = Math.max(cut.lastIndexOf('. '), cut.lastIndexOf('.\n'));
+  return (end > limit / 2 ? cut.slice(0, end + 1) : cut).trim();
+}
+
+/** True when the Steam CDN serves this official artwork for the application. */
+async function steamAsset(url: string) {
+  try {
+    const response = await fetch(url, {
+      method: 'HEAD',
+      headers: { 'User-Agent': 'Jinsei/0.1 (https://github.com/caio-kenai/Jinsei)' },
+      signal: AbortSignal.timeout(6000),
+    });
+    return response.ok && (response.headers.get('content-type') ?? '').startsWith('image/');
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Wikipedia (CC BY-SA 4.0) for the synopsis of any work linked on Wikidata, and the
+ * official Steam artwork (vertical cover and wide banner) for games with a Steam ID.
+ * The Steam images are only used after the CDN confirms they exist.
+ */
+export async function wikipediaDetail(qid: string, type: MediaType): Promise<DetailPart | null> {
+  if (!/^Q\d+$/.test(qid)) return null;
+  const params = new URLSearchParams({
+    action: 'wbgetentities',
+    ids: qid,
+    props: 'sitelinks|claims',
+    sitefilter: 'ptwiki|enwiki|eswiki',
+    format: 'json',
+  });
+  const entity = wikidataLinks.parse(
+    await providerFetch(`https://www.wikidata.org/w/api.php?${params}`),
+  ).entities[qid];
+  if (!entity) return null;
+  let synopsis = '';
+  let page: { label: string; url: string } | null = null;
+  for (const [site, language] of [
+    ['ptwiki', 'pt'],
+    ['enwiki', 'en'],
+  ] as const) {
+    const title = entity.sitelinks[site]?.title;
+    if (!title) continue;
+    const query = new URLSearchParams({
+      action: 'query',
+      prop: 'extracts',
+      exintro: '1',
+      explaintext: '1',
+      redirects: '1',
+      format: 'json',
+      formatversion: '2',
+      titles: title,
+    });
+    const extract = wikipediaExtract
+      .parse(await providerFetch(`https://${language}.wikipedia.org/w/api.php?${query}`))
+      .query.pages[0]?.extract;
+    if (extract && extract.length > 80) {
+      synopsis = summary(extract);
+      page = {
+        label: 'Wikipedia',
+        url: `https://${language}.wikipedia.org/wiki/${encodeURIComponent(title.replace(/ /g, '_'))}`,
+      };
+      break;
+    }
+  }
+  let poster: string | null = null;
+  let banner: string | null = null;
+  const steam = (entity.claims.P1733 ?? [])
+    .map((claim) => claim.mainsnak.datavalue?.value)
+    .find((value): value is string => typeof value === 'string' && /^\d+$/.test(value));
+  const links: WorkDetail['links'] = page ? [page] : [];
+  if (type === 'games' && steam) {
+    const [vertical, wide] = [
+      `${STEAM_ASSETS}/${steam}/library_600x900_2x.jpg`,
+      `${STEAM_ASSETS}/${steam}/library_hero.jpg`,
+    ];
+    const [hasVertical, hasWide] = await Promise.all([steamAsset(vertical), steamAsset(wide)]);
+    poster = hasVertical ? vertical : null;
+    banner = hasWide ? wide : null;
+    links.push({ label: 'Steam', url: `https://store.steampowered.com/app/${steam}/` });
+  }
+  if (!synopsis && !poster && !banner) return null;
+  return {
+    sourceId: `wikipedia:${qid}`,
+    synopsis,
+    poster,
+    banner,
+    links,
+    source: page ? { label: 'Wikipedia', url: page.url, license: 'CC BY-SA 4.0' } : undefined,
   };
 }

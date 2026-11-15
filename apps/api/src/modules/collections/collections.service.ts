@@ -25,7 +25,7 @@ const summaryInclude = {
   items: {
     orderBy: { position: 'asc' },
     take: 4,
-    select: { entry: { select: { media: { select: { coverUrl: true } } } } },
+    select: { entry: { select: { media: { select: { coverUrl: true, posterUrl: true } } } } },
   },
 } satisfies Prisma.CollectionInclude;
 type SummaryRow = Prisma.CollectionGetPayload<{ include: typeof summaryInclude }>;
@@ -53,7 +53,9 @@ export function summaryResult(row: SummaryRow): CollectionSummary {
     coverUrl: row.coverUrl,
     itemCount: row._count.items,
     covers: row.items.flatMap((item) =>
-      item.entry.media.coverUrl ? [item.entry.media.coverUrl] : [],
+      (item.entry.media.posterUrl ?? item.entry.media.coverUrl)
+        ? [(item.entry.media.posterUrl ?? item.entry.media.coverUrl)!]
+        : [],
     ),
     updatedAt: row.updatedAt.toISOString(),
   };
@@ -132,7 +134,9 @@ export class CollectionsService {
       ...summaryResult({
         ...row,
         items: row.items.slice(0, 4).map((item) => ({
-          entry: { media: { coverUrl: item.entry.media.coverUrl } },
+          entry: {
+            media: { coverUrl: item.entry.media.coverUrl, posterUrl: item.entry.media.posterUrl },
+          },
         })),
       }),
       items: row.items.map((item) => ({

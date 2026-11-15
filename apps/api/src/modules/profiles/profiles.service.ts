@@ -23,6 +23,7 @@ export const workSelect = {
       title: true,
       mediaTypeId: true,
       coverUrl: true,
+      posterUrl: true,
       releaseYear: true,
     },
   },
@@ -33,7 +34,7 @@ export const work = (row: WorkRow): PublicWork => ({
   workId: row.media.ownerId === null ? row.media.id : null,
   title: row.media.title,
   mediaType: row.media.mediaTypeId as MediaType,
-  coverUrl: row.media.coverUrl,
+  coverUrl: row.media.posterUrl ?? row.media.coverUrl,
   releaseYear: row.media.releaseYear,
   rating: row.ratingSteps === null ? null : row.ratingSteps / 4,
 });
@@ -59,7 +60,7 @@ const collectionInclude = {
   items: {
     orderBy: { position: 'asc' },
     take: 4,
-    select: { entry: { select: { media: { select: { coverUrl: true } } } } },
+    select: { entry: { select: { media: { select: { coverUrl: true, posterUrl: true } } } } },
   },
 } satisfies Prisma.CollectionInclude;
 
@@ -329,7 +330,9 @@ export class ProfilesService {
     const summary = summaryResult({
       ...row,
       items: row.items.slice(0, 4).map((item) => ({
-        entry: { media: { coverUrl: item.entry.media.coverUrl } },
+        entry: {
+          media: { coverUrl: item.entry.media.coverUrl, posterUrl: item.entry.media.posterUrl },
+        },
       })),
     });
     return {

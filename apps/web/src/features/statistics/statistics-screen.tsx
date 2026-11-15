@@ -1,4 +1,5 @@
 'use client';
+import { KpiCard } from '@/components/shared/kpi-card';
 import { currentDateLocale, currentLocale } from '@/i18n/config';
 import { useT } from '@/i18n/provider';
 import { useQuery } from '@tanstack/react-query';
@@ -67,50 +68,86 @@ export function StatisticsScreen() {
 function StatisticsContent({ statistics }: { statistics: Statistics }) {
   const t = useT();
   const { totals } = statistics;
+  const share = (value: number) => (totals.entries ? value / totals.entries : 0);
+  const percent = (value: number) =>
+    t('{percent}% da biblioteca', { percent: Math.round(share(value) * 100) });
   const tiles: {
     label: string;
     value: number | null;
     decimals?: number;
     suffix?: string;
     Icon: typeof Library;
+    caption: string;
+    meter?: number | null;
   }[] = [
-    { label: t('Títulos'), value: totals.entries, Icon: Library },
-    { label: t('Concluídos'), value: totals.completed, Icon: CircleCheck },
-    { label: t('Favoritos'), value: totals.favorites, Icon: Heart },
-    { label: t('Nota média'), value: totals.averageRating, decimals: 2, suffix: ' ★', Icon: Star },
-    { label: t('Horas jogadas'), value: Math.round(totals.hoursPlayed), Icon: Gamepad2 },
-    { label: t('Episódios'), value: totals.episodesWatched, Icon: Tv },
-    { label: t('Capítulos'), value: totals.chaptersRead, Icon: BookOpen },
-    { label: t('Páginas'), value: totals.pagesRead, Icon: BookMarked },
-    { label: t('Sessões de filmes'), value: totals.timesWatched, Icon: Film },
+    { label: t('Títulos'), value: totals.entries, Icon: Library, caption: t('na biblioteca') },
+    {
+      label: t('Concluídos'),
+      value: totals.completed,
+      Icon: CircleCheck,
+      caption: percent(totals.completed),
+      meter: share(totals.completed),
+    },
+    {
+      label: t('Favoritos'),
+      value: totals.favorites,
+      Icon: Heart,
+      caption: percent(totals.favorites),
+      meter: share(totals.favorites),
+    },
+    {
+      label: t('Nota média'),
+      value: totals.averageRating,
+      decimals: 2,
+      suffix: ' ★',
+      Icon: Star,
+      caption: t('de 5 estrelas'),
+      meter: totals.averageRating === null ? null : totals.averageRating / 5,
+    },
+    {
+      label: t('Horas jogadas'),
+      value: Math.round(totals.hoursPlayed),
+      Icon: Gamepad2,
+      caption: t('em jogos'),
+    },
+    {
+      label: t('Episódios'),
+      value: totals.episodesWatched,
+      Icon: Tv,
+      caption: t('em animes e séries'),
+    },
+    { label: t('Capítulos'), value: totals.chaptersRead, Icon: BookOpen, caption: t('em mangás') },
+    { label: t('Páginas'), value: totals.pagesRead, Icon: BookMarked, caption: t('em livros') },
+    {
+      label: t('Sessões de filmes'),
+      value: totals.timesWatched,
+      Icon: Film,
+      caption: t('em filmes'),
+    },
   ];
   const completedThisYear = statistics.completionsByMonth.reduce((sum, row) => sum + row.count, 0);
   return (
     <>
       <div className="stat-tiles">
-        {tiles.map(({ label, value, decimals, suffix, Icon }, index) => (
-          <div
-            className="stat-tile"
+        {tiles.map(({ label, value, decimals, suffix, Icon, caption, meter }, index) => (
+          <KpiCard
             key={label}
-            style={
-              { '--tile-color': chartPalette[index % chartPalette.length] } as React.CSSProperties
-            }
-          >
-            <span className="stat-tile-icon" aria-hidden="true">
-              <Icon size={15} />
-            </span>
-            <span>{label}</span>
-            <strong>
-              {value === null ? (
+            label={label}
+            color={chartPalette[index % chartPalette.length]!}
+            icon={<Icon size={15} />}
+            caption={caption}
+            meter={meter}
+            value={
+              value === null ? (
                 '—'
               ) : (
                 <>
                   <NumberTicker value={value} decimals={decimals} />
                   {suffix}
                 </>
-              )}
-            </strong>
-          </div>
+              )
+            }
+          />
         ))}
       </div>
       <div className="statistics-grid">

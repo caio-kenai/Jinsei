@@ -28,31 +28,27 @@ import {
   UsersRound,
 } from 'lucide-react';
 import {
-  categoryLabels,
   localeLabels,
   localeSchema,
   locales,
   dateFormats,
-  mediaTypes,
   preferencesPatchSchema,
   visualThemeLabels,
   visualThemeSchema,
   type AccountSession,
   type CurrentUser,
-  type MediaType,
   type PreferencesPatch,
 } from '@jinsei/contracts';
 import { toast } from 'sonner';
 import { useCurrentUser } from '@/features/auth/use-current-user';
 import { usePreferences } from '@/features/auth/use-preferences';
-import { categoryIcons } from '@/components/shared/category-icons';
 import { api, jsonBody } from '@/lib/api';
-import { categoryColors } from '@/lib/palette';
 import { celebrate } from '@/lib/celebrate';
 import { transitionTheme } from '@/lib/theme-transition';
 import { cn } from '@/lib/utils';
 import { PublicProfileSettings } from './public-profile-settings';
 import { MfaSettings } from './mfa-settings';
+import { CategoryPicker } from './category-picker';
 import { Button } from '@/components/ui/button';
 import { Input, Select, Textarea } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -357,24 +353,6 @@ function SettingsForm({ user }: { user: CurrentUser }) {
     }
     preferences.mutate(parsed.data, { onSuccess: () => toast.success(t('Perfil salvo')) });
   }
-  function toggleCategory(type: MediaType, enabled: boolean) {
-    const next = enabled
-      ? mediaTypes.filter((item) => item === type || prefs.categories.includes(item))
-      : prefs.categories.filter((item) => item !== type);
-    if (!next.length) {
-      toast.error(t('Mantenha ao menos uma categoria ativa'));
-      return;
-    }
-    preferences.mutate(
-      { categories: next },
-      {
-        onSuccess: () => {
-          void client.invalidateQueries({ queryKey: ['library'] });
-          void client.invalidateQueries({ queryKey: ['summary'] });
-        },
-      },
-    );
-  }
   async function changePassword(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
@@ -511,7 +489,7 @@ function SettingsForm({ user }: { user: CurrentUser }) {
                   className="mode-choice"
                   onClick={(event) => {
                     const target = event.currentTarget;
-                    transitionTheme(() => setTheme(mode.id), target);
+                    transitionTheme(() => setTheme(mode.id), target, mode.id);
                     save(
                       { theme: mode.id },
                       t('Modo {mode} ativado', { mode: t(mode.label).toLowerCase() }),
@@ -614,30 +592,7 @@ function SettingsForm({ user }: { user: CurrentUser }) {
             'Desativar uma categoria apenas a esconde. Seus registros continuam guardados.',
           )}
         >
-          <div className="settings-categories">
-            {mediaTypes.map((type) => {
-              const Icon = categoryIcons[type];
-              const enabled = prefs.categories.includes(type);
-              return (
-                <div
-                  key={type}
-                  className={cn('settings-category', enabled && 'enabled')}
-                  style={{ '--cat': categoryColors[type] } as CSSProperties}
-                >
-                  <span className="settings-category-icon">
-                    <Icon size={16} />
-                  </span>
-                  <strong>{t(categoryLabels[type])}</strong>
-                  <Switch
-                    checked={enabled}
-                    label={t('Mostrar {category}', { category: t(categoryLabels[type]) })}
-                    disabled={preferences.isPending}
-                    onChange={(checked) => toggleCategory(type, checked)}
-                  />
-                </div>
-              );
-            })}
-          </div>
+          <CategoryPicker />
         </Card>
 
         <Card

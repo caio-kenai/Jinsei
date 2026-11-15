@@ -152,10 +152,14 @@ export function OnboardingForm() {
                 aria-pressed={theme === value}
                 onClick={(event) => {
                   const target = event.currentTarget;
-                  transitionTheme(() => {
-                    setThemeValue(value);
-                    setTheme(value);
-                  }, target);
+                  transitionTheme(
+                    () => {
+                      setThemeValue(value);
+                      setTheme(value);
+                    },
+                    target,
+                    value,
+                  );
                 }}
               >
                 <Icon size={18} />

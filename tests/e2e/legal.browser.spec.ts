@@ -24,7 +24,7 @@ test('políticas usam navegação pública e o apoio está acessível sem conta'
     'Privacidade',
     'Termos',
   ]);
-  await expect(page.locator('.marketing-footer')).toContainText('Criado por Caio Pacifico');
+  await expect(page.locator('.marketing-footer')).toContainText('Criado por Caio Oliveira Pacifico');
   await navigation.getByRole('button', { name: 'Buy Me a Monster' }).click();
   await expect(
     page.getByRole('dialog', { name: 'Um Monster para o próximo capítulo?' }),

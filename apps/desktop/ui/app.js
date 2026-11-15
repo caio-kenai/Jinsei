@@ -15,7 +15,7 @@ const texts = {
     connect: 'Conectar',
     official: 'Usar o servidor oficial',
     invalid: 'Informe um endereço válido, como https://jinsei.kenai.site.',
-    unreachable: 'Não encontramos um servidor nesse endereço.',
+    unreachable: 'Não encontramos um Jinsei nesse endereço.',
     footer: 'Jinsei · gratuito e open source',
   },
   en: {
@@ -30,7 +30,7 @@ const texts = {
     connect: 'Connect',
     official: 'Use the official server',
     invalid: 'Enter a valid address, such as https://jinsei.kenai.site.',
-    unreachable: "We couldn't find a server at that address.",
+    unreachable: "We couldn't find a Jinsei at that address.",
     footer: 'Jinsei · free and open source',
   },
   es: {
@@ -46,7 +46,7 @@ const texts = {
     connect: 'Conectar',
     official: 'Usar el servidor oficial',
     invalid: 'Indica una dirección válida, como https://jinsei.kenai.site.',
-    unreachable: 'No encontramos un servidor en esa dirección.',
+    unreachable: 'No encontramos un Jinsei en esa dirección.',
     footer: 'Jinsei · gratuito y de código abierto',
   },
 };
@@ -79,22 +79,12 @@ function normalize(value) {
   }
 }
 
-/** True when something answers at the instance health check. */
+/** True when a Jinsei instance answers at this address (checked by the app, not the page). */
 async function reachable(origin) {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 10000);
   try {
-    // The response is opaque without CORS; reaching the server is what matters here.
-    await fetch(`${origin}/api/health`, {
-      mode: 'no-cors',
-      cache: 'no-store',
-      signal: controller.signal,
-    });
-    return true;
+    return await window.__TAURI__.core.invoke('check_server', { url: origin });
   } catch {
     return false;
-  } finally {
-    clearTimeout(timer);
   }
 }
 

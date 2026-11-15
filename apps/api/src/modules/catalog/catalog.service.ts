@@ -46,8 +46,11 @@ export function catalogResult(item: MediaWithMetadata): CatalogResult {
     title: item.title,
     description: item.description,
     releaseYear: item.releaseYear,
-    coverUrl: item.coverUrl,
-    coverAttribution: coverAttributionSchema.nullable().parse(item.coverAttribution),
+    // A vertical cover found by the work enrichment is preferred to a wide catalog image.
+    coverUrl: item.posterUrl ?? item.coverUrl,
+    coverAttribution: coverAttributionSchema
+      .nullable()
+      .parse(item.posterUrl ? item.posterAttribution : item.coverAttribution),
     platforms: item.game?.platforms ?? [],
     genres: item.genres,
     developers: item.game?.developers ?? [],

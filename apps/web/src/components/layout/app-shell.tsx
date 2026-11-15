@@ -14,7 +14,7 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   ChevronDown,
-  ChevronRight,
+  SlidersHorizontal,
   Sun,
   Moon,
   Compass,
@@ -45,7 +45,8 @@ import { AboutDialog } from '@/features/about/about-dialog';
 import { categoryIcons } from '@/components/shared/category-icons';
 import { useProgressionAnnouncements } from '@/features/progression/use-progression';
 import { CommandPalette } from '@/features/command/command-palette';
-import { LayoutGroup, motion } from 'motion/react';
+import { AnimatePresence, LayoutGroup, motion } from 'motion/react';
+import { CategoryPicker } from '@/features/settings/category-picker';
 import { useI18n } from '@/i18n/provider';
 
 /** Sidebar link whose selected background glides to the active page. */
@@ -84,6 +85,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [aboutOpen, setAboutOpen] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [libraryOpen, setLibraryOpen] = useState(true);
+  const [categoriesOpen, setCategoriesOpen] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
     const listener = (event: KeyboardEvent) => {
@@ -127,33 +129,52 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           aria-expanded={libraryOpen}
         >
           <span>{t('Minha biblioteca')}</span>
-          {libraryOpen ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
+          <ChevronDown
+            size={13}
+            className={cn('sidebar-section-chevron', !libraryOpen && 'closed')}
+          />
         </button>
-        {libraryOpen && (
-          <div>
-            {mediaTypes
-              .filter((type) => user.preferences.categories.includes(type))
-              .map((type) => {
-                const Icon = categoryIcons[type];
-                return (
-                  <NavLink
-                    key={type}
-                    href={`/library/${type}`}
-                    onClick={close}
-                    active={pathname === `/library/${type}`}
-                  >
-                    <Icon size={16} />
-                    {t(categoryLabels[type])}
-                    {pathname === `/library/${type}` && <span className="nav-active-dot" />}
-                  </NavLink>
-                );
-              })}
-            <Link href="/settings" onClick={close} className="nav-link nav-add">
-              <span>+</span>
-              {t('Personalizar categorias')}
-            </Link>
-          </div>
-        )}
+        <AnimatePresence initial={false}>
+          {libraryOpen && (
+            <motion.div
+              key="library-categories"
+              className="sidebar-collapsible"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
+            >
+              {mediaTypes
+                .filter((type) => user.preferences.categories.includes(type))
+                .map((type) => {
+                  const Icon = categoryIcons[type];
+                  return (
+                    <NavLink
+                      key={type}
+                      href={`/library/${type}`}
+                      onClick={close}
+                      active={pathname === `/library/${type}`}
+                    >
+                      <Icon size={16} />
+                      {t(categoryLabels[type])}
+                      {pathname === `/library/${type}` && <span className="nav-active-dot" />}
+                    </NavLink>
+                  );
+                })}
+              <button
+                type="button"
+                className="nav-link nav-customize"
+                onClick={() => {
+                  close();
+                  setCategoriesOpen(true);
+                }}
+              >
+                <SlidersHorizontal size={15} />
+                <span>{t('Personalizar categorias')}</span>
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
         <div className="sidebar-divider" />
         <NavLink href="/favorites" onClick={close} active={pathname === '/favorites'}>
           <Heart size={17} />
@@ -217,7 +238,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     }
   }
   function changeTheme(theme: CurrentUser['preferences']['theme'], origin: Element) {
-    transitionTheme(() => setTheme(theme), origin);
+    transitionTheme(() => setTheme(theme), origin, theme);
     preferences.mutate({ theme }, { onError: () => setTheme(user!.preferences.theme) });
   }
   return (
@@ -229,7 +250,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <button
           className="rail-collapse"
           aria-label={collapsed ? t('Expandir barra lateral') : t('Recolher barra lateral')}
-          onClick={() => preferences.mutate({ sidebarCollapsed: !collapsed })}
+          onClick={() => {
+            // Collapses at once; the preference is saved in the background.
+            queryClient.setQueryData<CurrentUser>(['me'], (current) =>
+              current
+                ? {
+                    ...current,
+                    preferences: { ...current.preferences, sidebarCollapsed: !collapsed },
+                  }
+                : current,
+            );
+            preferences.mutate({ sidebarCollapsed: !collapsed });
+          }}
         >
           {collapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}
         </button>
@@ -273,9 +305,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <div className="app-workspace">
         <header className="global-header">
           <Link href="/home" className="global-brand" aria-label={t('Jinsei início')}>
-            <Brand className="global-wordmark" />
-            <Brand compact className="global-app-icon" />
-            <ChevronDown size={12} />
+            <Brand adaptive className="global-wordmark" />
           </Link>
           <Button
             variant="ghost"
@@ -329,6 +359,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           {children}
         </main>
       </div>
+      <Dialog open={categoriesOpen} onOpenChange={setCategoriesOpen}>
+        <DialogContent className="categories-dialog">
+          <DialogTitle className="dialog-title">{t('Categorias da biblioteca')}</DialogTitle>
+          <DialogDescription className="dialog-description">
+            {t(
+              'Escolha o que aparece no menu e na sua biblioteca. Desativar uma categoria só a esconde.',
+            )}
+          </DialogDescription>
+          <CategoryPicker className="categories-dialog-grid" />
+        </DialogContent>
+      </Dialog>
       <Dialog open={mobileOpen} onOpenChange={setMobileOpen}>
         <DialogContent className="mobile-navigation">
           <DialogTitle className="sr-only">{t('Navegação')}</DialogTitle>
