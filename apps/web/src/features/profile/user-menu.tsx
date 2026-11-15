@@ -10,6 +10,7 @@ import {
   LoaderCircle,
   LogOut,
   Server,
+  ShieldAlert,
   Settings,
   UserRound,
   Users,
@@ -133,6 +134,14 @@ export function UserMenu({
             Configurações
           </Link>
         </DropdownMenuItem>
+        {user.isAdmin && (
+          <DropdownMenuItem asChild>
+            <Link href="/admin/moderation">
+              <ShieldAlert size={16} />
+              Moderação
+            </Link>
+          </DropdownMenuItem>
+        )}
         {user.isAdmin && (
           <DropdownMenuItem asChild>
             <Link href="/settings/instance">
