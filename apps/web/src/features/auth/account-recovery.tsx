@@ -227,7 +227,12 @@ export function VerifyEmail() {
   const started = useRef(false);
   const verify = useMutation({
     mutationFn: () => api('/auth/email/verify', { method: 'POST', body: jsonBody({ token }) }),
-    onSuccess: () => void client.invalidateQueries({ queryKey: ['me'] }),
+    onSuccess: async () => {
+      // A first /users/me request may still be running from before the confirmation;
+      // cancel it so the refetch is not merged into that stale response.
+      await client.cancelQueries({ queryKey: ['me'] });
+      await client.invalidateQueries({ queryKey: ['me'] });
+    },
   });
   const { mutate } = verify;
   useEffect(() => {
