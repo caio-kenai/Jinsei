@@ -1,6 +1,6 @@
 [package]
 name = "jinsei-desktop"
-version = "0.1.7"
+version = "0.1.8"
 description = "Jinsei para Windows, macOS e Linux"
 authors = ["Caio Pacifico"]
 license = "AGPL-3.0-only"
