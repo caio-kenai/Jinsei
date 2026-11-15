@@ -36,6 +36,37 @@ fn open_in_browser(app: &AppHandle, url: &Url) {
     }
 }
 
+/// True when the address answers the Jinsei API health check.
+///
+/// The check runs here because the instance does not allow cross-origin reads
+/// (Cross-Origin-Resource-Policy), so the start page cannot fetch it directly.
+#[tauri::command]
+async fn check_server(url: String) -> bool {
+    let Ok(base) = Url::parse(&url) else {
+        return false;
+    };
+    if !matches!(base.scheme(), "https" | "http") {
+        return false;
+    }
+    let Ok(health) = base.join("/api/health") else {
+        return false;
+    };
+    tauri::async_runtime::spawn_blocking(move || {
+        let agent: ureq::Agent = ureq::Agent::config_builder()
+            .timeout_global(Some(std::time::Duration::from_secs(10)))
+            .build()
+            .into();
+        agent
+            .get(health.as_str())
+            .call()
+            .ok()
+            .and_then(|mut response| response.body_mut().read_to_string().ok())
+            .is_some_and(|body| body.contains("jinsei-api"))
+    })
+    .await
+    .unwrap_or(false)
+}
+
 /// Opens the chosen instance in the main window.
 #[tauri::command]
 fn connect(app: AppHandle, url: String) -> Result<(), String> {
@@ -84,7 +115,7 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .manage(Server::default())
-        .invoke_handler(tauri::generate_handler![connect])
+        .invoke_handler(tauri::generate_handler![connect, check_server])
         .setup(|app| {
             let navigation = app.handle().clone();
             let popups = app.handle().clone();
