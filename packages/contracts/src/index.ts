@@ -84,6 +84,14 @@ export const usernameSchema = z
   .min(3)
   .max(30)
   .regex(/^[a-z0-9][a-z0-9_-]+$/, 'Use letras minúsculas, números, _ ou -');
+export const locales = ['pt-BR', 'en', 'es'] as const;
+export const localeSchema = z.enum(locales);
+export type Locale = z.infer<typeof localeSchema>;
+export const localeLabels: Record<Locale, string> = {
+  'pt-BR': 'Português (Brasil)',
+  en: 'English',
+  es: 'Español',
+};
 export const onboardingSchema = z
   .object({
     displayName: z.string().trim().min(2).max(60),
@@ -95,6 +103,7 @@ export const onboardingSchema = z
       .refine((v) => new Set(v).size === v.length),
     theme: themeSchema,
     accent: accentSchema.default('black'),
+    locale: localeSchema.optional(),
   })
   .strict();
 export type OnboardingInput = z.infer<typeof onboardingSchema>;
@@ -125,6 +134,7 @@ export const preferencesPatchSchema = onboardingSchema
     dateFormat: dateFormatSchema.optional(),
     timeFormat: timeFormatSchema.optional(),
     celebrations: z.boolean().optional(),
+    locale: localeSchema.optional(),
     showFavorites: z.boolean().optional(),
     showStatistics: z.boolean().optional(),
     showReviews: z.boolean().optional(),
@@ -165,6 +175,7 @@ export const currentUserSchema = z.object({
     dateFormat: dateFormatSchema.default('dd/MM/yyyy'),
     timeFormat: timeFormatSchema.default('24h'),
     celebrations: z.boolean().default(true),
+    locale: localeSchema.default('pt-BR'),
     categories: z.array(mediaTypeSchema),
     onboarded: z.boolean(),
   }),

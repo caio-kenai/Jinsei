@@ -92,6 +92,7 @@ model UserPreference {
   dateFormat       String    @default("dd/MM/yyyy")
   timeFormat       String    @default("24h")
   celebrations     Boolean   @default(true)
+  locale           String    @default("pt-BR")
   onboardedAt      DateTime?
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
