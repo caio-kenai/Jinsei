@@ -12,6 +12,7 @@ import { mediaTypes, type Credentials, type RegistrationInput } from '@jinsei/co
 import { PrismaService } from '../../prisma/prisma.service';
 import { env } from '../../config/env';
 import { tokenHash } from './session.guard';
+import { MfaService } from './mfa.service';
 
 export const initialStatuses = [
   { key: 'planned', label: 'Planejado', color: 'slate' },
@@ -29,6 +30,7 @@ export class AuthService {
   constructor(
     @Inject(PrismaService) private readonly db: PrismaService,
     @Inject(InstanceService) private readonly instance: InstanceService,
+    @Inject(MfaService) private readonly mfa: MfaService,
   ) {}
 
   async register(input: RegistrationInput, userAgent = '') {
@@ -60,11 +62,14 @@ export class AuthService {
     }
   }
 
+  /** Checks the password; accounts with two-step login get a challenge instead of a session. */
   async login(input: Credentials, userAgent = '') {
     const user = await this.db.user.findUnique({ where: { email: input.email } });
     const valid = await verify(user?.passwordHash ?? (await this.dummyHash), input.password);
     if (!user || !valid) throw new UnauthorizedException('E-mail ou senha incorretos');
-    return this.createSession(user.id, userAgent);
+    if (user.mfaEnabledAt)
+      return { challenge: await this.mfa.createChallenge(user.id, userAgent) } as const;
+    return { session: await this.createSession(user.id, userAgent) } as const;
   }
 
   async createSession(userId: string, userAgent = '') {

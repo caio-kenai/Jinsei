@@ -45,6 +45,8 @@ const schema = z.object({
   MAIL_CAPTURE_DIR: z.string().default(''),
   // Whether community actions wait for a confirmed e-mail when e-mail is configured.
   EMAIL_VERIFICATION: z.enum(['required', 'optional']).default('required'),
+  // Optional key (32+ characters) that encrypts two-step login secrets at rest.
+  SECRET_KEY: z.string().default(''),
   // Folder for uploaded images when no S3-compatible service is configured.
   MEDIA_DIR: z.string().default(''),
   // Multiplies every rate limit; only raise it for automated test runs.
@@ -69,4 +71,7 @@ if (
 }
 if (env.NODE_ENV === 'production' && env.MAIL_CAPTURE_DIR) {
   throw new Error('MAIL_CAPTURE_DIR é somente para desenvolvimento e testes');
+}
+if (env.SECRET_KEY && env.SECRET_KEY.length < 32) {
+  throw new Error('SECRET_KEY precisa de pelo menos 32 caracteres');
 }

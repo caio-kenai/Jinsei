@@ -1,5 +1,11 @@
 # Histórico de versões
 
+## 0.1.4 — 2026-11-14
+
+- Verificação em duas etapas com aplicativo autenticador, QR Code e 10 códigos de recuperação.
+- Login pede o código depois da senha quando a verificação está ativa.
+- Segredos da verificação criptografados no banco com SECRET_KEY.
+
 ## 0.1.3 — 2026-11-14
 
 - Confirmação de e-mail no cadastro, com aviso e reenvio dentro do app.

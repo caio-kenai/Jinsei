@@ -7,7 +7,7 @@ import {
 } from './progress';
 export * from './progress';
 export * from './support';
-export const appVersion = '0.1.3';
+export const appVersion = '0.1.4';
 
 export const healthSchema = z.object({ status: z.literal('ok'), service: z.literal('jinsei-api') });
 
@@ -137,6 +137,7 @@ export type PreferencesPatch = z.infer<typeof preferencesPatchSchema>;
 export const currentUserSchema = z.object({
   isAdmin: z.boolean().default(false),
   emailVerified: z.boolean().default(true),
+  mfaEnabled: z.boolean().default(false),
   id: z.string(),
   email: z.string(),
   createdAt: z.string(),
@@ -195,6 +196,27 @@ export const resetPasswordSchema = z
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
 export const verifyEmailSchema = z.object({ token: emailTokenSchema }).strict();
 export type VerifyEmailInput = z.infer<typeof verifyEmailSchema>;
+export const mfaCodeSchema = z.string().trim().min(6).max(12);
+export const mfaCodeInputSchema = z.object({ code: mfaCodeSchema }).strict();
+export type MfaCodeInput = z.infer<typeof mfaCodeInputSchema>;
+export const mfaDisableSchema = z
+  .object({ password: z.string().max(128), code: mfaCodeSchema })
+  .strict();
+export type MfaDisableInput = z.infer<typeof mfaDisableSchema>;
+export const loginMfaSchema = z
+  .object({ challenge: emailTokenSchema, code: mfaCodeSchema })
+  .strict();
+export type LoginMfaInput = z.infer<typeof loginMfaSchema>;
+export const loginResultSchema = z.union([
+  z.object({ authenticated: z.literal(true) }),
+  z.object({ mfaRequired: z.literal(true), challenge: z.string() }),
+]);
+export type LoginResult = z.infer<typeof loginResultSchema>;
+export const mfaStatusSchema = z.object({
+  enabled: z.boolean(),
+  remainingRecoveryCodes: z.number(),
+});
+export type MfaStatus = z.infer<typeof mfaStatusSchema>;
 export const passwordChangeSchema = z
   .object({ currentPassword: z.string().max(128), newPassword: passwordSchema })
   .strict();

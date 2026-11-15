@@ -49,6 +49,7 @@ import { celebrate } from '@/lib/celebrate';
 import { transitionTheme } from '@/lib/theme-transition';
 import { cn } from '@/lib/utils';
 import { PublicProfileSettings } from './public-profile-settings';
+import { MfaSettings } from './mfa-settings';
 import { Button } from '@/components/ui/button';
 import { Input, Select, Textarea } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -756,6 +757,7 @@ function SettingsForm({ user }: { user: CurrentUser }) {
               </Button>
             </div>
           </form>
+          <MfaSettings />
           <Sessions />
         </Card>
 
