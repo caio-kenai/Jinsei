@@ -20,6 +20,7 @@ test('políticas usam navegação pública e o apoio está acessível sem conta'
   await expect(navigation.locator('a,button')).toHaveText([
     'Código aberto',
     'Buy Me a Monster',
+    'Apps',
     'Privacidade',
     'Termos',
   ]);

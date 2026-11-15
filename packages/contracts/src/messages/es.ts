@@ -1591,4 +1591,32 @@ export const es: Record<string, string> = {
   'PERGUNTAS FREQUENTES': 'PREGUNTAS FRECUENTES',
   'A gente responde.': 'Te respondemos.',
   'Posso levar meus dados embora?': '¿Puedo llevarme mis datos?',
+  'Baixar o Jinsei': 'Descargar Jinsei',
+  'Jinsei para Windows, macOS, Linux e Android, conectado ao seu servidor.':
+    'Jinsei para Windows, macOS, Linux y Android, conectado a tu servidor.',
+  'Windows 10 ou mais recente, 64 bits': 'Windows 10 o posterior, 64 bits',
+  'Instalador (.exe)': 'Instalador (.exe)',
+  'macOS 11 ou mais recente, Intel e Apple Silicon': 'macOS 11 o posterior, Intel y Apple Silicon',
+  'Imagem de disco (.dmg)': 'Imagen de disco (.dmg)',
+  '64 bits, com WebKitGTK': '64 bits, con WebKitGTK',
+  'Pacote .deb': 'Paquete .deb',
+  'Android 8 ou mais recente': 'Android 8 o posterior',
+  'Aplicativo (.apk)': 'Aplicación (.apk)',
+  'APPS DO JINSEI': 'APPS DE JINSEI',
+  'Suas histórias no computador e no celular.': 'Tus historias en el ordenador y en el móvil.',
+  'Os apps abrem o mesmo Jinsei da web, com a sua conta e os seus dados no servidor. Basta entrar uma vez.':
+    'Las apps abren el mismo Jinsei de la web, con tu cuenta y tus datos en el servidor. Solo tienes que iniciar sesión una vez.',
+  'Ao abrir o app, use este servidor:': 'Al abrir la app, usa este servidor:',
+  'Copiar endereço do servidor': 'Copiar la dirección del servidor',
+  'Recomendado para este dispositivo': 'Recomendado para este dispositivo',
+  'Os instaladores ainda não têm assinatura digital paga. Na primeira abertura, o Windows pode mostrar “O Windows protegeu o computador” (clique em Mais informações → Executar assim mesmo) e o macOS pode pedir para abrir pelo menu Ajustes → Privacidade e Segurança.':
+    'Los instaladores todavía no tienen firma digital de pago. La primera vez, Windows puede mostrar “Windows protegió su PC” (haz clic en Más información → Ejecutar de todas formas) y macOS puede pedir que lo abras desde Ajustes del Sistema → Privacidad y seguridad.',
+  'No Android, permita a instalação pelo navegador quando o sistema pedir. O app não está na Play Store e é atualizado baixando o APK novo.':
+    'En Android, permite la instalación desde el navegador cuando el sistema lo pida. La app no está en Play Store y se actualiza descargando el APK nuevo.',
+  'Notas da versão': 'Notas de la versión',
+  'Somas de verificação (SHA-256)': 'Sumas de verificación (SHA-256)',
+  'Como compilar os apps': 'Cómo compilar las apps',
+  Apps: 'Apps',
+  'Abrir {title}': 'Abrir {title}',
+  'Baixar o app': 'Descargar la app',
 };
