@@ -1,0 +1,15 @@
+{
+  "name": "@jinsei/desktop",
+  "private": true,
+  "version": "0.1.7",
+  "description": "Jinsei para Windows, macOS e Linux, conectado a uma instância online.",
+  "scripts": {
+    "tauri": "tauri",
+    "start": "tauri dev",
+    "bundle": "tauri build",
+    "icons": "tauri icon ../../assets/branding/jinsei-favicon.png"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "2.12.4"
+  }
+}
