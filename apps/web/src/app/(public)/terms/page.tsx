@@ -35,7 +35,7 @@ export default async function Page() {
           {t('termos adicionais de atribuição')}
         </a>{' '}
         {t(
-          'que exigem preservar a autoria de Caio Pacifico e o Buy Me a Monster em todas as cópias e instalações. O texto integral da licença rege as permissões e condições aplicáveis. As imagens, marcas e dados de terceiros têm direitos próprios.',
+          'que exigem preservar a autoria de Caio Oliveira Pacifico e o Buy Me a Monster em todas as cópias e instalações. O texto integral da licença rege as permissões e condições aplicáveis. As imagens, marcas e dados de terceiros têm direitos próprios.',
         )}
       </p>
       <h2>{t('Metadados e imagens')}</h2>

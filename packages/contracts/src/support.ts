@@ -6,7 +6,7 @@
  * Instalações e versões modificadas devem preservá-los sem alteração.
  */
 export const creatorSupport = {
-  creator: 'Caio Pacifico',
+  creator: 'Caio Oliveira Pacifico',
   pixPayload:
     '00020126580014BR.GOV.BCB.PIX01368c08bb41-e019-4994-84a2-aaf0ce749ab85204000053039865802BR5922Caio Oliveira Pacifico6009SAO PAULO621405100rTmxm8uqz63041A7B',
   pixKey: '8c08bb41-e019-4994-84a2-aaf0ce749ab8',

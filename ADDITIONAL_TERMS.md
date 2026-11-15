@@ -1,6 +1,6 @@
 # Termos adicionais da licença
 
-Copyright (C) 2026 Caio Pacifico.
+Copyright (C) 2026 Caio Oliveira Pacifico.
 
 O Jinsei é distribuído sob a [GNU Affero General Public License v3](LICENSE). Conforme a seção 7 dessa licença, os termos abaixo complementam a AGPL v3 e se aplicam a todas as cópias do Jinsei, às versões modificadas e às instalações em servidor próprio (self-host), inclusive quando os usuários acessam a aplicação remotamente pela rede.
 
@@ -8,7 +8,7 @@ O Jinsei é distribuído sob a [GNU Affero General Public License v3](LICENSE). 
 
 Toda versão do Jinsei que ofereça interface interativa deve preservar, de forma visível e funcional, nos seus Avisos Legais Apropriados:
 
-1. A atribuição **"Jinsei, criado por Caio Pacifico"**.
+1. A atribuição **"Jinsei, criado por Caio Oliveira Pacifico"**.
 2. O recurso **Buy Me a Monster**, com o logotipo original, acessível na navegação principal da área autenticada e no rodapé das páginas públicas.
 3. No Buy Me a Monster, o QR Code e as opções de cópia do **Pix oficial do criador**, exatamente como definidos em [`packages/contracts/src/support.ts`](packages/contracts/src/support.ts).
 4. Um link para o código-fonte e para este documento.
@@ -29,4 +29,4 @@ As contribuições pelo Buy Me a Monster continuam voluntárias. Elas não liber
 
 ## Summary in English
 
-These are additional terms under section 7 of the GNU AGPL v3. Every copy, modified version and self-hosted instance of Jinsei must keep the attribution "Jinsei, created by Caio Pacifico" and the Buy Me a Monster feature, which shows the creator's official Pix as defined in `packages/contracts/src/support.ts`. Replacing the Pix recipient, hiding or removing the feature, or presenting someone else as the creator misrepresents the origin of the material. Modified versions must be marked as modified.
+These are additional terms under section 7 of the GNU AGPL v3. Every copy, modified version and self-hosted instance of Jinsei must keep the attribution "Jinsei, created by Caio Oliveira Pacifico" and the Buy Me a Monster feature, which shows the creator's official Pix as defined in `packages/contracts/src/support.ts`. Replacing the Pix recipient, hiding or removing the feature, or presenting someone else as the creator misrepresents the origin of the material. Modified versions must be marked as modified.
