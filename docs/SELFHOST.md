@@ -90,6 +90,10 @@ SMTP_FROM="Jinsei <seu-endereco@gmail.com>"
 
 No Gmail, use uma senha de app (a conta precisa de verificação em duas etapas). Use `SMTP_SECURE=true` com a porta 465. Os links valem 48 horas (confirmação) e 1 hora (senha) e só funcionam uma vez; redefinir a senha encerra todas as sessões. Com e-mail ativo, amizades, conversas e clubes esperam a confirmação do endereço; defina `EMAIL_VERIFICATION=optional` para não exigir. Contas criadas antes da atualização ficam confirmadas. Sem `SMTP_HOST`, esses recursos ficam desligados e o restante funciona normalmente.
 
+## Verificação em duas etapas
+
+Qualquer pessoa pode ativar a verificação em duas etapas em Configurações → Segurança, com um aplicativo autenticador e códigos de recuperação. Defina `SECRET_KEY` (32 caracteres ou mais, por exemplo `openssl rand -hex 32`) para criptografar os segredos no banco. Guarde a chave junto do backup: sem ela, quem usa a verificação em duas etapas não consegue entrar. Não troque a chave depois que alguém ativar o recurso.
+
 ## Imagens enviadas
 
 Avatar, banner e capas de coleção funcionam sem configuração extra: por padrão as imagens ficam no volume `media` do Docker (`MEDIA_DIR=/data/media` dentro do contêiner da API). A API valida o formato real do arquivo e entrega as imagens em `/api/media/<id>`, então a pasta nunca precisa ser pública.

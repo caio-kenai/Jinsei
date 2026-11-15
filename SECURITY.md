@@ -8,6 +8,7 @@ Use a aba Security do repositório e a opção de relato privado, se estiver hab
 
 ## Controles existentes
 
+- **Acesso:** confirmação de e-mail e recuperação de senha por links de uso único (48 horas e 1 hora), sem revelar quais endereços têm conta; redefinir a senha encerra todas as sessões. Verificação em duas etapas com aplicativo autenticador (TOTP), desafio de 5 minutos com até 5 tentativas, recusa de códigos repetidos e 10 códigos de recuperação guardados só como hash; os segredos são criptografados com AES-256-GCM quando `SECRET_KEY` está definida.
 - **Contas e sessões:** senhas usam Argon2id e o banco guarda apenas hashes dos identificadores de sessão. Cookies de sessão são HttpOnly, SameSite=Lax e Secure em produção com HTTPS; HTTP só é aceito em loopback. Cada sessão registra navegador, sistema e último acesso (sem endereço IP) e pode ser encerrada pela própria conta. Alteração de senha revoga todas as sessões.
 - **Autorização:** a API exige a origem configurada em operações de escrita, limita tentativas por minuto e deriva o proprietário de cada registro da sessão. Bibliotecas, anotações, tags e visualizações de outras contas não são acessíveis por identificador. A administração da instância exige o papel de administrador conferido pelo servidor.
 - **Perfil público e obras:** só é publicado o que a pessoa ativa: perfil público, seções escolhidas e reviews marcadas como públicas. Títulos cadastrados manualmente nunca aparecem em páginas públicas ou rankings.
@@ -21,6 +22,6 @@ Defina HTTPS, segredos e credenciais próprios, backups e restauração (banco e
 
 ## Limitações conhecidas
 
-Recuperação e verificação de e-mail, MFA, bloqueio e denúncia de usuários e moderação pela administração da instância ainda não estão implementados. Mensagens não têm criptografia de ponta a ponta: ficam no banco da instância. Imagens externas de catálogos podem informar o IP do navegador aos seus provedores.
+Bloqueio e denúncia de usuários e moderação pela administração da instância ainda não estão implementados. Recuperação de senha e confirmação de e-mail dependem de um servidor SMTP configurado. Mensagens não têm criptografia de ponta a ponta: ficam no banco da instância. Imagens externas de catálogos podem informar o IP do navegador aos seus provedores.
 
 O adaptador PostgreSQL atual pode emitir um aviso de depreciação sobre consultas concorrentes em transações; os testes de integridade passam. React Compiler não está habilitado; o lint sinaliza a limitação conhecida da API TanStack Table para compilação automática.
