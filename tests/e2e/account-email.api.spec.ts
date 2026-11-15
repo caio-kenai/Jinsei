@@ -98,3 +98,26 @@ test('confirma o e-mail e redefine a senha por link de uso único', async ({ pla
   await client.dispose();
   await anonymous.dispose();
 });
+
+test('envia os e-mails no idioma salvo na conta', async ({ playwright }) => {
+  const client = await playwright.request.newContext(options);
+  const anonymous = await playwright.request.newContext(options);
+  const email = `idioma-${randomUUID().slice(0, 8)}@example.test`;
+  await client.post('/api/auth/register', { data: { email, password: 'Jinsei testes 1234' } });
+  await client.post('/api/users/me/onboarding', {
+    data: {
+      displayName: 'Reader',
+      username: `mail-${randomUUID().slice(0, 8)}`,
+      categories: ['books'],
+      theme: 'light',
+      locale: 'en',
+    },
+  });
+  await anonymous.post('/api/auth/password/forgot', { data: { email } });
+  const reset = await latestMail(email, /Reset your Jinsei password/);
+  expect(reset.action).toContain('/reset-password?token=');
+
+  await client.patch('/api/users/me/preferences', { data: { locale: 'es' } });
+  await client.post('/api/users/me/email/verification');
+  await latestMail(email, /Confirma tu correo en Jinsei/);
+});
