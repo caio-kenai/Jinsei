@@ -1,4 +1,5 @@
 'use client';
+import { msg } from '@/i18n/config';
 import { useState, type CSSProperties } from 'react';
 import Link from 'next/link';
 import { useQueryClient } from '@tanstack/react-query';
@@ -10,13 +11,14 @@ import { uploadImage } from '@/lib/upload';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useInstance } from '@/features/instance/use-instance';
+import { useT } from '@/i18n/provider';
 
 const sections = [
-  ['showStatistics', 'Estatísticas', 'Totais, nota média e categorias'],
-  ['showFavorites', 'Favoritos', 'Até 12 títulos favoritos'],
-  ['showReviews', 'Resenhas', 'Somente as resenhas marcadas como públicas'],
-  ['showGoals', 'Metas', 'Metas que não estejam arquivadas'],
-  ['showHistory', 'Atividade recente', 'Últimos títulos atualizados e seus status'],
+  ['showStatistics', msg('Estatísticas'), msg('Totais, nota média e categorias')],
+  ['showFavorites', msg('Favoritos'), msg('Até 12 títulos favoritos')],
+  ['showReviews', msg('Resenhas'), msg('Somente as resenhas marcadas como públicas')],
+  ['showGoals', msg('Metas'), msg('Metas que não estejam arquivadas')],
+  ['showHistory', msg('Atividade recente'), msg('Últimos títulos atualizados e seus status')],
 ] as const;
 
 function ImageField({
@@ -32,6 +34,7 @@ function ImageField({
   path: string;
   wide?: boolean;
 }) {
+  const t = useT();
   const client = useQueryClient();
   const [busy, setBusy] = useState(false);
   async function run(action: () => Promise<unknown>, message: string) {
@@ -41,7 +44,7 @@ function ImageField({
       await client.invalidateQueries({ queryKey: ['me'] });
       toast.success(message);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Tente novamente');
+      toast.error(error instanceof Error ? error.message : t('Tente novamente'));
     } finally {
       setBusy(false);
     }
@@ -56,7 +59,7 @@ function ImageField({
       <div className="image-actions">
         <label className="toolbar-button">
           {busy ? <LoaderCircle className="spin" size={12} /> : <ImageUp size={12} />}
-          Enviar imagem
+          {t('Enviar imagem')}
           <input
             type="file"
             accept="image/jpeg,image/png,image/webp"
@@ -65,7 +68,7 @@ function ImageField({
             onChange={(event) => {
               const file = event.target.files?.[0];
               event.target.value = '';
-              if (file) void run(() => uploadImage(path, file), `${label} atualizado`);
+              if (file) void run(() => uploadImage(path, file), t('{label} atualizado', { label }));
             }}
           />
         </label>
@@ -74,10 +77,12 @@ function ImageField({
             type="button"
             className="toolbar-button"
             disabled={busy}
-            onClick={() => void run(() => api(path, { method: 'DELETE' }), `${label} removido`)}
+            onClick={() =>
+              void run(() => api(path, { method: 'DELETE' }), t('{label} removido', { label }))
+            }
           >
             <Trash2 size={12} />
-            Remover
+            {t('Remover')}
           </button>
         )}
       </div>
@@ -87,6 +92,7 @@ function ImageField({
 }
 
 export function PublicProfileSettings({ user }: { user: CurrentUser }) {
+  const t = useT();
   const client = useQueryClient();
   const instance = useInstance();
   const [links, setLinks] = useState<ProfileLink[]>(user.profile.links);
@@ -101,7 +107,7 @@ export function PublicProfileSettings({ user }: { user: CurrentUser }) {
       links: links.filter((link) => link.label.trim() || link.url.trim()),
     });
     if (!parsed.success) {
-      setError(parsed.error.issues[0]?.message ?? 'Revise os links do perfil');
+      setError(parsed.error.issues[0]?.message ?? t('Revise os links do perfil'));
       return;
     }
     setError('');
@@ -112,9 +118,9 @@ export function PublicProfileSettings({ user }: { user: CurrentUser }) {
         body: jsonBody(parsed.data),
       });
       client.setQueryData(['me'], next);
-      toast.success('Perfil público atualizado');
+      toast.success(t('Perfil público atualizado'));
     } catch (error) {
-      setError(error instanceof Error ? error.message : 'Tente novamente');
+      setError(error instanceof Error ? error.message : t('Tente novamente'));
     } finally {
       setBusy(false);
     }
@@ -129,15 +135,16 @@ export function PublicProfileSettings({ user }: { user: CurrentUser }) {
           <UsersRound size={17} />
         </span>
         <div>
-          <h2>Perfil público</h2>
+          <h2>{t('Perfil público')}</h2>
           <p>
-            Escolha o que outras pessoas podem ver. Anotações privadas, tags e títulos fora das
-            seções escolhidas nunca são publicados.
+            {t(
+              'Escolha o que outras pessoas podem ver. Anotações privadas, tags e títulos fora das seções escolhidas nunca são publicados.',
+            )}
             {user.profile.isPublic && user.profile.username && (
               <>
                 {' '}
                 <Link href={`/u/${user.profile.username}`} target="_blank" className="inline-link">
-                  Ver meu perfil público <ExternalLink size={11} />
+                  {t('Ver meu perfil público')} <ExternalLink size={11} />
                 </Link>
               </>
             )}
@@ -148,45 +155,45 @@ export function PublicProfileSettings({ user }: { user: CurrentUser }) {
         <div className="form-grid">
           <ImageField
             label="Avatar"
-            hint="JPEG, PNG ou WebP de até 2 MB."
+            hint={t('JPEG, PNG ou WebP de até 2 MB.')}
             url={user.profile.avatarUrl}
             path="/users/me/avatar"
           />
           <ImageField
             label="Banner"
-            hint="JPEG, PNG ou WebP de até 5 MB, de preferência horizontal."
+            hint={t('JPEG, PNG ou WebP de até 5 MB, de preferência horizontal.')}
             url={user.profile.bannerUrl}
             path="/users/me/banner"
             wide
           />
         </div>
       ) : (
-        <p className="muted">O envio de imagens não está configurado nesta instância.</p>
+        <p className="muted">{t('O envio de imagens não está configurado nesta instância.')}</p>
       )}
       <form onSubmit={save} className="dialog-form">
         <label className="checkbox-field">
           <input type="checkbox" name="isPublic" defaultChecked={user.profile.isPublic} />
-          Tornar meu perfil público em /u/{user.profile.username}
+          {t('Tornar meu perfil público em {path}', { path: `/u/${user.profile.username}` })}
         </label>
         <fieldset className="privacy-options">
-          <legend>Seções exibidas no perfil público</legend>
+          <legend>{t('Seções exibidas no perfil público')}</legend>
           {sections.map(([key, label, hint]) => (
             <label className="checkbox-field" key={key}>
               <input type="checkbox" name={key} defaultChecked={user.profile[key]} />
               <span>
-                {label}
-                <small> · {hint}</small>
+                {t(label)}
+                <small> · {t(hint)}</small>
               </span>
             </label>
           ))}
         </fieldset>
         <fieldset className="profile-links">
-          <legend>Links</legend>
+          <legend>{t('Links')}</legend>
           {links.map((link, index) => (
             <div className="profile-link-row" key={index}>
               <Input
-                aria-label={`Nome do link ${index + 1}`}
-                placeholder="Nome"
+                aria-label={t('Nome do link {number}', { number: index + 1 })}
+                placeholder={t('Nome')}
                 maxLength={40}
                 value={link.label}
                 onChange={(event) =>
@@ -198,8 +205,8 @@ export function PublicProfileSettings({ user }: { user: CurrentUser }) {
                 }
               />
               <Input
-                aria-label={`Endereço do link ${index + 1}`}
-                placeholder="https://…"
+                aria-label={t('Endereço do link {number}', { number: index + 1 })}
+                placeholder={t('https://…')}
                 type="url"
                 maxLength={500}
                 value={link.url}
@@ -215,7 +222,7 @@ export function PublicProfileSettings({ user }: { user: CurrentUser }) {
                 type="button"
                 variant="ghost"
                 size="icon"
-                aria-label={`Remover link ${index + 1}`}
+                aria-label={t('Remover link {number}', { number: index + 1 })}
                 onClick={() => setLinks(links.filter((_, i) => i !== index))}
               >
                 <X size={13} />
@@ -229,7 +236,7 @@ export function PublicProfileSettings({ user }: { user: CurrentUser }) {
               onClick={() => setLinks([...links, { label: '', url: '' }])}
             >
               <Plus size={12} />
-              Adicionar link
+              {t('Adicionar link')}
             </button>
           )}
         </fieldset>
@@ -240,7 +247,7 @@ export function PublicProfileSettings({ user }: { user: CurrentUser }) {
         )}
         <div>
           <Button type="submit" disabled={busy}>
-            Salvar perfil público
+            {t('Salvar perfil público')}
           </Button>
         </div>
       </form>

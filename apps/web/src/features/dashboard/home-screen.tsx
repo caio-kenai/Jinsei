@@ -36,6 +36,8 @@ import { JourneyToday } from '@/features/progression/journey-today';
 import { StatusBadge } from '@/features/library/status-badge';
 import { StarRating } from '@/components/shared/star-rating';
 import { NumberTicker } from '@/components/motion/number-ticker';
+import { useI18n } from '@/i18n/provider';
+import { msg } from '@/i18n/config';
 
 type Summary = {
   total: number;
@@ -86,13 +88,14 @@ function Sparkline({ values, color }: { values: number[]; color: string }) {
 
 function greeting() {
   const hour = new Date().getHours();
-  if (hour < 5) return 'Boa noite';
-  if (hour < 12) return 'Bom dia';
-  if (hour < 18) return 'Boa tarde';
-  return 'Boa noite';
+  if (hour < 5) return msg('Boa noite');
+  if (hour < 12) return msg('Bom dia');
+  if (hour < 18) return msg('Boa tarde');
+  return msg('Boa noite');
 }
 
 export function HomeScreen() {
+  const { t, formatNumber } = useI18n();
   const { data: user } = useCurrentUser();
   const [add, setAdd] = useState(false);
   const [detail, setDetail] = useState<string | null>(null);
@@ -123,21 +126,21 @@ export function HomeScreen() {
   const weekly = weeklyActivity(statistics.data?.activity ?? []);
   const tiles = [
     {
-      label: 'Na sua biblioteca',
+      label: t('Na sua biblioteca'),
       value: total,
       Icon: Library,
       color: chartPalette[0],
       series: weekly,
     },
     {
-      label: 'Experiências concluídas',
+      label: t('Experiências concluídas'),
       value: summary.data?.byStatus.completed ?? 0,
       Icon: CircleCheck,
       color: chartPalette[4],
       series: (statistics.data?.completionsByMonth ?? []).map((row) => row.count),
     },
     {
-      label: 'Horas de jogo registradas',
+      label: t('Horas de jogo registradas'),
       value: summary.data?.hoursPlayed ?? 0,
       decimals: Number.isInteger(summary.data?.hoursPlayed ?? 0) ? 0 : 1,
       suffix: 'h',
@@ -146,7 +149,7 @@ export function HomeScreen() {
       series: weekly.map((value, index) => value + (index % 3)),
     },
     {
-      label: 'Sua nota média',
+      label: t('Sua nota média'),
       value: summary.data?.averageRating ?? null,
       decimals: 2,
       suffix: '/5',
@@ -180,15 +183,15 @@ export function HomeScreen() {
           ))}
         </div>
         <div className="home-hero-copy">
-          <span className="eyebrow">SEU ESPAÇO, SUA HISTÓRIA</span>
+          <span className="eyebrow">{t('SEU ESPAÇO, SUA HISTÓRIA')}</span>
           <h1>
-            {greeting()}, <span>{user?.profile.displayName.split(' ')[0]}.</span>
+            {t(greeting())}, <span>{user?.profile.displayName.split(' ')[0]}.</span>
           </h1>
-          <p>Um novo dia para descobrir, continuar e guardar boas histórias.</p>
+          <p>{t('Um novo dia para descobrir, continuar e guardar boas histórias.')}</p>
         </div>
         <Button className="home-add" size="sm" onClick={() => setAdd(true)}>
           <Plus size={14} />
-          Adicionar título
+          {t('Adicionar título')}
         </Button>
       </header>
       {summary.error ? (
@@ -219,14 +222,16 @@ export function HomeScreen() {
       <div className="home-grid">
         <section className="home-panel home-continue">
           <div className="section-title">
-            <h2>Continue sua jornada</h2>
+            <h2>{t('Continue sua jornada')}</h2>
             <Link href="/library">
-              Ver biblioteca
+              {t('Ver biblioteca')}
               <ArrowRight size={12} />
             </Link>
           </div>
           {playing.error ? (
-            <p className="error-banner">Não foi possível carregar os títulos em andamento.</p>
+            <p className="error-banner">
+              {t('Não foi possível carregar os títulos em andamento.')}
+            </p>
           ) : playing.data?.items.length ? (
             <div className="continue-grid">
               {playing.data.items.map((entry) => {
@@ -258,11 +263,9 @@ export function HomeScreen() {
                             fill
                             sizes="320px"
                             unoptimized
-                            className={`continue-tile-cover ${
-                              entry.coverAttribution?.layout === 'landscape' ? 'is-landscape' : ''
-                            }`}
+                            className={`continue-tile-cover ${entry.coverAttribution?.layout === 'landscape' ? 'is-landscape' : ''}`}
                             src={entry.coverUrl}
-                            alt={`Capa de ${entry.title}`}
+                            alt={t('Capa de {title}', { title: entry.title })}
                             referrerPolicy="no-referrer"
                           />
                         </>
@@ -286,8 +289,8 @@ export function HomeScreen() {
             </div>
           ) : (
             <div className="quote-card">
-              <h3>Qual vai ser o próximo capítulo?</h3>
-              <p>Adicione uma obra e marque como “Em andamento” para continuar por aqui.</p>
+              <h3>{t('Qual vai ser o próximo capítulo?')}</h3>
+              <p>{t('Adicione uma obra e marque como “Em andamento” para continuar por aqui.')}</p>
               <Button
                 variant="outline"
                 size="sm"
@@ -295,14 +298,14 @@ export function HomeScreen() {
                 onClick={() => setAdd(true)}
               >
                 <Plus size={13} />
-                Adicionar uma experiência
+                {t('Adicionar uma experiência')}
               </Button>
             </div>
           )}
         </section>
         <section className="home-panel home-perspective">
           <div className="section-title">
-            <h2>Sua biblioteca em perspectiva</h2>
+            <h2>{t('Sua biblioteca em perspectiva')}</h2>
           </div>
           <div className="perspective-body">
             <div className="perspective-donut">
@@ -335,8 +338,10 @@ export function HomeScreen() {
                       if (!active || !row || !statusData.length) return null;
                       return (
                         <div className="chart-tooltip">
-                          <strong>{statusLabels[row.status]}</strong>
-                          <span>{row.value.toLocaleString('pt-BR')} títulos</span>
+                          <strong>{t(statusLabels[row.status])}</strong>
+                          <span>
+                            {formatNumber(row.value)} {t('títulos')}
+                          </span>
                         </div>
                       );
                     }}
@@ -347,14 +352,14 @@ export function HomeScreen() {
                 <strong>
                   <NumberTicker value={total} />
                 </strong>
-                total
+                {t('total')}
               </span>
             </div>
             <ul className="perspective-legend">
               {statusKeys.map((status) => (
                 <li key={status}>
                   <i style={{ background: statusColors[status] }} />
-                  {statusLabels[status]}
+                  {t(statusLabels[status])}
                   <strong>{summary.data?.byStatus[status] ?? 0}</strong>
                 </li>
               ))}
@@ -363,14 +368,14 @@ export function HomeScreen() {
         </section>
         <section className="home-panel home-recent">
           <div className="section-title">
-            <h2>Adicionados recentemente</h2>
+            <h2>{t('Adicionados recentemente')}</h2>
             <Link href="/library">
-              Ver todos
+              {t('Ver todos')}
               <ArrowRight size={12} />
             </Link>
           </div>
           {recent.error ? (
-            <p className="error-banner">Não foi possível carregar os títulos recentes.</p>
+            <p className="error-banner">{t('Não foi possível carregar os títulos recentes.')}</p>
           ) : recent.data?.items.length ? (
             <div className="recent-list">
               {recent.data.items.map((entry) => (
@@ -382,7 +387,7 @@ export function HomeScreen() {
                   />
                   <span className="recent-row-main">
                     <strong>{entry.title}</strong>
-                    <small>{entry.tags.join(' · ') || categoryLabels[entry.mediaType]}</small>
+                    <small>{entry.tags.join(' · ') || t(categoryLabels[entry.mediaType])}</small>
                   </span>
                   <StatusBadge status={entry.status} />
                   <StarRating value={entry.rating} size={11} />
@@ -392,7 +397,7 @@ export function HomeScreen() {
           ) : (
             <div className="empty-state" style={{ padding: 25 }}>
               <Library size={24} />
-              <p>Suas próximas descobertas vão aparecer aqui.</p>
+              <p>{t('Suas próximas descobertas vão aparecer aqui.')}</p>
             </div>
           )}
         </section>
@@ -400,10 +405,10 @@ export function HomeScreen() {
           <span className="home-explore-icon" aria-hidden="true">
             <Trophy size={26} />
           </span>
-          <h2>Continue explorando!</h2>
-          <p>Grandes histórias ainda esperam por você.</p>
+          <h2>{t('Continue explorando!')}</h2>
+          <p>{t('Grandes histórias ainda esperam por você.')}</p>
           <Link className="home-explore-button" href="/discover">
-            Descobrir agora
+            {t('Descobrir agora')}
             <ArrowRight size={14} />
           </Link>
         </aside>

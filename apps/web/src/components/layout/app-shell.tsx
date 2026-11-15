@@ -46,6 +46,7 @@ import { categoryIcons } from '@/components/shared/category-icons';
 import { useProgressionAnnouncements } from '@/features/progression/use-progression';
 import { CommandPalette } from '@/features/command/command-palette';
 import { LayoutGroup, motion } from 'motion/react';
+import { useI18n } from '@/i18n/provider';
 
 /** Sidebar link whose selected background glides to the active page. */
 function NavLink({
@@ -63,7 +64,16 @@ function NavLink({
 }
 
 export function AppShell({ children }: { children: React.ReactNode }) {
+  const { t, locale, setLocale } = useI18n();
   const { data: user } = useCurrentUser();
+  const accountLocale = user?.preferences.locale;
+  const syncedLocale = useRef<string | null>(null);
+  useEffect(() => {
+    // The account's language wins once per change; a local switch is then saved back to it.
+    if (!accountLocale || syncedLocale.current === accountLocale) return;
+    syncedLocale.current = accountLocale;
+    if (accountLocale !== locale) setLocale(accountLocale);
+  }, [accountLocale, locale, setLocale]);
   const pathname = usePathname();
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -100,23 +110,23 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const navigation = (close: () => void) => (
     <>
       <div className="workspace-label">
-        <span>Meu espaço</span>
+        <span>{t('Meu espaço')}</span>
       </div>
-      <nav className="sidebar-navigation" aria-label="Navegação principal">
+      <nav className="sidebar-navigation" aria-label={t('Navegação principal')}>
         <NavLink href="/home" onClick={close} active={pathname === '/home'}>
           <Home size={17} />
-          Início
+          {t('Início')}
         </NavLink>
         <NavLink href="/library" onClick={close} active={pathname === '/library'}>
           <Library size={17} />
-          Minha biblioteca
+          {t('Minha biblioteca')}
         </NavLink>
         <button
           className="sidebar-section"
           onClick={() => setLibraryOpen(!libraryOpen)}
           aria-expanded={libraryOpen}
         >
-          <span>Minha biblioteca</span>
+          <span>{t('Minha biblioteca')}</span>
           {libraryOpen ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
         </button>
         {libraryOpen && (
@@ -133,65 +143,66 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     active={pathname === `/library/${type}`}
                   >
                     <Icon size={16} />
-                    {categoryLabels[type]}
+                    {t(categoryLabels[type])}
                     {pathname === `/library/${type}` && <span className="nav-active-dot" />}
                   </NavLink>
                 );
               })}
             <Link href="/settings" onClick={close} className="nav-link nav-add">
-              <span>+</span>Personalizar categorias
+              <span>+</span>
+              {t('Personalizar categorias')}
             </Link>
           </div>
         )}
         <div className="sidebar-divider" />
         <NavLink href="/favorites" onClick={close} active={pathname === '/favorites'}>
           <Heart size={17} />
-          Favoritos
+          {t('Favoritos')}
         </NavLink>
         <NavLink href="/collections" onClick={close} active={pathname.startsWith('/collections')}>
           <FolderHeart size={17} />
-          Coleções
+          {t('Coleções')}
         </NavLink>
         <NavLink href="/statistics" onClick={close} active={pathname === '/statistics'}>
           <ChartColumn size={17} />
-          Estatísticas
+          {t('Estatísticas')}
         </NavLink>
         <NavLink href="/journey" onClick={close} active={pathname === '/journey'}>
           <Sparkles size={17} />
-          Jornada
+          {t('Jornada')}
         </NavLink>
         <NavLink href="/goals" onClick={close} active={pathname === '/goals'}>
           <Target size={17} />
-          Metas
+          {t('Metas')}
         </NavLink>
         <NavLink href="/community" onClick={close} active={pathname.startsWith('/community')}>
           <Users size={17} />
-          Comunidade
+          {t('Comunidade')}
           {communityBadge > 0 && (
             <span className="community-badge nav-badge">{communityBadge}</span>
           )}
         </NavLink>
         <NavLink href="/discover" onClick={close} active={pathname === '/discover'}>
           <Compass size={17} />
-          Descobrir
+          {t('Descobrir')}
         </NavLink>
         <NavLink href="/rankings" onClick={close} active={false}>
           <Trophy size={17} />
-          Rankings
+          {t('Rankings')}
         </NavLink>
       </nav>
       <div className="sidebar-bottom">
         <NavLink href="/settings" onClick={close} active={pathname === '/settings'}>
           <Settings size={17} />
-          Configurações
+          {t('Configurações')}
         </NavLink>
         <button className="nav-link support-nav" onClick={() => setSupportOpen(true)}>
           <CupSoda size={17} />
-          Buy Me a Monster
+          {t('Buy Me a Monster')}
         </button>
         <button className="nav-link support-nav" onClick={() => setAboutOpen(true)}>
           <Info size={17} />
-          Sobre
+          {t('Sobre')}
         </button>
       </div>
     </>
@@ -202,7 +213,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       queryClient.clear();
       router.replace('/login');
     } catch {
-      toast.error('Não foi possível sair. Tente novamente.');
+      toast.error(t('Não foi possível sair. Tente novamente.'));
     }
   }
   function changeTheme(theme: CurrentUser['preferences']['theme'], origin: Element) {
@@ -214,23 +225,23 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       className={cn('app-shell', collapsed && 'sidebar-collapsed')}
       data-density={user.preferences.density}
     >
-      <aside className="global-rail" aria-label="Atalhos globais">
+      <aside className="global-rail" aria-label={t('Atalhos globais')}>
         <button
           className="rail-collapse"
-          aria-label={collapsed ? 'Expandir barra lateral' : 'Recolher barra lateral'}
+          aria-label={collapsed ? t('Expandir barra lateral') : t('Recolher barra lateral')}
           onClick={() => preferences.mutate({ sidebarCollapsed: !collapsed })}
         >
           {collapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}
         </button>
         {[
-          { href: '/home', label: 'Início', Icon: Home },
-          { href: '/library', label: 'Biblioteca', Icon: Library },
-          { href: '/favorites', label: 'Favoritos', Icon: Heart },
-          { href: '/collections', label: 'Coleções', Icon: FolderHeart },
-          { href: '/goals', label: 'Metas', Icon: Target },
-          { href: '/community', label: 'Social', Icon: Users },
-          { href: '/journey', label: 'Jornada', Icon: Sparkles },
-          { href: '/discover', label: 'Descobrir', Icon: Compass },
+          { href: '/home', label: t('Início'), Icon: Home },
+          { href: '/library', label: t('Biblioteca'), Icon: Library },
+          { href: '/favorites', label: t('Favoritos'), Icon: Heart },
+          { href: '/collections', label: t('Coleções'), Icon: FolderHeart },
+          { href: '/goals', label: t('Metas'), Icon: Target },
+          { href: '/community', label: t('Social'), Icon: Users },
+          { href: '/journey', label: t('Jornada'), Icon: Sparkles },
+          { href: '/discover', label: t('Descobrir'), Icon: Compass },
         ].map(({ href, label, Icon }) => (
           <Link
             key={href}
@@ -250,8 +261,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <Link
           href="/settings"
           className="rail-button"
-          title="Configurações"
-          aria-label="Configurações"
+          title={t('Configurações')}
+          aria-label={t('Configurações')}
         >
           <Settings size={20} />
         </Link>
@@ -261,7 +272,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </aside>
       <div className="app-workspace">
         <header className="global-header">
-          <Link href="/home" className="global-brand" aria-label="Jinsei início">
+          <Link href="/home" className="global-brand" aria-label={t('Jinsei início')}>
             <Brand className="global-wordmark" />
             <Brand compact className="global-app-icon" />
             <ChevronDown size={12} />
@@ -270,7 +281,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             variant="ghost"
             size="icon"
             className="mobile-menu"
-            aria-label="Abrir navegação"
+            aria-label={t('Abrir navegação')}
             onClick={() => setMobileOpen(true)}
           >
             <Menu size={18} />
@@ -286,8 +297,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <Search size={14} />
             <input
               ref={searchRef}
-              placeholder="Pesquisar na sua biblioteca"
-              aria-label="Busca global na biblioteca"
+              placeholder={t('Pesquisar na sua biblioteca')}
+              aria-label={t('Busca global na biblioteca')}
               onFocus={(event) => {
                 event.currentTarget.blur();
                 setPaletteOpen(true);
@@ -301,8 +312,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               variant="ghost"
               size="icon"
               className="theme-toggle"
-              aria-label={resolvedTheme === 'dark' ? 'Usar tema claro' : 'Usar tema escuro'}
-              title={resolvedTheme === 'dark' ? 'Tema claro' : 'Tema escuro'}
+              aria-label={resolvedTheme === 'dark' ? t('Usar tema claro') : t('Usar tema escuro')}
+              title={resolvedTheme === 'dark' ? t('Tema claro') : t('Tema escuro')}
               onClick={(event) =>
                 changeTheme(resolvedTheme === 'dark' ? 'light' : 'dark', event.currentTarget)
               }
@@ -320,9 +331,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </div>
       <Dialog open={mobileOpen} onOpenChange={setMobileOpen}>
         <DialogContent className="mobile-navigation">
-          <DialogTitle className="sr-only">Navegação</DialogTitle>
+          <DialogTitle className="sr-only">{t('Navegação')}</DialogTitle>
           <DialogDescription className="sr-only">
-            Acesse sua biblioteca e as configurações
+            {t('Acesse sua biblioteca e as configurações')}
           </DialogDescription>
           <LayoutGroup id="drawer">{navigation(() => setMobileOpen(false))}</LayoutGroup>
         </DialogContent>

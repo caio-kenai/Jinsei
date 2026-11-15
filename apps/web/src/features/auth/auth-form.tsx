@@ -12,8 +12,11 @@ import { currentUserOptions } from './use-current-user';
 import { useSignupDraft } from './signup-draft';
 import { Brand } from '@/components/shared/brand';
 import { useInstance } from '@/features/instance/use-instance';
+import { useT } from '@/i18n/provider';
+import { LanguageSwitcher } from '@/components/shared/language-switcher';
 
 export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
+  const t = useT();
   const registering = mode === 'register';
   const instance = useInstance();
   const draft = useSignupDraft();
@@ -46,7 +49,7 @@ export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
       await api('/auth/login/mfa', { method: 'POST', body: jsonBody({ challenge, code }) });
       await enter();
     } catch (error) {
-      setError(error instanceof Error ? error.message : 'Código inválido');
+      setError(error instanceof Error ? error.message : t('Código inválido'));
       if (error instanceof Error && /expirou|tentativas/.test(error.message)) {
         setChallenge('');
         setCode('');
@@ -58,7 +61,7 @@ export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
   async function submit(input: RegistrationInput) {
     setError('');
     if (registering && !input.displayName) {
-      setError('Informe seu nome completo');
+      setError(t('Informe seu nome completo'));
       return;
     }
     try {
@@ -73,43 +76,47 @@ export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
       await enter();
     } catch (error) {
       setError(
-        error instanceof Error ? error.message : 'Não foi possível entrar. Tente novamente.',
+        error instanceof Error ? error.message : t('Não foi possível entrar. Tente novamente.'),
       );
     }
   }
   return (
     <main className="auth-page public-surface">
+      <LanguageSwitcher className="auth-language" />
       <div className="auth-halo" aria-hidden="true" />
       <section className="auth-box">
-        <Link href="/" aria-label="Página inicial do Jinsei">
+        <Link href="/" aria-label={t('Página inicial do Jinsei')}>
           <Brand />
         </Link>
-        <h1>{registering ? 'Você pode criar uma conta em segundos!' : 'Bem-vindo de volta!'}</h1>
+        <h1>
+          {registering ? t('Você pode criar uma conta em segundos!') : t('Bem-vindo de volta!')}
+        </h1>
         <p className="auth-switch">
-          {registering ? 'Já tem uma conta?' : 'Ainda não tem uma conta?'}{' '}
+          {registering ? t('Já tem uma conta?') : t('Ainda não tem uma conta?')}{' '}
           <Link href={registering ? '/login' : '/register'}>
-            {registering ? 'Entrar' : 'Cadastre-se gratuitamente'}
+            {registering ? 'Entrar' : t('Cadastre-se gratuitamente')}
           </Link>
         </p>
         {registering && instance.data?.registrationsEnabled === false && (
           <p className="public-field-error" role="alert">
-            Novos cadastros estão desativados nesta instância. Entre com uma conta existente.
+            {t('Novos cadastros estão desativados nesta instância. Entre com uma conta existente.')}
           </p>
         )}
         {challenge ? (
           <form onSubmit={confirmCode} className="mfa-login">
             <p className="auth-switch">
-              Digite o código de 6 dígitos do seu aplicativo autenticador ou um código de
-              recuperação.
+              {t(
+                'Digite o código de 6 dígitos do seu aplicativo autenticador ou um código de recuperação.',
+              )}
             </p>
             <div className="public-field">
               <label className="sr-only" htmlFor="auth-code">
-                Código de verificação
+                {t('Código de verificação')}
               </label>
               <input
                 id="auth-code"
                 className="public-input mfa-login-input"
-                aria-label="Código de verificação"
+                aria-label={t('Código de verificação')}
                 placeholder="000000"
                 autoComplete="one-time-code"
                 inputMode="text"
@@ -130,7 +137,7 @@ export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
               type="submit"
               disabled={verifying || code.length < 6}
             >
-              {verifying ? <LoaderCircle size={17} className="spin" /> : 'Verificar e entrar'}
+              {verifying ? <LoaderCircle size={17} className="spin" /> : t('Verificar e entrar')}
             </button>
             <button
               type="button"
@@ -141,7 +148,7 @@ export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
                 setError('');
               }}
             >
-              Voltar
+              {t('Voltar')}
             </button>
           </form>
         ) : (
@@ -149,14 +156,14 @@ export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
             {registering && (
               <div className="public-field">
                 <label className="sr-only" htmlFor="auth-name">
-                  Nome completo
+                  {t('Nome completo')}
                 </label>
                 <input
                   id="auth-name"
                   className="public-input"
-                  aria-label="Nome completo"
+                  aria-label={t('Nome completo')}
                   autoComplete="name"
-                  placeholder="Nome completo"
+                  placeholder={t('Nome completo')}
                   minLength={2}
                   maxLength={60}
                   required
@@ -169,14 +176,14 @@ export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
             )}
             <div className="public-field">
               <label className="sr-only" htmlFor="auth-email">
-                E-mail
+                {t('E-mail')}
               </label>
               <input
                 id="auth-email"
                 type="email"
                 className="public-input"
-                aria-label="E-mail"
-                placeholder="Seu e-mail"
+                aria-label={t('E-mail')}
+                placeholder={t('Seu e-mail')}
                 autoComplete="email"
                 required
                 {...register('email')}
@@ -185,15 +192,15 @@ export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
             </div>
             <div className="public-field">
               <label className="sr-only" htmlFor="auth-password">
-                Senha
+                {t('Senha')}
               </label>
               <div className="password-field">
                 <input
                   id="auth-password"
                   type={showPassword ? 'text' : 'password'}
                   className="public-input"
-                  aria-label="Senha"
-                  placeholder="Senha"
+                  aria-label={t('Senha')}
+                  placeholder={t('Senha')}
                   minLength={12}
                   maxLength={128}
                   autoComplete={registering ? 'new-password' : 'current-password'}
@@ -202,7 +209,7 @@ export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
                 />
                 <button
                   type="button"
-                  aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+                  aria-label={showPassword ? t('Ocultar senha') : t('Mostrar senha')}
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
@@ -211,7 +218,7 @@ export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
               {errors.password && <p className="public-field-error">{errors.password.message}</p>}
               {!registering && instance.data?.mailEnabled && (
                 <Link className="auth-forgot" href="/forgot-password">
-                  Esqueceu a senha?
+                  {t('Esqueceu a senha?')}
                 </Link>
               )}
             </div>
@@ -230,7 +237,7 @@ export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
               {isSubmitting ? (
                 <LoaderCircle size={17} className="spin" />
               ) : registering ? (
-                'Cadastrar-se com e-mail'
+                t('Cadastrar-se com e-mail')
               ) : (
                 'Entrar'
               )}
@@ -239,14 +246,15 @@ export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
         )}
         {registering && (
           <p className="auth-password-hint">
-            Use pelo menos 12 caracteres para proteger sua conta.
+            {t('Use pelo menos 12 caracteres para proteger sua conta.')}
           </p>
         )}
       </section>
       <footer className="auth-footer">
-        Ao continuar, você concorda com nossos <Link href="/terms">Termos de uso</Link> e{' '}
-        <Link href="/privacy">Política de privacidade</Link>.{' '}
-        <Link href="/privacy#contato">Precisa de ajuda?</Link>
+        {t('Ao continuar, você concorda com nossos')}{' '}
+        <Link href="/terms">{t('Termos de uso')}</Link> e{' '}
+        <Link href="/privacy">{t('Política de privacidade')}</Link>.{' '}
+        <Link href="/privacy#contato">{t('Precisa de ajuda?')}</Link>
       </footer>
     </main>
   );

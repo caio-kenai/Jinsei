@@ -5,6 +5,7 @@ import { Brand } from '@/components/shared/brand';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import '@/app/legal.css';
 import { useInstance } from '@/features/instance/use-instance';
+import { useT } from '@/i18n/provider';
 export function AboutDialog({
   open,
   onOpenChange,
@@ -12,6 +13,7 @@ export function AboutDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  const t = useT();
   const { data: instance } = useInstance();
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -19,7 +21,10 @@ export function AboutDialog({
         <Brand compact />
         <DialogTitle className="dialog-title">Jinsei</DialogTitle>
         <span className="about-version">
-          Versão {appVersion} · GNU AGPL v3 · Criado por {creatorSupport.creator}
+          {t('Versão {version} · GNU AGPL v3 · Criado por {creator}', {
+            version: appVersion,
+            creator: creatorSupport.creator,
+          })}
         </span>
         {instance && (
           <p className="attribution">
@@ -27,32 +32,34 @@ export function AboutDialog({
             {instance.contactEmail && (
               <>
                 <br />
-                <a href={`mailto:${instance.contactEmail}`}>Contato do operador</a>
+                <a href={`mailto:${instance.contactEmail}`}>{t('Contato do operador')}</a>
               </>
             )}
           </p>
         )}
         <DialogDescription className="dialog-description">
-          Um lugar para organizar seus jogos, filmes, séries, animes, mangás e livros. Gratuito,
-          open source e feito para acompanhar suas histórias.
+          {t(
+            'Um lugar para organizar seus jogos, filmes, séries, animes, mangás e livros. Gratuito, open source e feito para acompanhar suas histórias.',
+          )}
         </DialogDescription>
         <div className="about-links">
           <a href="https://github.com/caio-kenai/Jinsei" target="_blank" rel="noreferrer">
-            Código aberto
+            {t('Código aberto')}
           </a>
-          <Link href="/privacy">Privacidade</Link>
-          <Link href="/terms">Termos de uso</Link>
+          <Link href="/privacy">{t('Privacidade')}</Link>
+          <Link href="/terms">{t('Termos de uso')}</Link>
           <a
             href="https://github.com/caio-kenai/Jinsei/blob/main/ADDITIONAL_TERMS.md"
             target="_blank"
             rel="noreferrer"
           >
-            Termos da licença
+            {t('Termos da licença')}
           </a>
         </div>
         <p className="attribution">
-          Metadados e imagens de Wikidata, Wikimedia Commons, CheapShark, TVmaze e Open Library. Os
-          créditos de cada obra estão nos seus detalhes.
+          {t(
+            'Metadados e imagens de Wikidata, Wikimedia Commons, CheapShark, TVmaze e Open Library. Os créditos de cada obra estão nos seus detalhes.',
+          )}
         </p>
       </DialogContent>
     </Dialog>

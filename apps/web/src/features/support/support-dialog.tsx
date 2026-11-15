@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { creatorSupport } from '@jinsei/contracts';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { useT } from '@/i18n/provider';
 
 export function SupportDialog({
   open,
@@ -16,12 +17,13 @@ export function SupportDialog({
   onOpenChange: (open: boolean) => void;
   publicView?: boolean;
 }) {
+  const t = useT();
   async function copy(value: string, label: string) {
     try {
       await navigator.clipboard.writeText(value);
-      toast.success(`${label} copiado`);
+      toast.success(t('{label} copiado', { label }));
     } catch {
-      toast.error('Não foi possível copiar. Tente novamente.');
+      toast.error(t('Não foi possível copiar. Tente novamente.'));
     }
   }
   return (
@@ -32,34 +34,42 @@ export function SupportDialog({
           src="/branding/buy-me-a-monster.png"
           width={2172}
           height={724}
-          alt="Buy Me a Monster"
+          alt={t('Buy Me a Monster')}
         />
-        <DialogTitle className="dialog-title">Um Monster para o próximo capítulo?</DialogTitle>
+        <DialogTitle className="dialog-title">
+          {t('Um Monster para o próximo capítulo?')}
+        </DialogTitle>
         <DialogDescription className="dialog-description">
-          O Jinsei é gratuito e open source. Se quiser apoiar o desenvolvimento, faça um Pix de
-          qualquer valor para {creatorSupport.creator}, criador do projeto.
+          {t(
+            'O Jinsei é gratuito e open source. Se quiser apoiar o desenvolvimento, faça um Pix de qualquer valor para',
+          )}{' '}
+          {creatorSupport.creator}
+          {t(', criador do projeto.')}
         </DialogDescription>
         <div className="qr-surface">
           <QRCodeSVG
             value={creatorSupport.pixPayload}
             size={200}
             level="M"
-            title="QR Code Pix para apoio voluntário"
+            title={t('QR Code Pix para apoio voluntário')}
           />
         </div>
         <div className="donation-copy">
-          <Button onClick={() => void copy(creatorSupport.pixPayload, 'Pix Copia e Cola')}>
+          <Button onClick={() => void copy(creatorSupport.pixPayload, t('Pix Copia e Cola'))}>
             <Copy size={15} />
-            Copiar Pix Copia e Cola
+            {t('Copiar Pix Copia e Cola')}
           </Button>
-          <Button variant="outline" onClick={() => void copy(creatorSupport.pixKey, 'Chave Pix')}>
-            Copiar chave Pix
+          <Button
+            variant="outline"
+            onClick={() => void copy(creatorSupport.pixKey, t('Chave Pix'))}
+          >
+            {t('Copiar chave Pix')}
           </Button>
         </div>
         <p className="donation-note">
-          Você escolhe o valor no aplicativo do seu banco. A contribuição é opcional, vai
-          diretamente para o criador do Jinsei em qualquer servidor e não libera funcionalidades. O
-          Jinsei não processa nem confirma transferências.
+          {t(
+            'Você escolhe o valor no aplicativo do seu banco. A contribuição é opcional, vai diretamente para o criador do Jinsei em qualquer servidor e não libera funcionalidades. O Jinsei não processa nem confirma transferências.',
+          )}
         </p>
       </DialogContent>
     </Dialog>

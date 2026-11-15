@@ -1,4 +1,5 @@
 'use client';
+import { msg, translator } from '@/i18n/config';
 import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -6,7 +7,6 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTheme } from 'next-themes';
 import { motion } from 'motion/react';
 import { formatDistanceToNowStrict, parseISO, format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 import {
   Check,
   Download,
@@ -29,6 +29,9 @@ import {
 } from 'lucide-react';
 import {
   categoryLabels,
+  localeLabels,
+  localeSchema,
+  locales,
   dateFormats,
   mediaTypes,
   preferencesPatchSchema,
@@ -53,34 +56,35 @@ import { MfaSettings } from './mfa-settings';
 import { Button } from '@/components/ui/button';
 import { Input, Select, Textarea } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { useI18n } from '@/i18n/provider';
 
 const sections = [
-  { id: 'perfil', label: 'Perfil', Icon: UserRound, color: '#7050cf' },
-  { id: 'aparencia', label: 'Aparência', Icon: Palette, color: '#e5306f' },
-  { id: 'biblioteca', label: 'Biblioteca', Icon: Library, color: '#2f7bff' },
-  { id: 'preferencias', label: 'Idioma e região', Icon: Globe2, color: '#15936a' },
-  { id: 'perfil-publico', label: 'Perfil público', Icon: UsersRound, color: '#f7832b' },
-  { id: 'seguranca', label: 'Segurança', Icon: KeyRound, color: '#0e9aa7' },
-  { id: 'dados', label: 'Dados e conta', Icon: ShieldAlert, color: '#d93a50' },
+  { id: 'perfil', label: msg('Perfil'), Icon: UserRound, color: '#7050cf' },
+  { id: 'aparencia', label: msg('Aparência'), Icon: Palette, color: '#e5306f' },
+  { id: 'biblioteca', label: msg('Biblioteca'), Icon: Library, color: '#2f7bff' },
+  { id: 'preferencias', label: msg('Idioma e região'), Icon: Globe2, color: '#15936a' },
+  { id: 'perfil-publico', label: msg('Perfil público'), Icon: UsersRound, color: '#f7832b' },
+  { id: 'seguranca', label: msg('Segurança'), Icon: KeyRound, color: '#0e9aa7' },
+  { id: 'dados', label: msg('Dados e conta'), Icon: ShieldAlert, color: '#d93a50' },
 ] as const;
 
 const accents = [
-  { id: 'black', color: '#595d66', label: 'Preto' },
-  { id: 'rose', color: '#c91e47', label: 'Vermelho Jinsei' },
-  { id: 'violet', color: '#7f77f1', label: 'Violeta' },
-  { id: 'blue', color: '#1090e0', label: 'Azul' },
-  { id: 'pink', color: '#ee5e99', label: 'Rosa' },
-  { id: 'indigo', color: '#6985ff', label: 'Índigo' },
-  { id: 'orange', color: '#e16b16', label: 'Laranja' },
-  { id: 'teal', color: '#0f9d9f', label: 'Turquesa' },
-  { id: 'bronze', color: '#aa8d80', label: 'Bronze' },
-  { id: 'emerald', color: '#3db88b', label: 'Verde' },
+  { id: 'black', color: '#595d66', label: msg('Preto') },
+  { id: 'rose', color: '#c91e47', label: msg('Vermelho Jinsei') },
+  { id: 'violet', color: '#7f77f1', label: msg('Violeta') },
+  { id: 'blue', color: '#1090e0', label: msg('Azul') },
+  { id: 'pink', color: '#ee5e99', label: msg('Rosa') },
+  { id: 'indigo', color: '#6985ff', label: msg('Índigo') },
+  { id: 'orange', color: '#e16b16', label: msg('Laranja') },
+  { id: 'teal', color: '#0f9d9f', label: msg('Turquesa') },
+  { id: 'bronze', color: '#aa8d80', label: msg('Bronze') },
+  { id: 'emerald', color: '#3db88b', label: msg('Verde') },
 ] as const;
 
 const modes = [
-  { id: 'light', label: 'Claro' },
-  { id: 'dark', label: 'Escuro' },
-  { id: 'system', label: 'Automático' },
+  { id: 'light', label: msg('Claro') },
+  { id: 'dark', label: msg('Escuro') },
+  { id: 'system', label: msg('Automático') },
 ] as const;
 
 const sample = new Date(2026, 10, 14, 21, 30);
@@ -213,6 +217,7 @@ function useTimezones(current: string) {
 }
 
 function Sessions() {
+  const { t, dateLocale } = useI18n();
   const client = useQueryClient();
   const sessions = useQuery({
     queryKey: ['sessions'],
@@ -222,7 +227,7 @@ function Sessions() {
     mutationFn: (id: string | null) =>
       api<unknown>(id ? `/users/me/sessions/${id}` : '/users/me/sessions', { method: 'DELETE' }),
     onSuccess: (_, id) => {
-      toast.success(id ? 'Sessão encerrada' : 'Outras sessões encerradas');
+      toast.success(id ? t('Sessão encerrada') : t('Outras sessões encerradas'));
       void client.invalidateQueries({ queryKey: ['sessions'] });
     },
     onError: (error) => toast.error(error.message),
@@ -233,7 +238,7 @@ function Sessions() {
   return (
     <div className="settings-sessions">
       <div className="settings-sessions-head">
-        <strong>Sessões ativas</strong>
+        <strong>{t('Sessões ativas')}</strong>
         {total.length > 1 && (
           <Button
             size="sm"
@@ -242,7 +247,7 @@ function Sessions() {
             onClick={() => end.mutate(null)}
           >
             <LogOut size={14} />
-            Encerrar as outras
+            {t('Encerrar as outras')}
           </Button>
         )}
       </div>
@@ -265,15 +270,18 @@ function Sessions() {
                 <span className="settings-session-text">
                   <strong>
                     {session.browser} · {session.system}
-                    {session.current && <em>Este dispositivo</em>}
+                    {session.current && <em>{t('Este dispositivo')}</em>}
                   </strong>
                   <small>
-                    Ativa{' '}
-                    {formatDistanceToNowStrict(parseISO(session.lastSeenAt), {
-                      locale: ptBR,
-                      addSuffix: true,
-                    })}{' '}
-                    · desde {format(parseISO(session.createdAt), 'd MMM yyyy', { locale: ptBR })}
+                    {t('Ativa {relative} · desde {date}', {
+                      relative: formatDistanceToNowStrict(parseISO(session.lastSeenAt), {
+                        locale: dateLocale,
+                        addSuffix: true,
+                      }),
+                      date: format(parseISO(session.createdAt), 'd MMM yyyy', {
+                        locale: dateLocale,
+                      }),
+                    })}
                   </small>
                 </span>
                 {!session.current && (
@@ -283,7 +291,7 @@ function Sessions() {
                     disabled={end.isPending}
                     onClick={() => end.mutate(session.id)}
                   >
-                    Encerrar
+                    {t('Encerrar')}
                   </Button>
                 )}
               </li>
@@ -298,7 +306,7 @@ function Sessions() {
           className="settings-sessions-more"
           onClick={() => setAll(true)}
         >
-          Ver todas as {total.length} sessões
+          {t('Ver todas as {count} sessões', { count: total.length })}
         </Button>
       )}
     </div>
@@ -306,6 +314,7 @@ function Sessions() {
 }
 
 function SettingsForm({ user }: { user: CurrentUser }) {
+  const { t, dateLocale, locale, setLocale } = useI18n();
   const [busy, setBusy] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [active, setActive] = useState<string>(sections[0].id);
@@ -331,7 +340,7 @@ function SettingsForm({ user }: { user: CurrentUser }) {
     return () => observer.disconnect();
   }, []);
 
-  const save = (patch: PreferencesPatch, message = 'Preferência salva') =>
+  const save = (patch: PreferencesPatch, message = t('Preferência salva')) =>
     preferences.mutate(patch, { onSuccess: () => toast.success(message, { duration: 1500 }) });
 
   async function saveProfile(event: React.FormEvent<HTMLFormElement>) {
@@ -343,17 +352,17 @@ function SettingsForm({ user }: { user: CurrentUser }) {
       bio: values.get('bio'),
     });
     if (!parsed.success) {
-      toast.error(parsed.error.issues[0]?.message ?? 'Revise os dados');
+      toast.error(parsed.error.issues[0]?.message ?? t('Revise os dados'));
       return;
     }
-    preferences.mutate(parsed.data, { onSuccess: () => toast.success('Perfil salvo') });
+    preferences.mutate(parsed.data, { onSuccess: () => toast.success(t('Perfil salvo')) });
   }
   function toggleCategory(type: MediaType, enabled: boolean) {
     const next = enabled
       ? mediaTypes.filter((item) => item === type || prefs.categories.includes(item))
       : prefs.categories.filter((item) => item !== type);
     if (!next.length) {
-      toast.error('Mantenha ao menos uma categoria ativa');
+      toast.error(t('Mantenha ao menos uma categoria ativa'));
       return;
     }
     preferences.mutate(
@@ -379,10 +388,10 @@ function SettingsForm({ user }: { user: CurrentUser }) {
         }),
       });
       client.clear();
-      toast.success('Senha alterada. Entre novamente para continuar.');
+      toast.success(t('Senha alterada. Entre novamente para continuar.'));
       router.replace('/login');
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Não foi possível alterar a senha');
+      toast.error(error instanceof Error ? error.message : t('Não foi possível alterar a senha'));
     } finally {
       setBusy(false);
     }
@@ -398,17 +407,17 @@ function SettingsForm({ user }: { user: CurrentUser }) {
       });
       client.clear();
       router.replace('/register');
-      toast.success('Conta e dados pessoais excluídos');
+      toast.success(t('Conta e dados pessoais excluídos'));
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Não foi possível excluir a conta');
+      toast.error(error instanceof Error ? error.message : t('Não foi possível excluir a conta'));
       setBusy(false);
     }
   }
 
   return (
     <div className="settings-layout">
-      <nav className="settings-nav" aria-label="Seções das configurações">
-        <span className="settings-nav-title">Configurações</span>
+      <nav className="settings-nav" aria-label={t('Seções das configurações')}>
+        <span className="settings-nav-title">{t('Configurações')}</span>
         {sections.map(({ id, label, Icon, color }) => (
           <a
             key={id}
@@ -418,7 +427,7 @@ function SettingsForm({ user }: { user: CurrentUser }) {
             onClick={() => setActive(id)}
           >
             <Icon size={15} />
-            {label}
+            {t(label)}
             {active === id && (
               <motion.span
                 layoutId="settings-nav"
@@ -431,15 +440,15 @@ function SettingsForm({ user }: { user: CurrentUser }) {
       </nav>
       <div className="settings-content">
         <header className="settings-heading">
-          <h1>Do seu jeito</h1>
-          <p>Seu perfil, suas preferências e o controle da sua jornada.</p>
+          <h1>{t('Do seu jeito')}</h1>
+          <p>{t('Seu perfil, suas preferências e o controle da sua jornada.')}</p>
         </header>
 
-        <Card id="perfil" title="Perfil" description="Como você aparece no Jinsei.">
+        <Card id="perfil" title={t('Perfil')} description={t('Como você aparece no Jinsei.')}>
           <form onSubmit={saveProfile} className="settings-form">
             <div className="form-grid">
               <label className="field">
-                Nome de exibição
+                {t('Nome de exibição')}
                 <Input
                   name="displayName"
                   defaultValue={user.profile.displayName}
@@ -449,7 +458,7 @@ function SettingsForm({ user }: { user: CurrentUser }) {
                 />
               </label>
               <label className="field">
-                Nome de usuário
+                {t('Nome de usuário')}
                 <Input
                   name="username"
                   defaultValue={user.profile.username ?? ''}
@@ -460,18 +469,18 @@ function SettingsForm({ user }: { user: CurrentUser }) {
               </label>
             </div>
             <label className="field">
-              Sobre você
+              {t('Sobre você')}
               <Textarea
                 name="bio"
                 maxLength={500}
                 defaultValue={user.profile.bio}
-                placeholder="Um pouco sobre as histórias que você gosta de viver…"
+                placeholder={t('Um pouco sobre as histórias que você gosta de viver…')}
               />
             </label>
             <div className="settings-form-footer">
               <span>
                 <ShieldCheck size={14} />
-                Sua biblioteca é privada. Você decide o que publicar no perfil público.
+                {t('Sua biblioteca é privada. Você decide o que publicar no perfil público.')}
               </span>
               <Button type="submit" disabled={preferences.isPending}>
                 {preferences.isPending ? (
@@ -479,7 +488,7 @@ function SettingsForm({ user }: { user: CurrentUser }) {
                 ) : (
                   <Save size={15} />
                 )}
-                Salvar perfil
+                {t('Salvar perfil')}
               </Button>
             </div>
           </form>
@@ -487,12 +496,12 @@ function SettingsForm({ user }: { user: CurrentUser }) {
 
         <Card
           id="aparencia"
-          title="Aparência"
-          description="As mudanças valem na hora e ficam salvas na sua conta."
+          title={t('Aparência')}
+          description={t('As mudanças valem na hora e ficam salvas na sua conta.')}
         >
           <div className="settings-block">
-            <strong>Modo de cor</strong>
-            <div className="mode-picker" role="radiogroup" aria-label="Modo de cor">
+            <strong>{t('Modo de cor')}</strong>
+            <div className="mode-picker" role="radiogroup" aria-label={t('Modo de cor')}>
               {modes.map((mode) => (
                 <button
                   key={mode.id}
@@ -503,20 +512,23 @@ function SettingsForm({ user }: { user: CurrentUser }) {
                   onClick={(event) => {
                     const target = event.currentTarget;
                     transitionTheme(() => setTheme(mode.id), target);
-                    save({ theme: mode.id }, `Modo ${mode.label.toLowerCase()} ativado`);
+                    save(
+                      { theme: mode.id },
+                      t('Modo {mode} ativado', { mode: t(mode.label).toLowerCase() }),
+                    );
                   }}
                 >
                   <ModePreview mode={mode.id} />
                   <span>
                     {prefs.theme === mode.id && <Check size={13} strokeWidth={3} />}
-                    {mode.label}
+                    {t(mode.label)}
                   </span>
                 </button>
               ))}
             </div>
           </div>
           <div className="settings-block">
-            <strong>Cor de destaque</strong>
+            <strong>{t('Cor de destaque')}</strong>
             <div className="accent-picker">
               {accents.map((item) => (
                 <button
@@ -524,12 +536,15 @@ function SettingsForm({ user }: { user: CurrentUser }) {
                   key={item.id}
                   className="accent-choice"
                   style={{ background: item.color }}
-                  aria-label={item.label}
-                  title={item.label}
+                  aria-label={t(item.label)}
+                  title={t(item.label)}
                   aria-pressed={prefs.accent === item.id}
                   onClick={() => {
                     document.documentElement.dataset.accent = item.id;
-                    save({ accent: item.id }, `Destaque ${item.label.toLowerCase()}`);
+                    save(
+                      { accent: item.id },
+                      t('Destaque {accent}', { accent: t(item.label).toLowerCase() }),
+                    );
                   }}
                 >
                   {prefs.accent === item.id && <Check size={16} strokeWidth={3} />}
@@ -538,7 +553,7 @@ function SettingsForm({ user }: { user: CurrentUser }) {
             </div>
           </div>
           <div className="settings-block">
-            <strong>Tema visual</strong>
+            <strong>{t('Tema visual')}</strong>
             <div className="visual-theme-picker">
               {visualThemeSchema.options.map((id) => (
                 <button
@@ -552,7 +567,10 @@ function SettingsForm({ user }: { user: CurrentUser }) {
                     transitionTheme(() => {
                       document.documentElement.dataset.visualTheme = id;
                     }, target);
-                    save({ visualTheme: id }, `Tema ${visualThemeLabels[id]} aplicado`);
+                    save(
+                      { visualTheme: id },
+                      t('Tema {theme} aplicado', { theme: t(visualThemeLabels[id]) }),
+                    );
                   }}
                 >
                   <span className="visual-theme-swatch" aria-hidden="true">
@@ -560,18 +578,18 @@ function SettingsForm({ user }: { user: CurrentUser }) {
                     <i />
                     <i />
                   </span>
-                  {visualThemeLabels[id]}
+                  {t(visualThemeLabels[id])}
                   {prefs.visualTheme === id && <Check size={14} strokeWidth={3} />}
                 </button>
               ))}
             </div>
           </div>
-          <Row title="Densidade" description="Espaçamento padrão das listas e quadros.">
-            <div className="settings-segmented" role="radiogroup" aria-label="Densidade">
+          <Row title={t('Densidade')} description={t('Espaçamento padrão das listas e quadros.')}>
+            <div className="settings-segmented" role="radiogroup" aria-label={t('Densidade')}>
               {(
                 [
-                  ['comfortable', 'Confortável'],
-                  ['compact', 'Compacta'],
+                  ['comfortable', t('Confortável')],
+                  ['compact', t('Compacta')],
                 ] as const
               ).map(([id, label]) => (
                 <button
@@ -591,8 +609,10 @@ function SettingsForm({ user }: { user: CurrentUser }) {
 
         <Card
           id="biblioteca"
-          title="Biblioteca"
-          description="Desativar uma categoria apenas a esconde. Seus registros continuam guardados."
+          title={t('Biblioteca')}
+          description={t(
+            'Desativar uma categoria apenas a esconde. Seus registros continuam guardados.',
+          )}
         >
           <div className="settings-categories">
             {mediaTypes.map((type) => {
@@ -607,10 +627,10 @@ function SettingsForm({ user }: { user: CurrentUser }) {
                   <span className="settings-category-icon">
                     <Icon size={16} />
                   </span>
-                  <strong>{categoryLabels[type]}</strong>
+                  <strong>{t(categoryLabels[type])}</strong>
                   <Switch
                     checked={enabled}
-                    label={`Mostrar ${categoryLabels[type]}`}
+                    label={t('Mostrar {category}', { category: t(categoryLabels[type]) })}
                     disabled={preferences.isPending}
                     onChange={(checked) => toggleCategory(type, checked)}
                   />
@@ -622,28 +642,34 @@ function SettingsForm({ user }: { user: CurrentUser }) {
 
         <Card
           id="preferencias"
-          title="Idioma e região"
-          description="Datas, horários e o fuso usado nas missões diárias."
+          title={t('Idioma e região')}
+          description={t('Datas, horários e o fuso usado nas missões diárias.')}
         >
-          <Row title="Idioma" description="Mais idiomas chegam em breve.">
-            <Select value="pt-BR" onChange={() => undefined} aria-label="Idioma">
-              <option value="pt-BR">Português (Brasil)</option>
-              <option value="en" disabled>
-                English (em breve)
-              </option>
-              <option value="es" disabled>
-                Español (em breve)
-              </option>
+          <Row title={t('Idioma')} description={t('Textos da interface, datas e números.')}>
+            <Select
+              value={locale}
+              onChange={(event) => {
+                const next = localeSchema.parse(event.target.value);
+                setLocale(next);
+                save({ locale: next }, translator(next)(msg('Idioma atualizado')));
+              }}
+              aria-label={t('Idioma')}
+            >
+              {locales.map((value) => (
+                <option key={value} value={value}>
+                  {localeLabels[value]}
+                </option>
+              ))}
             </Select>
           </Row>
           <Row
-            title="Fuso horário"
-            description="Define quando o dia vira para sequências e missões."
+            title={t('Fuso horário')}
+            description={t('Define quando o dia vira para sequências e missões.')}
           >
             <Select
               value={prefs.timezone}
-              aria-label="Fuso horário"
-              onChange={(event) => save({ timezone: event.target.value }, 'Fuso horário salvo')}
+              aria-label={t('Fuso horário')}
+              onChange={(event) => save({ timezone: event.target.value }, t('Fuso horário salvo'))}
             >
               {zones.map((zone) => (
                 <option key={zone} value={zone}>
@@ -652,10 +678,15 @@ function SettingsForm({ user }: { user: CurrentUser }) {
               ))}
             </Select>
           </Row>
-          <Row title="Formato de data" description={`Ex.: ${format(sample, prefs.dateFormat)}`}>
+          <Row
+            title={t('Formato de data')}
+            description={t('Ex.: {sample}', {
+              sample: format(sample, prefs.dateFormat, { locale: dateLocale }),
+            })}
+          >
             <Select
               value={prefs.dateFormat}
-              aria-label="Formato de data"
+              aria-label={t('Formato de data')}
               onChange={(event) =>
                 save({ dateFormat: event.target.value as (typeof dateFormats)[number] })
               }
@@ -668,14 +699,18 @@ function SettingsForm({ user }: { user: CurrentUser }) {
             </Select>
           </Row>
           <Row
-            title="Formato de hora"
-            description={`Ex.: ${format(sample, prefs.timeFormat === '12h' ? 'h:mm a' : 'HH:mm')}`}
+            title={t('Formato de hora')}
+            description={t('Ex.: {sample}', {
+              sample: format(sample, prefs.timeFormat === '12h' ? 'h:mm a' : 'HH:mm', {
+                locale: dateLocale,
+              }),
+            })}
           >
-            <div className="settings-segmented" role="radiogroup" aria-label="Formato de hora">
+            <div className="settings-segmented" role="radiogroup" aria-label={t('Formato de hora')}>
               {(
                 [
-                  ['24h', '24 horas'],
-                  ['12h', '12 horas'],
+                  ['24h', t('24 horas')],
+                  ['12h', t('12 horas')],
                 ] as const
               ).map(([id, label]) => (
                 <button
@@ -692,8 +727,8 @@ function SettingsForm({ user }: { user: CurrentUser }) {
             </div>
           </Row>
           <Row
-            title="Celebrações"
-            description="Confetes ao concluir títulos, subir de nível e ganhar insígnias."
+            title={t('Celebrações')}
+            description={t('Confetes ao concluir títulos, subir de nível e ganhar insígnias.')}
           >
             <div className="settings-inline">
               <Button
@@ -703,11 +738,11 @@ function SettingsForm({ user }: { user: CurrentUser }) {
                 onClick={(event) => celebrate(event.currentTarget)}
               >
                 <PartyPopper size={14} />
-                Testar
+                {t('Testar')}
               </Button>
               <Switch
                 checked={prefs.celebrations}
-                label="Celebrações"
+                label={t('Celebrações')}
                 onChange={(checked) => {
                   save({ celebrations: checked });
                   if (checked) celebrate();
@@ -723,13 +758,13 @@ function SettingsForm({ user }: { user: CurrentUser }) {
 
         <Card
           id="seguranca"
-          title="Segurança"
-          description="Senha e dispositivos conectados à sua conta."
+          title={t('Segurança')}
+          description={t('Senha e dispositivos conectados à sua conta.')}
         >
           <form onSubmit={changePassword} className="settings-form">
             <div className="form-grid">
               <label className="field">
-                Senha atual
+                {t('Senha atual')}
                 <Input
                   name="currentPassword"
                   type="password"
@@ -739,7 +774,7 @@ function SettingsForm({ user }: { user: CurrentUser }) {
                 />
               </label>
               <label className="field">
-                Nova senha
+                {t('Nova senha')}
                 <Input
                   name="newPassword"
                   type="password"
@@ -751,9 +786,9 @@ function SettingsForm({ user }: { user: CurrentUser }) {
               </label>
             </div>
             <div className="settings-form-footer">
-              <span>Alterar a senha encerra todas as sessões, incluindo esta.</span>
+              <span>{t('Alterar a senha encerra todas as sessões, incluindo esta.')}</span>
               <Button type="submit" variant="outline" disabled={busy}>
-                Alterar senha
+                {t('Alterar senha')}
               </Button>
             </div>
           </form>
@@ -763,51 +798,53 @@ function SettingsForm({ user }: { user: CurrentUser }) {
 
         <Card
           id="dados"
-          title="Dados e conta"
-          description="Seus dados pertencem a você."
+          title={t('Dados e conta')}
+          description={t('Seus dados pertencem a você.')}
           tone="danger"
         >
           <Row
-            title="Exportar meus dados"
-            description="Biblioteca, preferências, coleções, metas e comunidade em JSON."
+            title={t('Exportar meus dados')}
+            description={t('Biblioteca, preferências, coleções, metas e comunidade em JSON.')}
           >
             <Button asChild variant="outline" size="sm">
               <a href="/api/users/me/export" download>
                 <Download size={14} />
-                Exportar
+                {t('Exportar')}
               </a>
             </Button>
           </Row>
           <div className="settings-danger">
             <div className="settings-row-text">
-              <strong>Zona de perigo</strong>
+              <strong>{t('Zona de perigo')}</strong>
               <span>
-                Excluir a conta remove biblioteca, anotações, progresso, mensagens, clubes que você
-                criou e sessões. Não dá para desfazer.
+                {t(
+                  'Excluir a conta remove biblioteca, anotações, progresso, mensagens, clubes que você criou e sessões. Não dá para desfazer.',
+                )}
               </span>
             </div>
             <Button variant="destructive" size="sm" onClick={() => setDeleting(true)}>
               <Trash2 size={14} />
-              Excluir minha conta
+              {t('Excluir minha conta')}
             </Button>
           </div>
           <div className="legal-links" style={{ justifyContent: 'start' }}>
-            <Link href="/privacy">Privacidade e retenção</Link>
+            <Link href="/privacy">{t('Privacidade e retenção')}</Link>
             <span>·</span>
-            <Link href="/terms">Termos e licenças</Link>
+            <Link href="/terms">{t('Termos e licenças')}</Link>
           </div>
         </Card>
       </div>
       <Dialog open={deleting} onOpenChange={setDeleting}>
         <DialogContent>
-          <DialogTitle className="dialog-title">Excluir sua conta?</DialogTitle>
+          <DialogTitle className="dialog-title">{t('Excluir sua conta?')}</DialogTitle>
           <DialogDescription className="dialog-description">
-            Sua biblioteca, anotações, progresso, preferências e sessões serão excluídos. Exporte
-            seus dados antes de continuar, se quiser guardar uma cópia.
+            {t(
+              'Sua biblioteca, anotações, progresso, preferências e sessões serão excluídos. Exporte seus dados antes de continuar, se quiser guardar uma cópia.',
+            )}
           </DialogDescription>
           <form onSubmit={remove}>
             <label className="field">
-              Confirme sua senha
+              {t('Confirme sua senha')}
               <Input
                 name="password"
                 type="password"
@@ -818,10 +855,10 @@ function SettingsForm({ user }: { user: CurrentUser }) {
             </label>
             <div className="dialog-footer">
               <Button variant="outline" type="button" onClick={() => setDeleting(false)}>
-                Cancelar
+                {t('Cancelar')}
               </Button>
               <Button variant="destructive" type="submit" disabled={busy}>
-                Excluir conta e dados
+                {t('Excluir conta e dados')}
               </Button>
             </div>
           </form>

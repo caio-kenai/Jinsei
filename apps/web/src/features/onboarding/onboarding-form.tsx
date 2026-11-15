@@ -19,9 +19,11 @@ import { Brand } from '@/components/shared/brand';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { categoryIcons } from '@/components/shared/category-icons';
+import { useI18n } from '@/i18n/provider';
 
 const icons = categoryIcons;
 export function OnboardingForm() {
+  const { t, locale } = useI18n();
   const { data: user } = useCurrentUser();
   const [displayName, setDisplayName] = useState(
     user?.profile.displayName === 'Minha jornada' ? '' : (user?.profile.displayName ?? ''),
@@ -46,9 +48,10 @@ export function OnboardingForm() {
       categories,
       theme,
       accent: 'black',
+      locale,
     });
     if (!parsed.success) {
-      setError(parsed.error.issues[0]?.message ?? 'Revise seus dados');
+      setError(parsed.error.issues[0]?.message ?? t('Revise seus dados'));
       return;
     }
     setSaving(true);
@@ -61,7 +64,7 @@ export function OnboardingForm() {
       queryClient.setQueryData(['me'], result);
       router.replace('/home');
     } catch (error) {
-      setError(error instanceof Error ? error.message : 'Tente novamente');
+      setError(error instanceof Error ? error.message : t('Tente novamente'));
       setSaving(false);
     }
   }
@@ -69,42 +72,42 @@ export function OnboardingForm() {
     <main className="onboarding-page public-surface">
       <Brand />
       <form onSubmit={submit} className="onboarding-card">
-        <span className="eyebrow">O PRIMEIRO CAPÍTULO</span>
+        <span className="eyebrow">{t('O PRIMEIRO CAPÍTULO')}</span>
         <h1>
-          Vamos deixar o Jinsei
+          {t('Vamos deixar o Jinsei')}
           <br />
-          com a sua cara.
+          {t('com a sua cara.')}
         </h1>
-        <p>Escolha o que faz parte da sua jornada. Você pode mudar tudo depois.</p>
+        <p>{t('Escolha o que faz parte da sua jornada. Você pode mudar tudo depois.')}</p>
         <div className="form-grid">
           <label className="field">
-            Como podemos te chamar?
+            {t('Como podemos te chamar?')}
             <Input
               required
               value={displayName}
               onChange={(event) => setDisplayName(event.target.value)}
-              placeholder="Seu nome"
+              placeholder={t('Seu nome')}
               maxLength={60}
               autoComplete="nickname"
             />
           </label>
           <label className="field">
-            Nome de usuário
+            {t('Nome de usuário')}
             <Input
               required
               value={username}
               onChange={(event) => setUsername(event.target.value.toLowerCase())}
-              placeholder="seu-usuario"
+              placeholder={t('seu-usuario')}
               maxLength={30}
               autoComplete="username"
-              aria-label="Nome de usuário"
+              aria-label={t('Nome de usuário')}
               aria-describedby="username-hint"
             />
-            <small id="username-hint">Letras minúsculas, números, _ e -</small>
+            <small id="username-hint">{t('Letras minúsculas, números, _ e -')}</small>
           </label>
         </div>
         <fieldset>
-          <legend>O que você gosta de acompanhar?</legend>
+          <legend>{t('O que você gosta de acompanhar?')}</legend>
           <div className="category-picker">
             {mediaTypes.map((category) => {
               const Icon = icons[category];
@@ -124,7 +127,7 @@ export function OnboardingForm() {
                   }
                 >
                   <Icon size={22} />
-                  <span>{categoryLabels[category]}</span>
+                  <span>{t(categoryLabels[category])}</span>
                   {selected && <Check size={14} className="category-check" />}
                 </button>
               );
@@ -132,13 +135,13 @@ export function OnboardingForm() {
           </div>
         </fieldset>
         <fieldset>
-          <legend>Como você prefere ver suas histórias?</legend>
+          <legend>{t('Como você prefere ver suas histórias?')}</legend>
           <div className="theme-picker">
             {(
               [
-                { value: 'light', label: 'Claro', Icon: Sun },
-                { value: 'dark', label: 'Escuro', Icon: Moon },
-                { value: 'system', label: 'Sistema', Icon: Monitor },
+                { value: 'light', label: t('Claro'), Icon: Sun },
+                { value: 'dark', label: t('Escuro'), Icon: Moon },
+                { value: 'system', label: t('Sistema'), Icon: Monitor },
               ] as const
             ).map(({ value, label, Icon }) => (
               <button
@@ -166,7 +169,7 @@ export function OnboardingForm() {
           </div>
         )}
         <div className="onboarding-footer">
-          <small>Sua biblioteca começa privada, do seu jeito.</small>
+          <small>{t('Sua biblioteca começa privada, do seu jeito.')}</small>
           <Button
             className="cta-glow onboarding-submit"
             disabled={saving || categories.length === 0}
@@ -182,7 +185,7 @@ export function OnboardingForm() {
                 <LoaderCircle className="spin" size={16} />
               ) : (
                 <>
-                  Começar minha jornada
+                  {t('Começar minha jornada')}
                   <ArrowRight size={16} className="cta-arrow" />
                 </>
               )}
@@ -190,7 +193,9 @@ export function OnboardingForm() {
           </Button>
         </div>
       </form>
-      <small className="onboarding-note">Cada experiência conta uma parte da sua história.</small>
+      <small className="onboarding-note">
+        {t('Cada experiência conta uma parte da sua história.')}
+      </small>
     </main>
   );
 }

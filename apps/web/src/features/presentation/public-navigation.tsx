@@ -6,8 +6,11 @@ import { SignupDialog } from '@/features/auth/signup-dialog';
 import { useCurrentUser } from '@/features/auth/use-current-user';
 import { creatorSupport } from '@jinsei/contracts';
 import { SupportDialog } from '@/features/support/support-dialog';
+import { useT } from '@/i18n/provider';
+import { LanguageSwitcher } from '@/components/shared/language-switcher';
 
 export function PublicHeader({ onSignup }: { onSignup?: () => void }) {
+  const t = useT();
   const [signup, setSignup] = useState(false);
   const user = useCurrentUser().data;
   const [scrolled, setScrolled] = useState(false);
@@ -21,30 +24,31 @@ export function PublicHeader({ onSignup }: { onSignup?: () => void }) {
     <>
       <header className={`marketing-header ${scrolled ? 'is-scrolled' : ''}`}>
         <div className="marketing-container marketing-header-inner">
-          <Link href="/" aria-label="Jinsei página inicial">
+          <Link href="/" aria-label={t('Jinsei página inicial')}>
             <Brand />
           </Link>
-          <nav aria-label="Navegação do site">
+          <nav aria-label={t('Navegação do site')}>
             <Link className="marketing-about-link" href="/#como-funciona">
-              Conheça o Jinsei
+              {t('Conheça o Jinsei')}
             </Link>
             <Link className="marketing-about-link" href="/rankings">
-              Rankings
+              {t('Rankings')}
             </Link>
+            <LanguageSwitcher />
             {user ? (
               <Link className="public-button" href="/home">
-                Abrir meu Jinsei
+                {t('Abrir meu Jinsei')}
               </Link>
             ) : (
               <>
                 <Link className="public-button public-button-muted" href="/login">
-                  Entrar
+                  {t('Entrar')}
                 </Link>
                 <button
                   className="public-button"
                   onClick={() => (onSignup ? onSignup() : setSignup(true))}
                 >
-                  Cadastre-se
+                  {t('Cadastre-se')}
                 </button>
               </>
             )}
@@ -56,6 +60,7 @@ export function PublicHeader({ onSignup }: { onSignup?: () => void }) {
   );
 }
 export function PublicFooter() {
+  const t = useT();
   const [support, setSupport] = useState(false);
   return (
     <>
@@ -64,16 +69,18 @@ export function PublicFooter() {
           <Link href="/" aria-label="Jinsei">
             <Brand />
           </Link>
-          <span>© 2026 Jinsei · Criado por {creatorSupport.creator}</span>
-          <nav aria-label="Informações do Jinsei">
+          <span>
+            {t('© 2026 Jinsei · Criado por {creator}', { creator: creatorSupport.creator })}
+          </span>
+          <nav aria-label={t('Informações do Jinsei')}>
             <a href="https://github.com/caio-kenai/Jinsei" target="_blank" rel="noreferrer">
-              Código aberto
+              {t('Código aberto')}
             </a>
             <button type="button" className="public-footer-link" onClick={() => setSupport(true)}>
-              Buy Me a Monster
+              {t('Buy Me a Monster')}
             </button>
-            <Link href="/privacy">Privacidade</Link>
-            <Link href="/terms">Termos</Link>
+            <Link href="/privacy">{t('Privacidade')}</Link>
+            <Link href="/terms">{t('Termos')}</Link>
           </nav>
         </div>
       </footer>
