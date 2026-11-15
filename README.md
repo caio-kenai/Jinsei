@@ -50,6 +50,7 @@ O projeto está em desenvolvimento ativo (série 0.1). Todas as categorias compa
 - Ficha da obra com episódios, temporadas, situação de lançamento, autoria, editoras, direção e duração quando disponíveis.
 - Metadados reais e capas com créditos via fontes públicas, além de cadastro pessoal com URL de imagem opcional.
 - Temas claro, escuro e automático com troca animada, sete temas visuais, dez cores de destaque, densidade e barra lateral configuráveis.
+- Interface em português, inglês e espanhol, escolhida pelo navegador ou nas configurações e salva na conta.
 - Configurações em cartões com idioma, fuso horário, formatos de data e hora, celebrações e lista de sessões ativas por dispositivo.
 - Menu da conta com favoritos compactos, atalho para a comunidade e perfil privado com estatísticas e até oito destaques.
 - Preferências e visualizações persistidas no PostgreSQL.
