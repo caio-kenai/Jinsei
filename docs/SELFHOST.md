@@ -75,6 +75,21 @@ O **Buy Me a Monster** já vem configurado com o Pix oficial do criador do Jinse
 
 Não execute o seed de demonstração em produção.
 
+## E-mail
+
+Com um servidor SMTP, o Jinsei envia a confirmação de e-mail no cadastro e os links de recuperação de senha. Defina em `.env.selfhost`:
+
+```sh
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=seu-endereco@gmail.com
+SMTP_PASSWORD=senha-de-app
+SMTP_FROM="Jinsei <seu-endereco@gmail.com>"
+```
+
+No Gmail, use uma senha de app (a conta precisa de verificação em duas etapas). Use `SMTP_SECURE=true` com a porta 465. Os links valem 48 horas (confirmação) e 1 hora (senha) e só funcionam uma vez; redefinir a senha encerra todas as sessões. Com e-mail ativo, amizades, conversas e clubes esperam a confirmação do endereço; defina `EMAIL_VERIFICATION=optional` para não exigir. Contas criadas antes da atualização ficam confirmadas. Sem `SMTP_HOST`, esses recursos ficam desligados e o restante funciona normalmente.
+
 ## Imagens enviadas
 
 Avatar, banner e capas de coleção funcionam sem configuração extra: por padrão as imagens ficam no volume `media` do Docker (`MEDIA_DIR=/data/media` dentro do contêiner da API). A API valida o formato real do arquivo e entrega as imagens em `/api/media/<id>`, então a pasta nunca precisa ser pública.
