@@ -18,6 +18,10 @@ import {
   preferencesPatchSchema,
   passwordChangeSchema,
   accountDeleteSchema,
+  mfaCodeInputSchema,
+  mfaDisableSchema,
+  type MfaCodeInput,
+  type MfaDisableInput,
   type OnboardingInput,
   type PreferencesPatch,
 } from '@jinsei/contracts';
@@ -25,6 +29,7 @@ import { CurrentUserId, type AuthenticatedRequest } from '../auth/session.guard'
 import { ApiZodBody, ZodPipe } from '../../common/zod.pipe';
 import { UsersService } from './users.service';
 import { AccountEmailService } from '../auth/account-email.service';
+import { MfaService } from '../auth/mfa.service';
 import { RateLimit } from '../../common/rate-limit';
 import { cookieOptions } from '../auth/auth.controller';
 import { SESSION_COOKIE } from '../auth/session.guard';
@@ -36,6 +41,7 @@ export class UsersController {
   constructor(
     @Inject(UsersService) private readonly users: UsersService,
     @Inject(AccountEmailService) private readonly accountEmail: AccountEmailService,
+    @Inject(MfaService) private readonly mfa: MfaService,
   ) {}
   @Get()
   me(@CurrentUserId() userId: string) {
@@ -64,6 +70,51 @@ export class UsersController {
   @Header('Content-Disposition', 'attachment; filename="jinsei-data.json"')
   export(@CurrentUserId() userId: string) {
     return this.users.export(userId);
+  }
+
+  @Get('mfa')
+  async mfaStatus(@CurrentUserId() userId: string) {
+    const me = await this.users.me(userId);
+    return {
+      enabled: me.mfaEnabled,
+      remainingRecoveryCodes: me.mfaEnabled ? await this.mfa.remainingCodes(userId) : 0,
+    };
+  }
+
+  @Post('mfa/setup')
+  @RateLimit(10)
+  mfaSetup(@CurrentUserId() userId: string) {
+    return this.mfa.setup(userId);
+  }
+
+  @Post('mfa/enable')
+  @RateLimit(10)
+  @ApiZodBody(mfaCodeInputSchema)
+  mfaEnable(
+    @CurrentUserId() userId: string,
+    @Body(new ZodPipe(mfaCodeInputSchema)) input: MfaCodeInput,
+  ) {
+    return this.mfa.enable(userId, input.code);
+  }
+
+  @Post('mfa/recovery-codes')
+  @RateLimit(5)
+  @ApiZodBody(mfaCodeInputSchema)
+  mfaRecoveryCodes(
+    @CurrentUserId() userId: string,
+    @Body(new ZodPipe(mfaCodeInputSchema)) input: MfaCodeInput,
+  ) {
+    return this.mfa.regenerate(userId, input.code);
+  }
+
+  @Post('mfa/disable')
+  @RateLimit(5)
+  @ApiZodBody(mfaDisableSchema)
+  mfaDisable(
+    @CurrentUserId() userId: string,
+    @Body(new ZodPipe(mfaDisableSchema)) input: MfaDisableInput,
+  ) {
+    return this.mfa.disable(userId, input.password, input.code);
   }
 
   @Post('email/verification')

@@ -4,11 +4,13 @@ import { RateLimit } from '../../common/rate-limit';
 import {
   credentialsSchema,
   forgotPasswordSchema,
+  loginMfaSchema,
   registrationSchema,
   resetPasswordSchema,
   verifyEmailSchema,
   type Credentials,
   type ForgotPasswordInput,
+  type LoginMfaInput,
   type RegistrationInput,
   type ResetPasswordInput,
   type VerifyEmailInput,
@@ -16,6 +18,7 @@ import {
 import type { Request, Response } from 'express';
 import { AccountEmailService } from './account-email.service';
 import { AuthService } from './auth.service';
+import { MfaService } from './mfa.service';
 import { Public, SESSION_COOKIE, type AuthenticatedRequest } from './session.guard';
 import { ApiZodBody, ZodPipe } from '../../common/zod.pipe';
 import { env } from '../../config/env';
@@ -34,6 +37,7 @@ export class AuthController {
   constructor(
     @Inject(AuthService) private readonly auth: AuthService,
     @Inject(AccountEmailService) private readonly accountEmail: AccountEmailService,
+    @Inject(MfaService) private readonly mfa: MfaService,
     @Inject(PrismaService) private readonly db: PrismaService,
   ) {}
 
@@ -65,7 +69,26 @@ export class AuthController {
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
   ) {
-    const session = await this.auth.login(input, request.get('user-agent') ?? '');
+    const result = await this.auth.login(input, request.get('user-agent') ?? '');
+    if ('challenge' in result) return { mfaRequired: true, challenge: result.challenge };
+    response.cookie(SESSION_COOKIE, result.session.token, {
+      ...cookieOptions,
+      expires: result.session.expiresAt,
+    });
+    return { authenticated: true };
+  }
+
+  @Public()
+  @Post('login/mfa')
+  @HttpCode(200)
+  @RateLimit(10)
+  @ApiZodBody(loginMfaSchema)
+  async loginMfa(
+    @Body(new ZodPipe(loginMfaSchema)) input: LoginMfaInput,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const { userId, userAgent } = await this.mfa.completeChallenge(input.challenge, input.code);
+    const session = await this.auth.createSession(userId, userAgent);
     response.cookie(SESSION_COOKIE, session.token, {
       ...cookieOptions,
       expires: session.expiresAt,

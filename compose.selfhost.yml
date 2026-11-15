@@ -23,6 +23,7 @@ x-api-environment: &api-environment
   SMTP_PASSWORD: ${SMTP_PASSWORD:-}
   SMTP_FROM: ${SMTP_FROM:-}
   EMAIL_VERIFICATION: ${EMAIL_VERIFICATION:-required}
+  SECRET_KEY: ${SECRET_KEY:-}
 services:
   postgres:
     image: postgres:17-alpine

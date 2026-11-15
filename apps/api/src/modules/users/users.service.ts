@@ -65,6 +65,7 @@ export class UsersService {
     return currentUserSchema.parse({
       isAdmin: user.role === 'admin',
       emailVerified: Boolean(user.emailVerifiedAt),
+      mfaEnabled: Boolean(user.mfaEnabledAt),
       id: user.id,
       email: user.email,
       createdAt: user.createdAt.toISOString(),

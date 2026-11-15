@@ -14,6 +14,11 @@ model User {
   passwordHash           String
   role                   String            @default("user")
   emailVerifiedAt        DateTime?
+  /// TOTP secret (encrypted when SECRET_KEY is set) and when two-step login was turned on.
+  mfaSecret              String?
+  mfaPendingSecret       String?
+  mfaEnabledAt           DateTime?
+  mfaLastStep            Int?
   createdAt              DateTime          @default(now())
   updatedAt              DateTime          @updatedAt
   profile                Profile?
@@ -41,6 +46,8 @@ model User {
   clubMemberships        ClubMember[]
   clubPosts              ClubPost[]
   emailTokens            EmailToken[]
+  recoveryCodes          MfaRecoveryCode[]
+  loginChallenges        LoginChallenge[]
 }
 
 model Profile {
@@ -573,4 +580,29 @@ model EmailToken {
   createdAt DateTime  @default(now())
 
   @@index([userId, purpose])
+}
+
+model MfaRecoveryCode {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  codeHash  String
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+}
+
+/// Password checked, second step pending: exchanged for a session after a valid code.
+model LoginChallenge {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String   @unique
+  userAgent String   @default("")
+  attempts  Int      @default(0)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
 }
