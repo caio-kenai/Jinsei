@@ -1605,3 +1605,52 @@
     animation: none;
   }
 }
+
+/* Account recovery and e-mail confirmation. */
+.auth-forgot {
+  display: block;
+  margin-top: 8px;
+  text-align: right;
+  font-size: 12px;
+  color: #1090f3;
+}
+.auth-forgot:hover {
+  text-decoration: underline;
+}
+.auth-notice {
+  display: flex;
+  gap: 10px;
+  margin-top: 18px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  font-size: 13px;
+  line-height: 20px;
+  text-align: left;
+}
+.auth-notice > svg {
+  flex: none;
+  margin-top: 1px;
+}
+.auth-notice.is-success {
+  background: #effaf5;
+  border: 1px solid #c9eadb;
+  color: #11734f;
+}
+.auth-notice.is-error {
+  background: #fdf0f2;
+  border: 1px solid #f5c9d1;
+  color: #b42339;
+}
+.auth-notice a {
+  color: inherit;
+  text-decoration: underline;
+}
+.auth-box > .auth-submit {
+  display: flex;
+  justify-content: center;
+  margin-top: 16px;
+  text-decoration: none;
+}
+.auth-switch .spin {
+  vertical-align: -3px;
+}
