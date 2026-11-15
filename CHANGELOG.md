@@ -1,5 +1,16 @@
 # Histórico de versões
 
+## 0.1.9 — 2026-11-15
+
+- O app de computador volta a reconhecer o servidor do Jinsei.
+- Páginas das obras com sinopse da Wikipédia, capa vertical oficial e banner de fundo; rankings, listas e coleções passam a usar a capa vertical.
+- Rankings trocam de categoria, ordem e página na hora, sem recarregar.
+- Header de vidro que acompanha a rolagem e troca de tema com revelação circular a partir do botão.
+- Seletores com menu animado, categorias personalizadas em um modal próprio e animação ao abrir e fechar "Minha biblioteca".
+- Cards de métricas redesenhados nas estatísticas, na comunidade e na moderação.
+- Ícones oficiais das plataformas na página de downloads e efeitos de hover em todos os links e botões.
+- Logotipo correto no modo escuro e nome completo do criador nos termos.
+
 ## 0.1.8 — 2026-11-15
 
 - Apps do Jinsei para Windows, macOS e Linux (Tauri) e para Android (APK), que se conectam à instância escolhida.
