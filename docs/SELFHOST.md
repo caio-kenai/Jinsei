@@ -65,7 +65,7 @@ O perfil opcional `tls` inicia Caddy e solicita um certificado para o domínio c
 docker compose --env-file .env.selfhost -f compose.selfhost.yml --profile tls up -d --wait
 ```
 
-Configure DNS e firewall antes. Com um proxy próprio, encaminhe o domínio ao frontend na porta local 3000 e preserve o cabeçalho Host. A API e o PostgreSQL não precisam de portas públicas. Este guia não configura DNS, firewall ou backups automaticamente.
+Configure DNS e firewall antes. Com um proxy próprio, encaminhe o domínio ao frontend na porta local 3000 e preserve o cabeçalho Host. Envie também `X-Forwarded-For` com o endereço do visitante (Caddy, Traefik e Nginx com `proxy_add_x_forwarded_for` já fazem isso): os limites de requisições da API são contados por visitante a partir desse cabeçalho. Mantenha `JINSEI_BIND=127.0.0.1` atrás do proxy, para que ninguém alcance o frontend diretamente com um cabeçalho forjado. A API e o PostgreSQL não precisam de portas públicas. Este guia não configura DNS, firewall ou backups automaticamente.
 
 ## Catálogos e apoio
 

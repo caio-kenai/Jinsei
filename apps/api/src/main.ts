@@ -3,14 +3,18 @@ import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
+import type { NestExpressApplication } from '@nestjs/platform-express';
 import type { NextFunction, Request, Response } from 'express';
 import { AppModule } from './app.module';
 import { env } from './config/env';
 import { HttpErrorFilter } from './common/http-error.filter';
+import { trustedProxies } from './common/client-address';
 import { appVersion } from '@jinsei/contracts';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  // Rate limits follow each visitor's address, as forwarded by the web proxy.
+  app.set('trust proxy', trustedProxies);
   app.use(helmet());
   app.use(cookieParser());
   app.enableCors({ origin: env.WEB_ORIGIN, credentials: true });

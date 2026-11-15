@@ -1,6 +1,8 @@
 import { Controller, Get, Inject, Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import type { Request } from 'express';
+import { isServerRendering } from './common/client-address';
 import { PrismaModule, PrismaService } from './prisma/prisma.service';
 import { AuthModule } from './modules/auth/auth.module';
 import { MailModule } from './modules/mail/mail.module';
@@ -48,7 +50,10 @@ class HealthController {
     MailModule,
     AuthModule,
     UsersModule,
-    ThrottlerModule.forRoot([perMinute(180)]),
+    ThrottlerModule.forRoot({
+      throttlers: [perMinute(180)],
+      skipIf: (context) => isServerRendering(context.switchToHttp().getRequest<Request>()),
+    }),
   ],
   controllers: [HealthController, ViewsController],
   providers: [
