@@ -39,6 +39,7 @@ async function seed() {
       create: {
         email,
         passwordHash: await hashPassword(password),
+        emailVerifiedAt: new Date(),
         profile: { create: { displayName: 'Alex Costa', username: 'alex-demo' } },
         preference: { create: { theme: 'dark', onboardedAt: new Date() } },
         categories: {

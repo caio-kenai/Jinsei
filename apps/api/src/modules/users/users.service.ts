@@ -64,6 +64,7 @@ export class UsersService {
     if (!user?.profile || !user.preference) throw new NotFoundException('Conta não encontrada');
     return currentUserSchema.parse({
       isAdmin: user.role === 'admin',
+      emailVerified: Boolean(user.emailVerifiedAt),
       id: user.id,
       email: user.email,
       createdAt: user.createdAt.toISOString(),

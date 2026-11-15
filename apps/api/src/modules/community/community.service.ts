@@ -27,6 +27,7 @@ import type { Prisma } from '../../generated/prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { historySelect, progressOf, work } from '../profiles/profiles.service';
 import { mediaUrl } from '../uploads/uploads.service';
+import { AccountEmailService } from '../auth/account-email.service';
 
 const PAGE = 50;
 const MAX_PENDING_REQUESTS = 100;
@@ -117,7 +118,10 @@ const club = (row: ClubRow): Club => ({
 
 @Injectable()
 export class CommunityService {
-  constructor(@Inject(PrismaService) private readonly db: PrismaService) {}
+  constructor(
+    @Inject(PrismaService) private readonly db: PrismaService,
+    @Inject(AccountEmailService) private readonly accountEmail: AccountEmailService,
+  ) {}
 
   async summary(userId: string): Promise<CommunitySummary> {
     const [pendingRequests, unreadMessages] = await Promise.all([
@@ -218,6 +222,7 @@ export class CommunityService {
 
   /** Sending a request to someone who already asked you accepts theirs. */
   async request(userId: string, username: string): Promise<Relationship> {
+    await this.accountEmail.requireVerified(userId);
     const other = await this.userByUsername(username);
     if (other.id === userId) throw new BadRequestException('Você não pode adicionar a si mesmo');
     const existing = await this.friendship(userId, other.id);
@@ -384,6 +389,7 @@ export class CommunityService {
   }
 
   async send(userId: string, otherId: string, body: string): Promise<DirectMessage> {
+    await this.accountEmail.requireVerified(userId);
     if (otherId === userId || !(await this.areFriends(userId, otherId)))
       throw new ForbiddenException('Vocês precisam ser amigos para conversar');
     const row = await this.db.directMessage.create({
@@ -426,6 +432,7 @@ export class CommunityService {
   }
 
   async createClub(userId: string, input: ClubInput): Promise<Club> {
+    await this.accountEmail.requireVerified(userId);
     const owned = await this.db.club.count({ where: { ownerId: userId } });
     if (owned >= MAX_OWNED_CLUBS)
       throw new BadRequestException(`Você pode criar até ${MAX_OWNED_CLUBS} clubes`);
@@ -522,6 +529,7 @@ export class CommunityService {
   }
 
   async post(userId: string, slug: string, body: string): Promise<ClubPost> {
+    await this.accountEmail.requireVerified(userId);
     const row = await this.clubBySlug(userId, slug);
     if (!row.members.length) throw new ForbiddenException('Entre no clube para publicar');
     const [post] = await this.db.$transaction([
