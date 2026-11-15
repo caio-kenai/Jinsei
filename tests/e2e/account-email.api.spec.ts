@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { randomUUID } from 'node:crypto';
@@ -15,7 +15,8 @@ async function latestMail(to: string, subject: RegExp) {
   let found: { to: string; subject: string; action: string } | undefined;
   await expect
     .poll(() => {
-      const mails = readdirSync(outbox)
+      // The outbox folder only exists after the first e-mail is written.
+      const mails = (existsSync(outbox) ? readdirSync(outbox) : [])
         .sort()
         .map((name) => JSON.parse(readFileSync(join(outbox, name), 'utf8')))
         .filter((mail) => mail.to === to && subject.test(mail.subject));

@@ -1,5 +1,9 @@
 # Histórico de versões
 
+## 0.2.0 — 2026-11-15
+
+- Os limites de requisições da API passam a valer por visitante. Antes, todos dividiam o mesmo limite, e um pico de acessos fazia as páginas das obras responderem 404.
+
 ## 0.1.9 — 2026-11-15
 
 - O app de computador volta a reconhecer o servidor do Jinsei.
