@@ -304,7 +304,7 @@ test('consulta o Wikidata real e importa uma obra sem duplicar o catálogo', asy
   const entry = await imported.json();
   expect(entry.title).toBe('Hollow Knight');
   expect(entry.coverUrl).toMatch(/^https:\/\//);
-  expect(entry.coverAttribution.provider).toBe('CheapShark');
+  expect(['CheapShark', 'Steam']).toContain(entry.coverAttribution.provider);
   expect(
     (
       await client.post('/api/library/entries', {

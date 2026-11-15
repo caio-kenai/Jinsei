@@ -387,7 +387,7 @@ export class LibraryService {
       startedOn: true,
       completedOn: true,
       status: { select: { key: true } },
-      media: { select: { title: true, mediaTypeId: true, coverUrl: true } },
+      media: { select: { title: true, mediaTypeId: true, coverUrl: true, posterUrl: true } },
     } satisfies Prisma.UserMediaEntrySelect;
     const [entries, viewings] = await this.db.$transaction([
       this.db.userMediaEntry.findMany({
@@ -412,7 +412,7 @@ export class LibraryService {
       title: entry.media.title,
       mediaType: entry.media.mediaTypeId as MediaType,
       status: entry.status.key as StatusKey,
-      coverUrl: entry.media.coverUrl,
+      coverUrl: entry.media.posterUrl ?? entry.media.coverUrl,
     });
     const inRange = (date: Date | null): date is Date =>
       Boolean(date && date >= range.gte && date <= range.lte);

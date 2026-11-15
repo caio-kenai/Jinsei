@@ -151,30 +151,35 @@ model UserStatus {
 }
 
 model MediaItem {
-  id               String            @id @default(cuid())
-  mediaTypeId      String
-  mediaType        MediaType         @relation(fields: [mediaTypeId], references: [id])
-  ownerId          String?
-  owner            User?             @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  title            String
-  normalizedTitle  String
-  description      String            @default("")
-  releaseYear      Int?
-  coverUrl         String?
-  coverAttribution Json?
-  genres           String[]
-  attributionLabel String
-  attributionUrl   String?
-  dataLicense      String
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
-  game             GameMetadata?
-  series           SeriesMetadata?
-  reading          ReadingMetadata?
-  movie            MovieMetadata?
-  externalIds      MediaExternalId[]
-  entries          UserMediaEntry[]
-  detail           MediaDetail?
+  id                String            @id @default(cuid())
+  mediaTypeId       String
+  mediaType         MediaType         @relation(fields: [mediaTypeId], references: [id])
+  ownerId           String?
+  owner             User?             @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  title             String
+  normalizedTitle   String
+  description       String            @default("")
+  releaseYear       Int?
+  coverUrl          String?
+  coverAttribution  Json?
+  /// Vertical cover found by the work enrichment (preferred over a wide catalog cover).
+  posterUrl         String?
+  posterAttribution Json?
+  /// Wide artwork for the work page banner.
+  bannerUrl         String?
+  genres            String[]
+  attributionLabel  String
+  attributionUrl    String?
+  dataLicense       String
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  game              GameMetadata?
+  series            SeriesMetadata?
+  reading           ReadingMetadata?
+  movie             MovieMetadata?
+  externalIds       MediaExternalId[]
+  entries           UserMediaEntry[]
+  detail            MediaDetail?
 
   @@unique([ownerId, mediaTypeId, normalizedTitle])
   @@index([mediaTypeId, title])

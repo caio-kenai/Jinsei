@@ -27,7 +27,7 @@ export function PublicHeader({ onSignup }: { onSignup?: () => void }) {
       <header className={`marketing-header ${scrolled ? 'is-scrolled' : ''}`}>
         <div className="marketing-container marketing-header-inner">
           <Link href="/" aria-label={t('Jinsei página inicial')}>
-            <Brand />
+            <Brand adaptive />
           </Link>
           <nav aria-label={t('Navegação do site')}>
             <div className="marketing-nav-links" onMouseLeave={() => setHovered(null)}>
