@@ -149,13 +149,23 @@ function EntryForm({ entry, onClose }: { entry: LibraryEntry; onClose: () => voi
             <div className="form-grid">
               <label className="field">
                 {t('Status')}
-                <Select aria-label={t('Status')} {...register('status')}>
-                  {statusKeys.map((status) => (
-                    <option key={status} value={status}>
-                      {t(statusLabels[status])}
-                    </option>
-                  ))}
-                </Select>
+                <Controller
+                  control={control}
+                  name="status"
+                  render={({ field }) => (
+                    <Select
+                      aria-label={t('Status')}
+                      value={field.value}
+                      onChange={(event) => field.onChange(event.target.value)}
+                    >
+                      {statusKeys.map((status) => (
+                        <option key={status} value={status}>
+                          {t(statusLabels[status])}
+                        </option>
+                      ))}
+                    </Select>
+                  )}
+                />
               </label>
               <div className="field">
                 <span>{t('Sua nota')}</span>

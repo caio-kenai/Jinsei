@@ -23,7 +23,8 @@ test('jornada completa no navegador persiste edições, visualização e tema', 
   await page.getByRole('button', { name: 'Não encontrou? Cadastrar manualmente' }).click();
   await page.getByLabel('Nome do título').fill(`Jogo de teste ${id}`);
   await page.getByLabel('Plataformas', { exact: true }).fill('PC');
-  await page.getByLabel('Status', { exact: true }).selectOption('in_progress');
+  await page.getByRole('combobox', { name: 'Status', exact: true }).click();
+  await page.getByRole('option', { name: 'Em andamento' }).click();
   const ratingInput = page.getByRole('slider', { name: 'Sua nota', exact: true });
   await ratingInput.press('End');
   await ratingInput.press('ArrowLeft');

@@ -24,7 +24,8 @@ test('cria um clube, publica e exclui pela comunidade', async ({ page }) => {
   const dialog = page.getByRole('dialog', { name: 'Novo clube' });
   await dialog.getByLabel('Nome').fill(name);
   await dialog.getByLabel('Descrição').fill('Conversas sobre a biblioteca');
-  await dialog.getByLabel('Categoria').selectOption('anime');
+  await dialog.getByRole('combobox', { name: 'Categoria' }).click();
+  await page.getByRole('option', { name: 'Animes' }).click();
   await dialog.getByRole('button', { name: 'Criar clube' }).click();
   await expect(page.getByRole('heading', { name })).toBeVisible();
   await page.getByLabel('Nova publicação').fill('Primeira publicação do clube');
