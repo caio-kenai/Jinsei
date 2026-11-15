@@ -1,7 +1,11 @@
 'use client';
 import { useT } from '@/i18n/provider';
 import { currentLocale } from '@/i18n/config';
+import { useState, type MouseEvent } from 'react';
 import Link from 'next/link';
+import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query';
+import { api } from '@/lib/api';
+import { cn } from '@/lib/utils';
 import { ChevronLeft, ChevronRight, Star, Users } from 'lucide-react';
 import {
   categoryLabels,
@@ -28,8 +32,57 @@ const href = (mediaType: MediaType | undefined, sort: string, page = 1) => {
   return `/rankings${value ? `?${value}` : ''}`;
 };
 
-export function RankingsPage({ ranking, mediaType, sort }: Props) {
+type View = { mediaType?: MediaType; sort: 'score' | 'popular'; page: number };
+const apiPath = ({ mediaType, sort, page }: View) => {
+  const query = new URLSearchParams({ sort, page: String(page) });
+  if (mediaType) query.set('mediaType', mediaType);
+  return `/works/rankings?${query}`;
+};
+const sameView = (a: View, b: View) =>
+  a.mediaType === b.mediaType && a.sort === b.sort && a.page === b.page;
+
+/**
+ * Rankings switch category, order and page in the browser: the list keeps showing
+ * while the next one loads, and hovering a tab fetches it ahead of the click.
+ */
+export function RankingsPage({
+  ranking: initial,
+  mediaType: initialType,
+  sort: initialSort,
+}: Props) {
   const t = useT();
+  const client = useQueryClient();
+  const first: View = { mediaType: initialType, sort: initialSort, page: initial.page };
+  const [view, setView] = useState<View>(first);
+  const fetchView = (next: View) => api<RankingResponse>(apiPath(next));
+  const query = useQuery({
+    queryKey: ['rankings', view.mediaType ?? 'all', view.sort, view.page],
+    queryFn: () => fetchView(view),
+    initialData: sameView(view, first) ? initial : undefined,
+    placeholderData: keepPreviousData,
+    staleTime: 60_000,
+  });
+  const ranking = query.data ?? initial;
+  const { mediaType, sort } = view;
+  const prefetch = (next: View) =>
+    void client.prefetchQuery({
+      queryKey: ['rankings', next.mediaType ?? 'all', next.sort, next.page],
+      queryFn: () => fetchView(next),
+      staleTime: 60_000,
+    });
+  const go = (next: View) => (event: MouseEvent<HTMLAnchorElement>) => {
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) return;
+    event.preventDefault();
+    setView(next);
+    window.history.pushState(null, '', href(next.mediaType, next.sort, next.page));
+    if (next.page !== view.page) window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+  const linkProps = (next: View) => ({
+    href: href(next.mediaType, next.sort, next.page),
+    onClick: go(next),
+    onMouseEnter: () => prefetch(next),
+    onFocus: () => prefetch(next),
+  });
   return (
     <div className="public-surface rankings-surface">
       <PublicHeader />
@@ -42,36 +95,42 @@ export function RankingsPage({ ranking, mediaType, sort }: Props) {
           <p>{t('Notas de quem acompanha cada obra, ponderadas pela quantidade de avaliações.')}</p>
         </header>
         <nav className="rankings-tabs" aria-label={t('Categorias')}>
-          <Link className={!mediaType ? 'active' : ''} href={href(undefined, sort)}>
+          <a className={!mediaType ? 'active' : ''} {...linkProps({ sort, page: 1 })}>
             {t('Todas')}
-          </Link>
+          </a>
           {mediaTypes.map((type) => {
             const Icon = categoryIcons[type];
             return (
-              <Link
+              <a
                 key={type}
                 className={mediaType === type ? 'active' : ''}
-                href={href(type, sort)}
+                {...linkProps({ mediaType: type, sort, page: 1 })}
                 style={{ '--tab-color': categoryColors[type] } as React.CSSProperties}
               >
                 <Icon size={15} />
                 {t(categoryLabels[type])}
-              </Link>
+              </a>
             );
           })}
         </nav>
         <div className="rankings-sort">
-          <Link className={sort === 'score' ? 'active' : ''} href={href(mediaType, 'score')}>
+          <a
+            className={sort === 'score' ? 'active' : ''}
+            {...linkProps({ mediaType, sort: 'score', page: 1 })}
+          >
             <Star size={14} />
             {t('Melhor avaliadas')}
-          </Link>
-          <Link className={sort === 'popular' ? 'active' : ''} href={href(mediaType, 'popular')}>
+          </a>
+          <a
+            className={sort === 'popular' ? 'active' : ''}
+            {...linkProps({ mediaType, sort: 'popular', page: 1 })}
+          >
             <Users size={14} />
             {t('Mais populares')}
-          </Link>
+          </a>
         </div>
         {ranking.items.length ? (
-          <ol className="rankings-list">
+          <ol className={cn('rankings-list', query.isPlaceholderData && 'is-loading')}>
             {ranking.items.map((item) => {
               const Icon = categoryIcons[item.mediaType];
               return (
@@ -124,16 +183,16 @@ export function RankingsPage({ ranking, mediaType, sort }: Props) {
         )}
         <nav className="rankings-pages" aria-label={t('Páginas')}>
           {ranking.page > 1 && (
-            <Link href={href(mediaType, sort, ranking.page - 1)}>
+            <a {...linkProps({ mediaType, sort, page: ranking.page - 1 })}>
               <ChevronLeft size={15} />
               {t('Anteriores')}
-            </Link>
+            </a>
           )}
           {ranking.hasMore && (
-            <Link href={href(mediaType, sort, ranking.page + 1)}>
+            <a {...linkProps({ mediaType, sort, page: ranking.page + 1 })}>
               {t('Próximas 50')}
               <ChevronRight size={15} />
-            </Link>
+            </a>
           )}
         </nav>
       </main>
