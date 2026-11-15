@@ -1,10 +1,11 @@
 'use client';
+import { currentDateLocale } from '@/i18n/config';
+import { useT } from '@/i18n/provider';
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { AnimatePresence, motion } from 'motion/react';
 import { format, isSameDay, parseISO } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 import { ArrowLeft, LoaderCircle, MessagesSquare, Send, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/input';
@@ -20,6 +21,7 @@ import {
 } from './use-community';
 
 function Thread({ userId }: { userId: string }) {
+  const t = useT();
   const formatTime = useDateFormat().time;
   const conversation = useConversation(userId);
   const { send } = useCommunityMutations();
@@ -42,15 +44,15 @@ function Thread({ userId }: { userId: string }) {
     );
   if (conversation.error || !conversation.data)
     return (
-      <CommunityEmpty icon={<MessagesSquare size={24} />} title="Conversa indisponível">
-        Vocês precisam ser amigos para trocar mensagens.
+      <CommunityEmpty icon={<MessagesSquare size={24} />} title={t('Conversa indisponível')}>
+        {t('Vocês precisam ser amigos para trocar mensagens.')}
       </CommunityEmpty>
     );
   const { user, messages, canMessage } = conversation.data;
   return (
     <div className="community-thread">
       <header className="community-thread-header">
-        <Link href="/community/messages" className="community-back" aria-label="Voltar">
+        <Link href="/community/messages" className="community-back" aria-label={t('Voltar')}>
           <ArrowLeft size={16} />
         </Link>
         <UserAvatar user={user} size={34} />
@@ -60,7 +62,7 @@ function Thread({ userId }: { userId: string }) {
       <div className="community-thread-messages" aria-live="polite">
         {messages.length === 0 && (
           <p className="community-hint community-thread-start">
-            Comece a conversa com {user.displayName}.
+            {t('Comece a conversa com')} {user.displayName}.
           </p>
         )}
         <AnimatePresence initial={false}>
@@ -78,14 +80,14 @@ function Thread({ userId }: { userId: string }) {
               >
                 {newDay && (
                   <div className="community-day">
-                    {format(date, "d 'de' MMMM", { locale: ptBR })}
+                    {format(date, t("d 'de' MMMM"), { locale: currentDateLocale() })}
                   </div>
                 )}
                 <div className={cn('community-message', message.mine && 'mine')}>
                   {!message.mine && (
                     <ReportButton
                       target={{ targetType: 'message', targetId: message.id }}
-                      label="Denunciar mensagem"
+                      label={t('Denunciar mensagem')}
                       className="message-report"
                     />
                   )}
@@ -113,8 +115,8 @@ function Thread({ userId }: { userId: string }) {
             value={draft}
             maxLength={2000}
             rows={1}
-            placeholder={`Mensagem para ${user.displayName}`}
-            aria-label="Mensagem"
+            placeholder={t('Mensagem para {displayName}', { displayName: user.displayName })}
+            aria-label={t('Mensagem')}
             onChange={(event) => setDraft(event.target.value)}
             onKeyDown={(event) => {
               if (event.key === 'Enter' && !event.shiftKey) {
@@ -127,15 +129,16 @@ function Thread({ userId }: { userId: string }) {
             type="submit"
             size="icon"
             disabled={!draft.trim() || send.isPending}
-            aria-label="Enviar"
+            aria-label={t('Enviar')}
           >
             {send.isPending ? <LoaderCircle size={15} className="spin" /> : <Send size={15} />}
           </Button>
         </form>
       ) : (
         <p className="community-hint community-composer-off">
-          Vocês não são mais amigos; o histórico continua visível, mas novas mensagens estão
-          desativadas.
+          {t(
+            'Vocês não são mais amigos; o histórico continua visível, mas novas mensagens estão desativadas.',
+          )}
         </p>
       )}
     </div>
@@ -143,6 +146,7 @@ function Thread({ userId }: { userId: string }) {
 }
 
 export function MessagesScreen() {
+  const t = useT();
   const params = useSearchParams();
   const router = useRouter();
   const selected = params.get('com');
@@ -176,7 +180,7 @@ export function MessagesScreen() {
                       </time>
                     </span>
                     <span className="community-inbox-preview">
-                      {item.lastMessage.mine && 'Você: '}
+                      {item.lastMessage.mine && t('Você: ')}
                       {item.lastMessage.body}
                     </span>
                   </span>
@@ -188,13 +192,13 @@ export function MessagesScreen() {
         )}
         {withoutConversation.length > 0 && (
           <div className="community-inbox-friends">
-            <h3>Começar conversa</h3>
+            <h3>{t('Começar conversa')}</h3>
             <div>
               {withoutConversation.slice(0, 12).map((friend) => (
                 <button
                   key={friend.id}
                   title={friend.displayName}
-                  aria-label={`Conversar com ${friend.displayName}`}
+                  aria-label={t('Conversar com {displayName}', { displayName: friend.displayName })}
                   onClick={() => router.replace(`/community/messages?com=${friend.id}`)}
                 >
                   <UserAvatar user={friend} size={34} />
@@ -206,17 +210,17 @@ export function MessagesScreen() {
         {!conversations.isPending && list.length === 0 && friends.length === 0 && (
           <CommunityEmpty
             icon={<MessagesSquare size={24} />}
-            title="Nenhuma conversa"
+            title={t('Nenhuma conversa')}
             action={
               <Button variant="outline" size="sm" asChild>
                 <Link href="/community/friends">
                   <UserPlus size={14} />
-                  Adicionar amigos
+                  {t('Adicionar amigos')}
                 </Link>
               </Button>
             }
           >
-            As conversas são privadas e acontecem entre amigos.
+            {t('As conversas são privadas e acontecem entre amigos.')}
           </CommunityEmpty>
         )}
       </aside>
@@ -224,8 +228,8 @@ export function MessagesScreen() {
         {selected ? (
           <Thread key={selected} userId={selected} />
         ) : (
-          <CommunityEmpty icon={<MessagesSquare size={24} />} title="Suas mensagens">
-            Escolha uma conversa ao lado ou comece uma nova com um amigo.
+          <CommunityEmpty icon={<MessagesSquare size={24} />} title={t('Suas mensagens')}>
+            {t('Escolha uma conversa ao lado ou comece uma nova com um amigo.')}
           </CommunityEmpty>
         )}
       </section>

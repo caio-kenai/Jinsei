@@ -1,10 +1,15 @@
 import { BadRequestException, ForbiddenException, Inject, Injectable } from '@nestjs/common';
 import { randomBytes } from 'node:crypto';
+import { localeSchema, translator, type Locale } from '@jinsei/contracts';
 import { PrismaService } from '../../prisma/prisma.service';
 import { env } from '../../config/env';
 import { MailService, mailEnabled, verificationRequired } from '../mail/mail.service';
 import { hashPassword } from './auth.service';
 import { tokenHash } from './session.guard';
+
+/** The account's saved language, or Portuguese when it is missing or unknown. */
+const accountLocale = (value?: string | null): Locale =>
+  localeSchema.safeParse(value).data ?? 'pt-BR';
 
 type Purpose = 'verify' | 'reset';
 const lifetimes: Record<Purpose, number> = { verify: 48 * 3600_000, reset: 3600_000 };
@@ -52,23 +57,33 @@ export class AccountEmailService {
     if (!mailEnabled) return { sent: false };
     const user = await this.db.user.findUnique({
       where: { id: userId },
-      select: { email: true, emailVerifiedAt: true, profile: { select: { displayName: true } } },
+      select: {
+        email: true,
+        emailVerifiedAt: true,
+        profile: { select: { displayName: true } },
+        preference: { select: { locale: true } },
+      },
     });
     if (!user || user.emailVerifiedAt) return { sent: false };
     const token = await this.issue(userId, 'verify');
+    const locale = accountLocale(user.preference?.locale);
+    const t = translator(locale);
     const sent = await this.mail.send(user.email, {
-      subject: 'Confirme seu e-mail no Jinsei',
-      preview: 'Falta só um clique para confirmar sua conta.',
-      title: `Olá, ${user.profile?.displayName ?? 'boas-vindas'}!`,
+      locale,
+      subject: t('Confirme seu e-mail no Jinsei'),
+      preview: t('Falta só um clique para confirmar sua conta.'),
+      title: user.profile?.displayName
+        ? t('Olá, {name}!', { name: user.profile.displayName })
+        : t('Boas-vindas!'),
       paragraphs: [
-        'Confirme este endereço para proteger sua conta e liberar amizades, conversas e clubes.',
-        'O link vale por 48 horas.',
+        t('Confirme este endereço para proteger sua conta e liberar amizades, conversas e clubes.'),
+        t('O link vale por 48 horas.'),
       ],
       action: {
-        label: 'Confirmar meu e-mail',
+        label: t('Confirmar meu e-mail'),
         url: `${env.WEB_ORIGIN}/verify-email?token=${token}`,
       },
-      footnote: 'Se você não criou uma conta no Jinsei, ignore esta mensagem.',
+      footnote: t('Se você não criou uma conta no Jinsei, ignore esta mensagem.'),
     });
     return { sent };
   }
@@ -89,23 +104,29 @@ export class AccountEmailService {
         email: true,
         suspendedAt: true,
         profile: { select: { displayName: true } },
+        preference: { select: { locale: true } },
       },
     });
     if (user && !user.suspendedAt) {
       const token = await this.issue(user.id, 'reset');
+      const locale = accountLocale(user.preference?.locale);
+      const t = translator(locale);
       await this.mail.send(user.email, {
-        subject: 'Redefina sua senha do Jinsei',
-        preview: 'Use o link para criar uma nova senha.',
-        title: 'Vamos criar uma nova senha',
+        locale,
+        subject: t('Redefina sua senha do Jinsei'),
+        preview: t('Use o link para criar uma nova senha.'),
+        title: t('Vamos criar uma nova senha'),
         paragraphs: [
-          `Recebemos um pedido para redefinir a senha da conta de ${user.profile?.displayName ?? user.email}.`,
-          'O link vale por 1 hora. Ao trocar a senha, todas as sessões abertas são encerradas.',
+          t('Recebemos um pedido para redefinir a senha da conta de {name}.', {
+            name: user.profile?.displayName ?? user.email,
+          }),
+          t('O link vale por 1 hora. Ao trocar a senha, todas as sessões abertas são encerradas.'),
         ],
         action: {
-          label: 'Criar nova senha',
+          label: t('Criar nova senha'),
           url: `${env.WEB_ORIGIN}/reset-password?token=${token}`,
         },
-        footnote: 'Se você não pediu isso, ignore esta mensagem: sua senha continua a mesma.',
+        footnote: t('Se você não pediu isso, ignore esta mensagem: sua senha continua a mesma.'),
       });
     }
     return { ok: true };

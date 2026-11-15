@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { msg } from './msg';
 import {
   entryProgressSchema,
   isoDateSchema,
@@ -7,7 +8,8 @@ import {
 } from './progress';
 export * from './progress';
 export * from './support';
-export const appVersion = '0.1.6';
+export * from './i18n';
+export const appVersion = '0.1.7';
 
 export const healthSchema = z.object({ status: z.literal('ok'), service: z.literal('jinsei-api') });
 
@@ -70,7 +72,7 @@ export const timezoneSchema = z
     }
   }, 'Fuso horário inválido');
 export const emailSchema = z.email('Informe um e-mail válido').max(254).trim().toLowerCase();
-export const passwordSchema = z.string().min(12, 'Use pelo menos 12 caracteres').max(128);
+export const passwordSchema = z.string().min(12, msg('Use pelo menos 12 caracteres')).max(128);
 export const credentialsSchema = z
   .object({ email: emailSchema, password: passwordSchema })
   .strict();
@@ -83,10 +85,11 @@ export const usernameSchema = z
   .string()
   .min(3)
   .max(30)
-  .regex(/^[a-z0-9][a-z0-9_-]+$/, 'Use letras minúsculas, números, _ ou -');
+  .regex(/^[a-z0-9][a-z0-9_-]+$/, msg('Use letras minúsculas, números, _ ou -'));
 export const locales = ['pt-BR', 'en', 'es'] as const;
 export const localeSchema = z.enum(locales);
 export type Locale = z.infer<typeof localeSchema>;
+export const defaultLocale: Locale = 'pt-BR';
 export const localeLabels: Record<Locale, string> = {
   'pt-BR': 'Português (Brasil)',
   en: 'English',
@@ -113,7 +116,7 @@ export const profileLinkSchema = z
     url: z
       .url()
       .max(500)
-      .refine((value) => value.startsWith('https://'), 'Use um endereço HTTPS'),
+      .refine((value) => value.startsWith('https://'), msg('Use um endereço HTTPS')),
   })
   .strict();
 export type ProfileLink = z.infer<typeof profileLinkSchema>;
@@ -200,7 +203,9 @@ export const publicInstanceSchema = instanceSettingsSchema.extend({
 export type PublicInstance = z.infer<typeof publicInstanceSchema>;
 export const forgotPasswordSchema = z.object({ email: emailSchema }).strict();
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
-export const emailTokenSchema = z.string().regex(/^[a-f0-9]{64}$/, 'Link inválido ou expirado');
+export const emailTokenSchema = z
+  .string()
+  .regex(/^[a-f0-9]{64}$/, msg('Link inválido ou expirado'));
 export const resetPasswordSchema = z
   .object({ token: emailTokenSchema, password: passwordSchema })
   .strict();
@@ -272,7 +277,7 @@ export const manualMediaSchema = z
     coverUrl: z
       .url()
       .max(2000)
-      .refine((value) => value.startsWith('https://'), 'Use uma imagem HTTPS')
+      .refine((value) => value.startsWith('https://'), msg('Use uma imagem HTTPS'))
       .nullable()
       .default(null),
     releaseYear: z.number().int().min(1900).max(2100).nullable().default(null),
@@ -526,10 +531,10 @@ const httpsImageSchema = z
     (value) =>
       /^\/api\/media\/[a-z0-9]+$/.test(value) ||
       (URL.canParse(value) && value.startsWith('https://')),
-    'Use uma imagem HTTPS',
+    msg('Use uma imagem HTTPS'),
   );
 const collectionFields = {
-  name: z.string().trim().min(1, 'Dê um nome à coleção').max(80),
+  name: z.string().trim().min(1, msg('Dê um nome à coleção')).max(80),
   description: z.string().trim().max(1000),
   visibility: collectionVisibilitySchema,
   ranked: z.boolean(),
@@ -642,7 +647,7 @@ export const goalStateLabels: Record<GoalState, string> = {
   archived: 'Arquivada',
 };
 const goalFields = z.object({
-  name: z.string().trim().min(1, 'Dê um nome à meta').max(80),
+  name: z.string().trim().min(1, msg('Dê um nome à meta')).max(80),
   description: z.string().trim().max(500).default(''),
   metric: goalMetricSchema,
   mediaType: mediaTypeSchema.nullable().default(null),
@@ -664,13 +669,13 @@ const goalRules = (goal: {
   (!goal.startsOn || !goal.endsOn || goal.endsOn >= goal.startsOn);
 export const goalInputSchema = goalFields
   .strict()
-  .refine(goalRules, 'Revise a categoria, a coleção e o período da meta');
+  .refine(goalRules, msg('Revise a categoria, a coleção e o período da meta'));
 export type GoalInput = z.infer<typeof goalInputSchema>;
 export const goalPatchSchema = goalFields
   .partial()
   .extend({ archived: z.boolean().optional() })
   .strict()
-  .refine(goalRules, 'Revise a categoria, a coleção e o período da meta');
+  .refine(goalRules, msg('Revise a categoria, a coleção e o período da meta'));
 export type GoalPatch = z.infer<typeof goalPatchSchema>;
 export const goalSchema = z.object({
   id: z.string(),

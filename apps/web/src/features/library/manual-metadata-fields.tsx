@@ -1,33 +1,36 @@
 'use client';
+import { useT } from '@/i18n/provider';
+import { msg } from '@/i18n/config';
 import { progressKinds, type MediaType } from '@jinsei/contracts';
 import { Input } from '@/components/ui/input';
 
 const creatorLabels: Record<(typeof progressKinds)[MediaType], [string, string]> = {
-  game: ['Desenvolvimento', 'Estúdios ou pessoas, separados por vírgula'],
-  episodic: ['Produção', 'Estúdios ou produtoras, separados por vírgula'],
-  reading: ['Autoria', 'Autores, separados por vírgula'],
-  film: ['Direção', 'Diretores, separados por vírgula'],
+  game: [msg('Desenvolvimento'), msg('Estúdios ou pessoas, separados por vírgula')],
+  episodic: [msg('Produção'), msg('Estúdios ou produtoras, separados por vírgula')],
+  reading: [msg('Autoria'), msg('Autores, separados por vírgula')],
+  film: [msg('Direção'), msg('Diretores, separados por vírgula')],
 };
 const totals: Record<MediaType, [string, string, number][]> = {
   games: [],
   anime: [
-    ['totalEpisodes', 'Total de episódios', 100000],
-    ['totalSeasons', 'Temporadas', 1000],
+    ['totalEpisodes', msg('Total de episódios'), 100000],
+    ['totalSeasons', msg('Temporadas'), 1000],
   ],
   series: [
-    ['totalEpisodes', 'Total de episódios', 100000],
-    ['totalSeasons', 'Temporadas', 1000],
+    ['totalEpisodes', msg('Total de episódios'), 100000],
+    ['totalSeasons', msg('Temporadas'), 1000],
   ],
   manga: [
-    ['totalChapters', 'Total de capítulos', 100000],
-    ['totalVolumes', 'Total de volumes', 10000],
+    ['totalChapters', msg('Total de capítulos'), 100000],
+    ['totalVolumes', msg('Total de volumes'), 10000],
   ],
-  books: [['totalPages', 'Total de páginas', 100000]],
-  movies: [['runtimeMinutes', 'Duração (minutos)', 2000]],
+  books: [['totalPages', msg('Total de páginas'), 100000]],
+  movies: [['runtimeMinutes', msg('Duração (minutos)'), 2000]],
 };
 
 /** Optional totals and credits of a personal record, adapted to its category. */
 export function ManualMetadataFields({ mediaType }: { mediaType: MediaType }) {
+  const t = useT();
   const [creatorLabel, placeholder] = creatorLabels[progressKinds[mediaType]];
   return (
     <>
@@ -35,15 +38,22 @@ export function ManualMetadataFields({ mediaType }: { mediaType: MediaType }) {
         <div className="form-grid">
           {totals[mediaType].map(([name, label, max]) => (
             <label className="field" key={name}>
-              {label}
-              <Input name={name} type="number" min={1} max={max} step={1} placeholder="Opcional" />
+              {t(label)}
+              <Input
+                name={name}
+                type="number"
+                min={1}
+                max={max}
+                step={1}
+                placeholder={t('Opcional')}
+              />
             </label>
           ))}
         </div>
       )}
       <label className="field">
-        {creatorLabel}
-        <Input name="creators" placeholder={placeholder} />
+        {t(creatorLabel)}
+        <Input name="creators" placeholder={t(placeholder)} />
       </label>
     </>
   );

@@ -1,4 +1,5 @@
 'use client';
+import { issueMessage } from '@/i18n/config';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -149,7 +150,7 @@ export function ResetPasswordForm() {
           onSubmit={(event) => {
             event.preventDefault();
             const parsed = passwordSchema.safeParse(password);
-            if (!parsed.success) setError(parsed.error.issues[0]?.message ?? t('Senha inválida'));
+            if (!parsed.success) setError(issueMessage(parsed.error) ?? t('Senha inválida'));
             else if (password !== confirm) setError(t('As senhas não conferem'));
             else {
               setError('');

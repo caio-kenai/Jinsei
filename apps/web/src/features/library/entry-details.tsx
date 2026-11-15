@@ -1,4 +1,5 @@
 'use client';
+import { useT } from '@/i18n/provider';
 import { Fragment, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Controller, useForm } from 'react-hook-form';
@@ -28,6 +29,7 @@ import { ViewingHistory } from './viewing-history';
 import { EntryCollections } from '@/features/collections/entry-collections';
 
 export function EntryDetails({ id, onClose }: { id: string; onClose: () => void }) {
+  const t = useT();
   const result = useQuery({
     queryKey: ['entry', id],
     queryFn: () => api<LibraryEntry>(`/library/entries/${id}`),
@@ -40,9 +42,9 @@ export function EntryDetails({ id, onClose }: { id: string; onClose: () => void 
       }}
     >
       <DialogContent className="details-drawer">
-        <DialogTitle className="sr-only">Detalhes do título</DialogTitle>
+        <DialogTitle className="sr-only">{t('Detalhes do título')}</DialogTitle>
         <DialogDescription className="sr-only">
-          Edite seu progresso e seus registros privados
+          {t('Edite seu progresso e seus registros privados')}
         </DialogDescription>
         {result.isPending ? (
           <div className="empty-state">
@@ -64,6 +66,7 @@ export function EntryDetails({ id, onClose }: { id: string; onClose: () => void 
   );
 }
 function EntryForm({ entry, onClose }: { entry: LibraryEntry; onClose: () => void }) {
+  const t = useT();
   const [tags, setTags] = useState(entry.tags.join(', '));
   const [confirmDelete, setConfirmDelete] = useState(false);
   const update = useEntryMutation();
@@ -94,7 +97,7 @@ function EntryForm({ entry, onClose }: { entry: LibraryEntry; onClose: () => voi
     onSuccess: () => {
       void client.invalidateQueries({ queryKey: ['library'] });
       void client.invalidateQueries({ queryKey: ['summary'] });
-      toast.success('Título removido da biblioteca');
+      toast.success(t('Título removido da biblioteca'));
       onClose();
     },
     onError: (error) => toast.error(error.message),
@@ -102,7 +105,7 @@ function EntryForm({ entry, onClose }: { entry: LibraryEntry; onClose: () => voi
   return (
     <>
       <div className="details-breadcrumb">
-        Minha biblioteca <span>/</span> {entry.title}
+        {t('Minha biblioteca')} <span>/</span> {entry.title}
       </div>
       <div className="details-layout">
         <section className="details-primary">
@@ -115,13 +118,13 @@ function EntryForm({ entry, onClose }: { entry: LibraryEntry; onClose: () => voi
                   href={`/obras/${entry.mediaId}`}
                   target="_blank"
                 >
-                  Ver página da obra, notas e reviews
+                  {t('Ver página da obra, notas e reviews')}
                   <ExternalLink size={12} />
                 </Link>
               )}
               <p>
                 {[entry.releaseYear, creditsLine(entry)].filter(Boolean).join(' · ') ||
-                  'Sua experiência, do seu jeito'}
+                  t('Sua experiência, do seu jeito')}
               </p>
             </div>
           </div>
@@ -138,24 +141,24 @@ function EntryForm({ entry, onClose }: { entry: LibraryEntry; onClose: () => voi
                       .filter(Boolean),
                   },
                 },
-                { onSuccess: () => toast.success('Alterações salvas') },
+                { onSuccess: () => toast.success(t('Alterações salvas')) },
               ),
             )}
             className="dialog-form"
           >
             <div className="form-grid">
               <label className="field">
-                Status
-                <Select aria-label="Status" {...register('status')}>
+                {t('Status')}
+                <Select aria-label={t('Status')} {...register('status')}>
                   {statusKeys.map((status) => (
                     <option key={status} value={status}>
-                      {statusLabels[status]}
+                      {t(statusLabels[status])}
                     </option>
                   ))}
                 </Select>
               </label>
               <div className="field">
-                <span>Sua nota</span>
+                <span>{t('Sua nota')}</span>
                 <Controller
                   name="rating"
                   control={control}
@@ -168,7 +171,7 @@ function EntryForm({ entry, onClose }: { entry: LibraryEntry; onClose: () => voi
             <ProgressFields entry={entry} register={register} />
             <div className="form-grid">
               <label className="field">
-                Início
+                {t('Início')}
                 <Input
                   type="date"
                   min="1900-01-01"
@@ -176,7 +179,7 @@ function EntryForm({ entry, onClose }: { entry: LibraryEntry; onClose: () => voi
                 />
               </label>
               <label className="field">
-                Conclusão
+                {t('Conclusão')}
                 <Input
                   type="date"
                   min="1900-01-01"
@@ -187,38 +190,38 @@ function EntryForm({ entry, onClose }: { entry: LibraryEntry; onClose: () => voi
             <label className="checkbox-field">
               <input type="checkbox" {...register('favorite')} />
               <Heart size={14} />
-              Marcar como favorito
+              {t('Marcar como favorito')}
             </label>
             <label className="field">
-              Tags
+              {t('Tags')}
               <Input
                 value={tags}
-                aria-label="Tags"
+                aria-label={t('Tags')}
                 onChange={(event) => setTags(event.target.value)}
-                placeholder="Indie, Relaxante, Com amigos…"
+                placeholder={t('Indie, Relaxante, Com amigos…')}
               />
-              <small>Separe por vírgulas. Até 8 tags de 24 caracteres.</small>
+              <small>{t('Separe por vírgulas. Até 8 tags de 24 caracteres.')}</small>
             </label>
             <label className="field">
               <span style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                 <LockKeyhole size={13} />
-                Anotações privadas
+                {t('Anotações privadas')}
               </span>
               <Textarea
                 {...register('notes')}
                 rows={5}
                 maxLength={10000}
-                placeholder="O que você quer lembrar desta experiência?"
+                placeholder={t('O que você quer lembrar desta experiência?')}
               />
-              <small>Visíveis somente para você.</small>
+              <small>{t('Visíveis somente para você.')}</small>
             </label>
             <label className="field">
-              Resenha
+              {t('Resenha')}
               <Textarea
                 {...register('review')}
                 rows={4}
                 maxLength={5000}
-                placeholder="O que você diria a alguém sobre esta obra?"
+                placeholder={t('O que você diria a alguém sobre esta obra?')}
               />
             </label>
             <Controller
@@ -228,7 +231,7 @@ function EntryForm({ entry, onClose }: { entry: LibraryEntry; onClose: () => voi
                 <div
                   className="recommendation-picker"
                   role="radiogroup"
-                  aria-label="Sua recomendação"
+                  aria-label={t('Sua recomendação')}
                 >
                   {(Object.keys(recommendationLabels) as Recommendation[]).map((key) => (
                     <button
@@ -239,7 +242,7 @@ function EntryForm({ entry, onClose }: { entry: LibraryEntry; onClose: () => voi
                       className={`recommendation-choice is-${key}`}
                       onClick={() => field.onChange(field.value === key ? null : key)}
                     >
-                      {recommendationLabels[key]}
+                      {t(recommendationLabels[key])}
                     </button>
                   ))}
                 </div>
@@ -247,16 +250,16 @@ function EntryForm({ entry, onClose }: { entry: LibraryEntry; onClose: () => voi
             />
             <label className="checkbox-field">
               <input type="checkbox" {...register('reviewPublic')} />
-              Publicar a resenha no meu perfil e na página da obra
+              {t('Publicar a resenha no meu perfil e na página da obra')}
             </label>
             {Object.keys(errors).length > 0 && (
               <div role="alert" className="error-banner">
-                Revise a nota e os limites de progresso informados.
+                {t('Revise a nota e os limites de progresso informados.')}
               </div>
             )}
             <Button type="submit" disabled={update.isPending}>
               {update.isPending ? <LoaderCircle className="spin" size={15} /> : <Save size={15} />}
-              Salvar alterações
+              {t('Salvar alterações')}
             </Button>
           </form>
           <ViewingHistory entry={entry} onStatusChange={(status) => setValue('status', status)} />
@@ -270,7 +273,7 @@ function EntryForm({ entry, onClose }: { entry: LibraryEntry; onClose: () => voi
           />
           {metadataFacts(entry).length > 0 && (
             <section className="details-section">
-              <h3>FICHA</h3>
+              <h3>{t('FICHA')}</h3>
               <dl className="metadata-facts">
                 {metadataFacts(entry).map((fact) => (
                   <Fragment key={fact.label}>
@@ -284,12 +287,12 @@ function EntryForm({ entry, onClose }: { entry: LibraryEntry; onClose: () => voi
           <EntryCollections entryId={entry.id} />
           {entry.description && (
             <section className="details-section">
-              <h3>SOBRE A OBRA</h3>
+              <h3>{t('SOBRE A OBRA')}</h3>
               <p className="detail-description">{entry.description}</p>
             </section>
           )}
           <p className="attribution">
-            Origem:{' '}
+            {t('Origem:')}{' '}
             {entry.attribution.url ? (
               <a href={entry.attribution.url} target="_blank" rel="noreferrer">
                 {entry.attribution.label}
@@ -302,7 +305,7 @@ function EntryForm({ entry, onClose }: { entry: LibraryEntry; onClose: () => voi
           </p>
           {entry.coverAttribution && (
             <p className="attribution">
-              Capa:{' '}
+              {t('Capa:')}{' '}
               <a href={entry.coverAttribution.sourceUrl} target="_blank" rel="noreferrer">
                 {entry.coverAttribution.provider}
               </a>
@@ -320,25 +323,26 @@ function EntryForm({ entry, onClose }: { entry: LibraryEntry; onClose: () => voi
           <div className="details-section">
             <Button variant="ghost" size="sm" onClick={() => setConfirmDelete(true)}>
               <Trash2 size={13} />
-              Remover da biblioteca
+              {t('Remover da biblioteca')}
             </Button>
           </div>
           <Dialog open={confirmDelete} onOpenChange={setConfirmDelete}>
             <DialogContent>
-              <DialogTitle className="dialog-title">Remover da sua biblioteca?</DialogTitle>
+              <DialogTitle className="dialog-title">{t('Remover da sua biblioteca?')}</DialogTitle>
               <DialogDescription className="dialog-description">
-                Seu progresso, sua nota e suas anotações de {entry.title} serão removidos.
+                {t('Seu progresso, sua nota e suas anotações de')} {entry.title}{' '}
+                {t('serão removidos.')}
               </DialogDescription>
               <div className="dialog-footer">
                 <Button variant="outline" onClick={() => setConfirmDelete(false)}>
-                  Cancelar
+                  {t('Cancelar')}
                 </Button>
                 <Button
                   variant="destructive"
                   disabled={remove.isPending}
                   onClick={() => remove.mutate()}
                 >
-                  Remover título
+                  {t('Remover título')}
                 </Button>
               </div>
             </DialogContent>

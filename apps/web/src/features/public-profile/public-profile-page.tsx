@@ -1,9 +1,10 @@
 'use client';
+import { currentDateLocale, currentLocale } from '@/i18n/config';
+import { useT } from '@/i18n/provider';
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { AnimatePresence, motion } from 'motion/react';
 import { format, formatDistanceToNowStrict, parseISO } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 import {
   CalendarDays,
   CircleCheck,
@@ -43,6 +44,7 @@ const initials = (name: string) =>
     .join('');
 
 function StatusBar({ statuses }: { statuses: Category['statuses'] }) {
+  const t = useT();
   const total = Object.values(statuses).reduce((sum, value) => sum + value, 0);
   return (
     <div className="profile-status">
@@ -63,8 +65,8 @@ function StatusBar({ statuses }: { statuses: Category['statuses'] }) {
         {statusKeys.map((status) => (
           <li key={status}>
             <i style={{ background: statusColors[status] }} />
-            {statusLabels[status]}
-            <strong>{statuses[status].toLocaleString('pt-BR')}</strong>
+            {t(statusLabels[status])}
+            <strong>{statuses[status].toLocaleString(currentLocale())}</strong>
           </li>
         ))}
       </ul>
@@ -73,6 +75,7 @@ function StatusBar({ statuses }: { statuses: Category['statuses'] }) {
 }
 
 function CategoryCard({ category, compact = false }: { category: Category; compact?: boolean }) {
+  const t = useT();
   const Icon = categoryIcons[category.mediaType];
   return (
     <motion.article
@@ -86,24 +89,24 @@ function CategoryCard({ category, compact = false }: { category: Category; compa
         <span className="profile-category-icon">
           <Icon size={16} />
         </span>
-        <h3>{categoryLabels[category.mediaType]}</h3>
+        <h3>{t(categoryLabels[category.mediaType])}</h3>
         <span className="profile-category-score">
           <Star size={13} fill="currentColor" />
           {category.averageRating === null
             ? '—'
-            : category.averageRating.toLocaleString('pt-BR', { maximumFractionDigits: 2 })}
+            : category.averageRating.toLocaleString(currentLocale(), { maximumFractionDigits: 2 })}
         </span>
       </header>
       <StatusBar statuses={category.statuses} />
       <dl>
         <div>
-          <dt>Total</dt>
+          <dt>{t('Total')}</dt>
           <dd>
             <NumberTicker value={category.total} />
           </dd>
         </div>
         <div>
-          <dt>Favoritos</dt>
+          <dt>{t('Favoritos')}</dt>
           <dd>
             <NumberTicker value={category.favorites} />
           </dd>
@@ -122,6 +125,7 @@ function CategoryCard({ category, compact = false }: { category: Category; compa
 }
 
 export function PublicProfilePage({ profile }: { profile: PublicProfile }) {
+  const t = useT();
   const categories = useMemo(() => profile.statistics?.categories ?? [], [profile.statistics]);
   const present = useMemo(() => {
     const types = new Set<MediaType>([
@@ -162,7 +166,7 @@ export function PublicProfilePage({ profile }: { profile: PublicProfile }) {
           <h1>{profile.displayName}</h1>
           <p className="public-username">
             @{profile.username}
-            {profile.title && <span className="profile-title-chip">{profile.title}</span>}
+            {profile.title && <span className="profile-title-chip">{t(profile.title)}</span>}
           </p>
           <FriendButton username={profile.username} />
           {profile.bio && <p className="profile-bio">{profile.bio}</p>}
@@ -170,35 +174,39 @@ export function PublicProfilePage({ profile }: { profile: PublicProfile }) {
             <div>
               <dt>
                 <CalendarDays size={13} />
-                No Jinsei desde
+                {t('No Jinsei desde')}
               </dt>
-              <dd>{format(parseISO(profile.memberSince), "MMM 'de' yyyy", { locale: ptBR })}</dd>
+              <dd>
+                {format(parseISO(profile.memberSince), t("MMM 'de' yyyy"), {
+                  locale: currentDateLocale(),
+                })}
+              </dd>
             </div>
             {profile.statistics && (
               <>
                 <div>
                   <dt>
                     <Library size={13} />
-                    Títulos
+                    {t('Títulos')}
                   </dt>
-                  <dd>{profile.statistics.entries.toLocaleString('pt-BR')}</dd>
+                  <dd>{profile.statistics.entries.toLocaleString(currentLocale())}</dd>
                 </div>
                 <div>
                   <dt>
                     <CircleCheck size={13} />
-                    Concluídos
+                    {t('Concluídos')}
                   </dt>
-                  <dd>{profile.statistics.completed.toLocaleString('pt-BR')}</dd>
+                  <dd>{profile.statistics.completed.toLocaleString(currentLocale())}</dd>
                 </div>
                 <div>
                   <dt>
                     <Star size={13} />
-                    Nota média
+                    {t('Nota média')}
                   </dt>
                   <dd>
                     {profile.statistics.averageRating === null
                       ? '—'
-                      : profile.statistics.averageRating.toLocaleString('pt-BR', {
+                      : profile.statistics.averageRating.toLocaleString(currentLocale(), {
                           maximumFractionDigits: 2,
                         })}
                   </dd>
@@ -207,7 +215,7 @@ export function PublicProfilePage({ profile }: { profile: PublicProfile }) {
             )}
           </dl>
           {profile.links.length > 0 && (
-            <nav className="profile-links" aria-label="Links">
+            <nav className="profile-links" aria-label={t('Links')}>
               {profile.links.map((link) => (
                 <a
                   key={link.url}
@@ -223,7 +231,7 @@ export function PublicProfilePage({ profile }: { profile: PublicProfile }) {
           )}
           {profile.collections.length > 0 && (
             <section className="profile-aside-section">
-              <h2>Coleções</h2>
+              <h2>{t('Coleções')}</h2>
               {profile.collections.map((collection) => (
                 <Link
                   key={collection.slug}
@@ -234,7 +242,8 @@ export function PublicProfilePage({ profile }: { profile: PublicProfile }) {
                   <span>
                     <strong>{collection.name}</strong>
                     <small>
-                      {collection.itemCount} {collection.itemCount === 1 ? 'título' : 'títulos'}
+                      {collection.itemCount}{' '}
+                      {collection.itemCount === 1 ? t('título') : t('títulos')}
                     </small>
                   </span>
                 </Link>
@@ -243,7 +252,7 @@ export function PublicProfilePage({ profile }: { profile: PublicProfile }) {
           )}
         </aside>
         <section className="profile-main">
-          <nav className="profile-tabs" role="tablist" aria-label="Categorias do perfil">
+          <nav className="profile-tabs" role="tablist" aria-label={t('Categorias do perfil')}>
             {(['all', ...present] as const).map((type) => {
               const Icon = type === 'all' ? LayoutGrid : categoryIcons[type];
               return (
@@ -261,7 +270,7 @@ export function PublicProfilePage({ profile }: { profile: PublicProfile }) {
                 >
                   {tab === type && <motion.i layoutId="profile-tab" className="profile-tab-bg" />}
                   <Icon size={16} />
-                  {type === 'all' ? 'Visão geral' : categoryLabels[type]}
+                  {type === 'all' ? t('Visão geral') : t(categoryLabels[type])}
                 </button>
               );
             })}
@@ -277,7 +286,7 @@ export function PublicProfilePage({ profile }: { profile: PublicProfile }) {
             >
               {profile.statistics && (
                 <section className="profile-panel">
-                  <h2>Estatísticas</h2>
+                  <h2>{t('Estatísticas')}</h2>
                   {tab === 'all' ? (
                     categories.length ? (
                       <div className="profile-category-grid">
@@ -286,18 +295,18 @@ export function PublicProfilePage({ profile }: { profile: PublicProfile }) {
                         ))}
                       </div>
                     ) : (
-                      <p className="muted">Nenhum título registrado ainda.</p>
+                      <p className="muted">{t('Nenhum título registrado ainda.')}</p>
                     )
                   ) : selected ? (
                     <CategoryCard category={selected} />
                   ) : (
-                    <p className="muted">Sem títulos nesta categoria.</p>
+                    <p className="muted">{t('Sem títulos nesta categoria.')}</p>
                   )}
                 </section>
               )}
               {history.length > 0 && (
                 <section className="profile-panel">
-                  <h2>Últimas atualizações</h2>
+                  <h2>{t('Últimas atualizações')}</h2>
                   <ul className="profile-updates">
                     {history.map((item, index) => {
                       const content = (
@@ -319,13 +328,13 @@ export function PublicProfilePage({ profile }: { profile: PublicProfile }) {
                               <StatusBadge status={item.status} />
                               {item.progressLabel}
                               {item.rating !== null &&
-                                ` · ${item.rating.toLocaleString('pt-BR')} ★`}
+                                ` · ${item.rating.toLocaleString(currentLocale())} ★`}
                             </small>
                           </span>
                           <time dateTime={item.updatedAt}>
                             {formatDistanceToNowStrict(parseISO(item.updatedAt), {
                               addSuffix: true,
-                              locale: ptBR,
+                              locale: currentDateLocale(),
                             })}
                           </time>
                         </>
@@ -351,7 +360,7 @@ export function PublicProfilePage({ profile }: { profile: PublicProfile }) {
               {favorites.length > 0 && (
                 <section className="profile-panel">
                   <h2>
-                    <Heart size={16} /> Favoritos
+                    <Heart size={16} /> {t('Favoritos')}
                   </h2>
                   <div className="public-grid">
                     {favorites.map((work) => (
@@ -362,7 +371,7 @@ export function PublicProfilePage({ profile }: { profile: PublicProfile }) {
               )}
               {reviews.length > 0 && (
                 <section className="profile-panel">
-                  <h2>Reviews</h2>
+                  <h2>{t('Reviews')}</h2>
                   <div className="public-reviews">
                     {reviews.map((review) => (
                       <PublicWorkCard key={`${review.mediaType}:${review.title}`} work={review}>
@@ -374,15 +383,15 @@ export function PublicProfilePage({ profile }: { profile: PublicProfile }) {
               )}
               {tab === 'all' && profile.goals && profile.goals.length > 0 && (
                 <section className="profile-panel">
-                  <h2>Metas</h2>
+                  <h2>{t('Metas')}</h2>
                   <ul className="public-goals">
                     {profile.goals.map((goal) => (
                       <li key={goal.name}>
                         <strong>{goal.name}</strong>
                         <span>
-                          {goal.current.toLocaleString('pt-BR')} /{' '}
-                          {goal.target.toLocaleString('pt-BR')} {goalUnits[goal.metric][1]} ·{' '}
-                          {goalStateLabels[goal.state]}
+                          {goal.current.toLocaleString(currentLocale())} /{' '}
+                          {goal.target.toLocaleString(currentLocale())} {goalUnits[goal.metric][1]}{' '}
+                          · {t(goalStateLabels[goal.state])}
                         </span>
                         <span className="mission-track">
                           <span

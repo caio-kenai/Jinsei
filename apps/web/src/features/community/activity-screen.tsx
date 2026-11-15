@@ -1,4 +1,5 @@
 'use client';
+import { useT } from '@/i18n/provider';
 import type { CSSProperties } from 'react';
 import Link from 'next/link';
 import { motion } from 'motion/react';
@@ -15,34 +16,35 @@ import { useClubs, useCommunitySummary, useFeed, useFriends } from './use-commun
 const ease = [0.22, 1, 0.36, 1] as const;
 
 export function ActivityScreen() {
+  const t = useT();
   const feed = useFeed();
   const friends = useFriends().data;
   const summary = useCommunitySummary().data;
   const clubs = useClubs('', true).data?.clubs ?? [];
   const stats = [
     {
-      label: 'Amigos',
+      label: t('Amigos'),
       value: friends?.friends.length ?? 0,
       Icon: UsersRound,
       color: '#2f7bff',
       href: '/community/friends',
     },
     {
-      label: 'Pedidos',
+      label: t('Pedidos'),
       value: summary?.pendingRequests ?? 0,
       Icon: UserPlus,
       color: '#e5306f',
       href: '/community/friends',
     },
     {
-      label: 'Não lidas',
+      label: t('Não lidas'),
       value: summary?.unreadMessages ?? 0,
       Icon: MessageCircle,
       color: '#15936a',
       href: '/community/messages',
     },
     {
-      label: 'Clubes',
+      label: t('Clubes'),
       value: clubs.length,
       Icon: Tent,
       color: '#f7832b',
@@ -79,7 +81,7 @@ export function ActivityScreen() {
         <section className="community-card">
           <div className="community-card-title">
             <Activity size={16} />
-            <h2>O que seus amigos estão vendo, lendo e jogando</h2>
+            <h2>{t('O que seus amigos estão vendo, lendo e jogando')}</h2>
           </div>
           {feed.isPending ? (
             <div className="empty-state">
@@ -88,18 +90,19 @@ export function ActivityScreen() {
           ) : !feed.data?.items.length ? (
             <CommunityEmpty
               icon={<UsersRound size={24} />}
-              title="Nada por aqui ainda"
+              title={t('Nada por aqui ainda')}
               action={
                 <Button variant="outline" asChild>
                   <Link href="/community/friends">
                     <UserPlus size={14} />
-                    Encontrar amigos
+                    {t('Encontrar amigos')}
                   </Link>
                 </Button>
               }
             >
-              Quando seus amigos atualizarem a biblioteca e compartilharem o histórico, as novidades
-              aparecem aqui.
+              {t(
+                'Quando seus amigos atualizarem a biblioteca e compartilharem o histórico, as novidades aparecem aqui.',
+              )}
             </CommunityEmpty>
           ) : (
             <ol className="community-feed">
@@ -135,7 +138,7 @@ export function ActivityScreen() {
                               style={{ '--cat': categoryColors[item.mediaType] } as CSSProperties}
                             >
                               <Icon size={12} />
-                              {categoryLabels[item.mediaType]}
+                              {t(categoryLabels[item.mediaType])}
                             </span>
                             <StatusBadge status={item.status} />
                             {item.progressLabel && <span>{item.progressLabel}</span>}
@@ -164,9 +167,9 @@ export function ActivityScreen() {
           <section className="community-card">
             <div className="community-card-title">
               <UsersRound size={16} />
-              <h2>Amigos</h2>
+              <h2>{t('Amigos')}</h2>
               <Link href="/community/friends" className="community-more">
-                Ver todos
+                {t('Ver todos')}
               </Link>
             </div>
             {friends?.friends.length ? (
@@ -178,7 +181,9 @@ export function ActivityScreen() {
                     <Link
                       href={`/community/messages?com=${friend.id}`}
                       className="community-icon-link"
-                      aria-label={`Conversar com ${friend.displayName}`}
+                      aria-label={t('Conversar com {displayName}', {
+                        displayName: friend.displayName,
+                      })}
                     >
                       <MessageCircle size={15} />
                     </Link>
@@ -186,15 +191,15 @@ export function ActivityScreen() {
                 ))}
               </ul>
             ) : (
-              <p className="community-hint">Adicione amigos pelo nome de usuário.</p>
+              <p className="community-hint">{t('Adicione amigos pelo nome de usuário.')}</p>
             )}
           </section>
           <section className="community-card">
             <div className="community-card-title">
               <Tent size={16} />
-              <h2>Meus clubes</h2>
+              <h2>{t('Meus clubes')}</h2>
               <Link href="/community/clubs" className="community-more">
-                Explorar
+                {t('Explorar')}
               </Link>
             </div>
             {clubs.length ? (
@@ -213,13 +218,17 @@ export function ActivityScreen() {
                     </span>
                     <Link href={`/community/clubs/${club.slug}`} className="community-user-name">
                       <strong>{club.name}</strong>
-                      <small>{club.memberCount} membros</small>
+                      <small>
+                        {club.memberCount} {t('membros')}
+                      </small>
                     </Link>
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="community-hint">Entre em clubes para conversar sobre o que você ama.</p>
+              <p className="community-hint">
+                {t('Entre em clubes para conversar sobre o que você ama.')}
+              </p>
             )}
           </section>
         </aside>

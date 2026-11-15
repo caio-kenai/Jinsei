@@ -1,4 +1,5 @@
 'use client';
+import { useT } from '@/i18n/provider';
 import { useState, type CSSProperties } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -30,6 +31,7 @@ import { useCurrentUser } from '@/features/auth/use-current-user';
 const ease = [0.22, 1, 0.36, 1] as const;
 
 export function ClubScreen({ slug }: { slug: string }) {
+  const t = useT();
   const router = useRouter();
   const club = useClub(slug);
   const me = useCurrentUser().data?.id;
@@ -46,14 +48,14 @@ export function ClubScreen({ slug }: { slug: string }) {
     return (
       <CommunityEmpty
         icon={<Tent size={24} />}
-        title="Clube não encontrado"
+        title={t('Clube não encontrado')}
         action={
           <Button variant="outline" asChild>
-            <Link href="/community/clubs">Ver clubes</Link>
+            <Link href="/community/clubs">{t('Ver clubes')}</Link>
           </Button>
         }
       >
-        Ele pode ter sido excluído por quem o criou.
+        {t('Ele pode ter sido excluído por quem o criou.')}
       </CommunityEmpty>
     );
   const data = club.data;
@@ -71,7 +73,11 @@ export function ClubScreen({ slug }: { slug: string }) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease }}
       >
-        <Link href="/community/clubs" className="community-back" aria-label="Voltar aos clubes">
+        <Link
+          href="/community/clubs"
+          className="community-back"
+          aria-label={t('Voltar aos clubes')}
+        >
           <ArrowLeft size={16} />
         </Link>
         <span className="community-club-hero-icon">
@@ -79,27 +85,29 @@ export function ClubScreen({ slug }: { slug: string }) {
         </span>
         <div className="community-club-hero-text">
           <span className="community-category">
-            {data.mediaType ? categoryLabels[data.mediaType] : 'Todas as categorias'}
+            {data.mediaType ? t(categoryLabels[data.mediaType]) : t('Todas as categorias')}
           </span>
           <h2>{data.name}</h2>
           {data.description && <p>{data.description}</p>}
           <div className="community-club-numbers">
             <span>
               <UsersRound size={14} />
-              <NumberTicker value={data.memberCount} /> membros
+              <NumberTicker value={data.memberCount} /> {t('membros')}
             </span>
             <span>
               <MessageSquareText size={14} />
-              <NumberTicker value={data.postCount} /> publicações
+              <NumberTicker value={data.postCount} /> {t('publicações')}
             </span>
-            <span>Criado {relativeTime(data.createdAt)}</span>
+            <span>
+              {t('Criado')} {relativeTime(data.createdAt)}
+            </span>
           </div>
         </div>
         <div className="community-club-actions">
           {data.role !== 'owner' && (
             <ReportButton
               target={{ targetType: 'club', targetId: data.id }}
-              label="Denunciar clube"
+              label={t('Denunciar clube')}
               className="club-report"
             />
           )}
@@ -107,29 +115,33 @@ export function ClubScreen({ slug }: { slug: string }) {
             <>
               <Button size="sm" variant="outline" onClick={() => setEditing(true)}>
                 <Pencil size={14} />
-                Editar
+                {t('Editar')}
               </Button>
               <Button
                 size="sm"
                 variant="ghost"
                 onClick={() => {
-                  if (window.confirm(`Excluir o clube ${data.name} e todas as publicações?`))
+                  if (
+                    window.confirm(
+                      t('Excluir o clube {name} e todas as publicações?', { name: data.name }),
+                    )
+                  )
                     removeClub.mutate(slug, { onSuccess: () => router.push('/community/clubs') });
                 }}
               >
                 <Trash2 size={14} />
-                Excluir
+                {t('Excluir')}
               </Button>
             </>
           ) : data.role === 'member' ? (
             <Button size="sm" variant="outline" onClick={() => leave.mutate(slug)}>
               <LogOut size={14} />
-              Sair do clube
+              {t('Sair do clube')}
             </Button>
           ) : (
             <Button size="sm" onClick={() => join.mutate(slug)} disabled={join.isPending}>
               <LogIn size={14} />
-              Entrar no clube
+              {t('Entrar no clube')}
             </Button>
           )}
         </div>
@@ -148,8 +160,8 @@ export function ClubScreen({ slug }: { slug: string }) {
                 value={draft}
                 rows={2}
                 maxLength={2000}
-                placeholder="Compartilhe algo com o clube"
-                aria-label="Nova publicação"
+                placeholder={t('Compartilhe algo com o clube')}
+                aria-label={t('Nova publicação')}
                 onChange={(event) => setDraft(event.target.value)}
                 onKeyDown={(event) => {
                   if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
@@ -160,15 +172,18 @@ export function ClubScreen({ slug }: { slug: string }) {
               />
               <Button type="submit" size="sm" disabled={!draft.trim() || post.isPending}>
                 {post.isPending ? <LoaderCircle size={14} className="spin" /> : <Send size={14} />}
-                Publicar
+                {t('Publicar')}
               </Button>
             </form>
           ) : (
-            <p className="community-hint">Entre no clube para publicar.</p>
+            <p className="community-hint">{t('Entre no clube para publicar.')}</p>
           )}
           {data.posts.length === 0 ? (
-            <CommunityEmpty icon={<MessageSquareText size={24} />} title="Nenhuma publicação ainda">
-              Que tal abrir a conversa?
+            <CommunityEmpty
+              icon={<MessageSquareText size={24} />}
+              title={t('Nenhuma publicação ainda')}
+            >
+              {t('Que tal abrir a conversa?')}
             </CommunityEmpty>
           ) : (
             <ol className="community-posts">
@@ -190,13 +205,13 @@ export function ClubScreen({ slug }: { slug: string }) {
                         {item.author.id !== me && (
                           <ReportButton
                             target={{ targetType: 'club_post', targetId: item.id }}
-                            label="Denunciar publicação"
+                            label={t('Denunciar publicação')}
                           />
                         )}
                         {item.canDelete && (
                           <button
                             className="community-icon-link"
-                            aria-label="Excluir publicação"
+                            aria-label={t('Excluir publicação')}
                             onClick={() => removePost.mutate({ slug, id: item.id })}
                           >
                             <Trash2 size={14} />
@@ -215,7 +230,7 @@ export function ClubScreen({ slug }: { slug: string }) {
           <section className="community-card">
             <div className="community-card-title">
               <UsersRound size={16} />
-              <h2>Membros</h2>
+              <h2>{t('Membros')}</h2>
               <span className="group-number">{data.memberCount}</span>
             </div>
             <ul className="community-mini-list">
@@ -224,7 +239,7 @@ export function ClubScreen({ slug }: { slug: string }) {
                   <UserAvatar user={member} size={30} />
                   <UserName user={member} />
                   {member.role === 'owner' && (
-                    <Crown size={14} className="community-crown" aria-label="Criador" />
+                    <Crown size={14} className="community-crown" aria-label={t('Criador')} />
                   )}
                 </li>
               ))}

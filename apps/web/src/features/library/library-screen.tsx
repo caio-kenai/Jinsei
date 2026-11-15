@@ -1,4 +1,5 @@
 'use client';
+import { useT } from '@/i18n/provider';
 import { useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -93,6 +94,7 @@ function uniqueName(views: SavedView[], base: string) {
 }
 
 export function LibraryScreen(props: Props) {
+  const t = useT();
   const scope: ViewScope = props.favorites ? 'favorites' : (props.mediaType ?? 'library');
   const result = useQuery({
     queryKey: ['saved-views', scope],
@@ -108,7 +110,7 @@ export function LibraryScreen(props: Props) {
     return (
       <div className="empty-state">
         <p>{result.error.message}</p>
-        <Button onClick={() => void result.refetch()}>Tentar novamente</Button>
+        <Button onClick={() => void result.refetch()}>{t('Tentar novamente')}</Button>
       </div>
     );
   return (
@@ -128,6 +130,7 @@ function LibraryWorkspace({
   scope,
   initialViews,
 }: Props & { scope: ViewScope; initialViews: SavedView[] }) {
+  const t = useT();
   const router = useRouter();
   const pathname = usePathname();
   const client = useQueryClient();
@@ -176,7 +179,7 @@ function LibraryWorkspace({
       replaceViews(views.map((view) => (view.id === active.id ? saved : view)));
       setActiveId(saved.id);
       rememberView(scope, saved.id);
-      toast.success('Visualização salva');
+      toast.success(t('Visualização salva'));
     },
     onError: (error) => toast.error(error.message),
   });
@@ -217,7 +220,7 @@ function LibraryWorkspace({
       setViews(next);
       void client.invalidateQueries({ queryKey: ['saved-views', scope] });
       if (view.id === activeId) activate(next[0]);
-      toast.success('Visualização excluída');
+      toast.success(t('Visualização excluída'));
     },
     onError: (error) => toast.error(error.message),
   });
@@ -240,10 +243,10 @@ function LibraryWorkspace({
     placeholderData: keepPreviousData,
   });
   const label = favorites
-    ? 'Favoritos'
+    ? t('Favoritos')
     : mediaType
-      ? categoryLabels[mediaType]
-      : 'Minha biblioteca';
+      ? t(categoryLabels[mediaType])
+      : t('Minha biblioteca');
   const Icon = favorites ? Heart : mediaType ? categoryIcons[mediaType] : Library;
   function filters(next: SavedViewConfig['filters']) {
     setConfig({ ...config, filters: next });
@@ -277,7 +280,7 @@ function LibraryWorkspace({
           <div>
             <h1>{label}</h1>
             <div className="breadcrumb">
-              Meu espaço
+              {t('Meu espaço')}
               <ChevronRight size={10} />
               {label}
             </div>
@@ -292,11 +295,11 @@ function LibraryWorkspace({
             className={dirty ? 'has-changes' : undefined}
           >
             <Save size={13} />
-            {dirty ? 'Salvar alterações' : 'Salvar visualização'}
+            {dirty ? t('Salvar alterações') : t('Salvar visualização')}
           </Button>
           <Button size="sm" onClick={() => setAddOpen(true)}>
             <Plus size={14} />
-            Adicionar título
+            {t('Adicionar título')}
           </Button>
         </div>
       </header>
@@ -309,13 +312,13 @@ function LibraryWorkspace({
         onLayout={layout}
         onCreate={(next) =>
           create.mutate({
-            name: uniqueName(views, layoutLabels[next]),
+            name: uniqueName(views, t(layoutLabels[next])),
             config: { ...config, layout: next },
           })
         }
         onDuplicate={(view) =>
           create.mutate({
-            name: uniqueName(views, `${view.name} (cópia)`.slice(0, 40)),
+            name: uniqueName(views, t('{name} (cópia)', { name: view.name }).slice(0, 40)),
             config: view.id === active.id ? config : view.config,
           })
         }
@@ -331,7 +334,7 @@ function LibraryWorkspace({
             }
           >
             <Layers size={12} />
-            {config.groupBy === 'status' ? 'Grupo: Status' : 'Sem agrupamento'}
+            {config.groupBy === 'status' ? t('Grupo: Status') : t('Sem agrupamento')}
           </button>
           <button
             className={`toolbar-button ${filterOpen || config.filters.status || config.filters.favorite ? 'selected' : ''}`}
@@ -339,23 +342,23 @@ function LibraryWorkspace({
             aria-expanded={filterOpen}
           >
             <SlidersHorizontal size={12} />
-            Filtros
+            {t('Filtros')}
           </button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className="toolbar-button">
                 <ArrowDownUp size={12} />
-                Ordenar
+                {t('Ordenar')}
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-              <DropdownMenuLabel>Ordenar por</DropdownMenuLabel>
+              <DropdownMenuLabel>{t('Ordenar por')}</DropdownMenuLabel>
               {(
                 [
-                  { value: 'updatedAt', label: 'Última atualização' },
-                  { value: 'title', label: 'Nome do título' },
-                  { value: 'rating', label: 'Sua nota' },
-                  { value: 'createdAt', label: 'Data de adição' },
+                  { value: 'updatedAt', label: t('Última atualização') },
+                  { value: 'title', label: t('Nome do título') },
+                  { value: 'rating', label: t('Sua nota') },
+                  { value: 'createdAt', label: t('Data de adição') },
                 ] as const
               ).map((option) => (
                 <DropdownMenuItem
@@ -371,7 +374,7 @@ function LibraryWorkspace({
                   setConfig({ ...config, order: config.order === 'asc' ? 'desc' : 'asc' })
                 }
               >
-                {config.order === 'asc' ? 'Crescente ↑' : 'Decrescente ↓'}
+                {config.order === 'asc' ? t('Crescente ↑') : t('Decrescente ↓')}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -379,11 +382,11 @@ function LibraryWorkspace({
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button className="toolbar-button selected">
-                  {selectedIds.length} selecionados
+                  {selectedIds.length} {t('selecionados')}
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
-                <DropdownMenuLabel>Alterar status em lote</DropdownMenuLabel>
+                <DropdownMenuLabel>{t('Alterar status em lote')}</DropdownMenuLabel>
                 {statusKeys.map((status) => (
                   <DropdownMenuItem
                     key={status}
@@ -393,7 +396,7 @@ function LibraryWorkspace({
                       setSelected({});
                     }}
                   >
-                    {statusLabels[status]}
+                    {t(statusLabels[status])}
                   </DropdownMenuItem>
                 ))}
               </DropdownMenuContent>
@@ -405,21 +408,21 @@ function LibraryWorkspace({
           <div className="library-search">
             <Search size={12} />
             <input
-              aria-label="Filtrar títulos da biblioteca"
+              aria-label={t('Filtrar títulos da biblioteca')}
               value={config.filters.q}
               onChange={(event) => filters({ ...config.filters, q: event.target.value })}
-              placeholder="Buscar nesta biblioteca…"
+              placeholder={t('Buscar nesta biblioteca…')}
             />
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className="toolbar-button">
                 <Columns3 size={12} />
-                Colunas
+                {t('Colunas')}
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-              <DropdownMenuLabel>Colunas visíveis</DropdownMenuLabel>
+              <DropdownMenuLabel>{t('Colunas visíveis')}</DropdownMenuLabel>
               {Object.entries(columnLabels).map(([key, value]) => (
                 <DropdownMenuCheckboxItem
                   key={key}
@@ -435,10 +438,10 @@ function LibraryWorkspace({
                     })
                   }
                 >
-                  {value}
+                  {t(value)}
                 </DropdownMenuCheckboxItem>
               ))}
-              <DropdownMenuLabel>Densidade</DropdownMenuLabel>
+              <DropdownMenuLabel>{t('Densidade')}</DropdownMenuLabel>
               <DropdownMenuItem
                 onSelect={() =>
                   setConfig({
@@ -447,7 +450,7 @@ function LibraryWorkspace({
                   })
                 }
               >
-                {config.density === 'compact' ? 'Confortável' : 'Compacta'}
+                {config.density === 'compact' ? t('Confortável') : t('Compacta')}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -456,7 +459,7 @@ function LibraryWorkspace({
       {filterOpen && (
         <div className="filter-panel">
           <label className="field">
-            Status
+            {t('Status')}
             <Select
               value={config.filters.status ?? ''}
               onChange={(event) =>
@@ -466,10 +469,10 @@ function LibraryWorkspace({
                 })
               }
             >
-              <option value="">Todos os status</option>
+              <option value="">{t('Todos os status')}</option>
               {statusKeys.map((status) => (
                 <option key={status} value={status}>
-                  {statusLabels[status]}
+                  {t(statusLabels[status])}
                 </option>
               ))}
             </Select>
@@ -483,20 +486,20 @@ function LibraryWorkspace({
                   filters({ ...config.filters, favorite: event.target.checked || undefined })
                 }
               />
-              Somente favoritos
+              {t('Somente favoritos')}
             </label>
           )}
           <Button variant="ghost" size="sm" onClick={() => filters({ q: '' })}>
-            Limpar filtros
+            {t('Limpar filtros')}
           </Button>
         </div>
       )}
       <div className="library-scroll" data-density={config.density}>
         {result.error ? (
           <div className="empty-state">
-            <h2>Não foi possível carregar sua biblioteca</h2>
+            <h2>{t('Não foi possível carregar sua biblioteca')}</h2>
             <p>{result.error.message}</p>
-            <Button onClick={() => void result.refetch()}>Tentar novamente</Button>
+            <Button onClick={() => void result.refetch()}>{t('Tentar novamente')}</Button>
           </div>
         ) : result.isPending ? (
           <div className="empty-state">
@@ -509,21 +512,21 @@ function LibraryWorkspace({
             </span>
             <h2>
               {config.filters.q || config.filters.status
-                ? 'Nenhum título por aqui'
+                ? t('Nenhum título por aqui')
                 : favorites
-                  ? 'Suas experiências favoritas'
-                  : 'Toda jornada tem um começo'}
+                  ? t('Suas experiências favoritas')
+                  : t('Toda jornada tem um começo')}
             </h2>
             <p>
               {config.filters.q || config.filters.status
-                ? 'Tente outros filtros para encontrar o que procura.'
+                ? t('Tente outros filtros para encontrar o que procura.')
                 : favorites
-                  ? 'Marque o coração nas suas obras favoritas para reuni-las aqui.'
-                  : 'Adicione o que você está vivendo agora ou guarde uma história para depois.'}
+                  ? t('Marque o coração nas suas obras favoritas para reuni-las aqui.')
+                  : t('Adicione o que você está vivendo agora ou guarde uma história para depois.')}
             </p>
             <Button variant="outline" onClick={() => setAddOpen(true)}>
               <Plus size={14} />
-              Adicionar meu primeiro título
+              {t('Adicionar meu primeiro título')}
             </Button>
           </div>
         ) : config.layout === 'calendar' ? (
@@ -579,17 +582,19 @@ function LibraryWorkspace({
       </div>
       <footer className="pagination">
         <span>
-          {result.data?.total ?? 0} títulos · {active.name}
-          {save.isPending ? ' · Salvando visualização…' : dirty ? ' · Alterações não salvas' : ''}
+          {result.data?.total ?? 0} {t('títulos ·')} {active.name}
+          {save.isPending
+            ? t(' · Salvando visualização…')
+            : dirty
+              ? t(' · Alterações não salvas')
+              : ''}
         </span>
         <div className="pagination-actions">
-          <span>
-            Página {page} de {result.data?.pages ?? 1}
-          </span>
+          <span>{t('Página {page} de {pages}', { page, pages: result.data?.pages ?? 1 })}</span>
           <Button
             variant="ghost"
             size="icon"
-            aria-label="Página anterior"
+            aria-label={t('Página anterior')}
             disabled={page === 1 || result.isFetching}
             onClick={() => {
               setPage(page - 1);
@@ -601,7 +606,7 @@ function LibraryWorkspace({
           <Button
             variant="ghost"
             size="icon"
-            aria-label="Próxima página"
+            aria-label={t('Próxima página')}
             disabled={page >= (result.data?.pages ?? 1) || result.isFetching}
             onClick={() => {
               setPage(page + 1);

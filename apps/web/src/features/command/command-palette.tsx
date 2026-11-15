@@ -1,4 +1,5 @@
 'use client';
+import { useT } from '@/i18n/provider';
 import { useState } from 'react';
 import { motion } from 'motion/react';
 import { useRouter } from 'next/navigation';
@@ -54,6 +55,7 @@ export function CommandPalette({
   onOpenChange: (open: boolean) => void;
   categories: MediaType[];
 }) {
+  const t = useT();
   const router = useRouter();
   const [query, setQuery] = useState('');
   const [active, setActive] = useState(0);
@@ -79,11 +81,11 @@ export function CommandPalette({
   const term = normalize(query.trim());
   const matches = (text: string) => !term || normalize(text).includes(term);
   const navigation: Command[] = [
-    { id: 'home', group: 'Ir para', label: 'Início', Icon: Home, run: go('/home') },
+    { id: 'home', group: t('Ir para'), label: t('Início'), Icon: Home, run: go('/home') },
     {
       id: 'library',
-      group: 'Ir para',
-      label: 'Minha biblioteca',
+      group: t('Ir para'),
+      label: t('Minha biblioteca'),
       Icon: Library,
       run: go('/library'),
     },
@@ -91,33 +93,51 @@ export function CommandPalette({
       .filter((type) => categories.includes(type))
       .map((type) => ({
         id: `category:${type}`,
-        group: 'Ir para',
-        label: categoryLabels[type],
+        group: t('Ir para'),
+        label: t(categoryLabels[type]),
         Icon: categoryIcons[type],
         run: go(`/library/${type}`),
       })),
-    { id: 'favorites', group: 'Ir para', label: 'Favoritos', Icon: Heart, run: go('/favorites') },
+    {
+      id: 'favorites',
+      group: t('Ir para'),
+      label: t('Favoritos'),
+      Icon: Heart,
+      run: go('/favorites'),
+    },
     {
       id: 'collections',
-      group: 'Ir para',
-      label: 'Coleções',
+      group: t('Ir para'),
+      label: t('Coleções'),
       Icon: FolderHeart,
       run: go('/collections'),
     },
-    { id: 'goals', group: 'Ir para', label: 'Metas', Icon: Target, run: go('/goals') },
-    { id: 'journey', group: 'Ir para', label: 'Jornada', Icon: Sparkles, run: go('/journey') },
+    { id: 'goals', group: t('Ir para'), label: t('Metas'), Icon: Target, run: go('/goals') },
+    {
+      id: 'journey',
+      group: t('Ir para'),
+      label: t('Jornada'),
+      Icon: Sparkles,
+      run: go('/journey'),
+    },
     {
       id: 'statistics',
-      group: 'Ir para',
-      label: 'Estatísticas',
+      group: t('Ir para'),
+      label: t('Estatísticas'),
       Icon: ChartColumn,
       run: go('/statistics'),
     },
-    { id: 'discover', group: 'Ir para', label: 'Descobrir', Icon: Compass, run: go('/discover') },
+    {
+      id: 'discover',
+      group: t('Ir para'),
+      label: t('Descobrir'),
+      Icon: Compass,
+      run: go('/discover'),
+    },
     {
       id: 'settings',
-      group: 'Ir para',
-      label: 'Configurações',
+      group: t('Ir para'),
+      label: t('Configurações'),
       Icon: Settings,
       run: go('/settings'),
     },
@@ -125,8 +145,8 @@ export function CommandPalette({
   const actions: Command[] = [
     {
       id: 'add',
-      group: 'Ações',
-      label: 'Adicionar título',
+      group: t('Ações'),
+      label: t('Adicionar título'),
       Icon: Plus,
       run: () => {
         close();
@@ -135,8 +155,10 @@ export function CommandPalette({
     },
     {
       id: 'search-library',
-      group: 'Ações',
-      label: term ? `Buscar “${query.trim()}” na biblioteca` : 'Buscar na biblioteca',
+      group: t('Ações'),
+      label: term
+        ? t('Buscar “{trim}” na biblioteca', { trim: query.trim() })
+        : t('Buscar na biblioteca'),
       Icon: Search,
       run: go(`/library${term ? `?q=${encodeURIComponent(query.trim())}` : ''}`),
     },
@@ -145,9 +167,9 @@ export function CommandPalette({
     debounced.length > 1
       ? (entries.data?.items ?? []).map((entry) => ({
           id: `entry:${entry.id}`,
-          group: 'Títulos',
+          group: t('Títulos'),
           label: entry.title,
-          hint: categoryLabels[entry.mediaType],
+          hint: t(categoryLabels[entry.mediaType]),
           cover: { title: entry.title, url: entry.coverUrl },
           run: go(`/library/${entry.mediaType}?entry=${entry.id}`),
         }))
@@ -158,7 +180,7 @@ export function CommandPalette({
         .slice(0, 4)
         .map((collection) => ({
           id: `collection:${collection.id}`,
-          group: 'Coleções',
+          group: t('Coleções'),
           label: collection.name,
           Icon: FolderHeart,
           run: go(`/collections/${collection.id}`),
@@ -170,7 +192,7 @@ export function CommandPalette({
         .slice(0, 4)
         .map((goal) => ({
           id: `goal:${goal.id}`,
-          group: 'Metas',
+          group: t('Metas'),
           label: goal.name,
           hint: `${goal.current}/${goal.target}`,
           Icon: Target,
@@ -184,9 +206,9 @@ export function CommandPalette({
     <>
       <Dialog open={open} onOpenChange={(next) => (next ? onOpenChange(true) : close())}>
         <DialogContent className="command-palette">
-          <DialogTitle className="sr-only">Paleta de comandos</DialogTitle>
+          <DialogTitle className="sr-only">{t('Paleta de comandos')}</DialogTitle>
           <DialogDescription className="sr-only">
-            Busque títulos, coleções e metas ou navegue pelo Jinsei.
+            {t('Busque títulos, coleções e metas ou navegue pelo Jinsei.')}
           </DialogDescription>
           <div className="command-input">
             <Search size={15} />
@@ -198,7 +220,7 @@ export function CommandPalette({
               aria-activedescendant={
                 commands[current] ? `command-${commands[current].id}` : undefined
               }
-              placeholder="Buscar títulos, coleções, metas ou páginas…"
+              placeholder={t('Buscar títulos, coleções, metas ou páginas…')}
               value={query}
               onChange={(event) => {
                 setQuery(event.target.value);
@@ -217,7 +239,7 @@ export function CommandPalette({
                 }
               }}
             />
-            <kbd>Esc</kbd>
+            <kbd>{t('Esc')}</kbd>
           </div>
           <ul id="command-list" role="listbox" className="command-list">
             {commands.map((command, index) => {
@@ -254,7 +276,7 @@ export function CommandPalette({
                 </li>
               );
             })}
-            {commands.length === 0 && <li className="command-empty">Nada encontrado.</li>}
+            {commands.length === 0 && <li className="command-empty">{t('Nada encontrado.')}</li>}
           </ul>
         </DialogContent>
       </Dialog>

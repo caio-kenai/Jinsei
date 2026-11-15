@@ -47,7 +47,7 @@ function RecoveryCodes({ codes, onDone }: { codes: string[]; onDone: () => void 
         <Button type="button" variant="outline" size="sm" asChild>
           <a
             href={`data:text/plain;charset=utf-8,${encodeURIComponent(`Jinsei — ${t('códigos de recuperação')}\n\n${text}\n`)}`}
-            download="jinsei-codigos-de-recuperacao.txt"
+            download={t('jinsei-codigos-de-recuperacao.txt')}
           >
             <Download size={14} />
             {t('Baixar')}
@@ -134,7 +134,7 @@ export function MfaSettings() {
         <span className="mfa-title">
           {enabled ? <ShieldCheck size={16} /> : <ShieldOff size={16} />}
           <strong>{t('Verificação em duas etapas')}</strong>
-          <em className={enabled ? 'is-on' : ''}>{enabled ? 'Ativa' : 'Desativada'}</em>
+          <em className={enabled ? 'is-on' : ''}>{enabled ? t('Ativa') : t('Desativada')}</em>
         </span>
         {status.isPending ? (
           <LoaderCircle size={16} className="spin" />
@@ -286,7 +286,7 @@ export function MfaSettings() {
                     variant={step === 'disable' ? 'destructive' : 'default'}
                     disabled={code.length < 6 || disable.isPending || regenerate.isPending}
                   >
-                    {step === 'disable' ? 'Desativar' : t('Gerar códigos')}
+                    {step === 'disable' ? t('Desativar') : t('Gerar códigos')}
                   </Button>
                 </div>
               </form>

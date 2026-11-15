@@ -1,32 +1,47 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { categoryLabels, statusLabels, visualThemeLabels } from '../../packages/contracts/src';
-import { matchLocale, translator } from '../../apps/web/src/i18n/config';
-import { en } from '../../apps/web/src/i18n/messages/en';
-import { es } from '../../apps/web/src/i18n/messages/es';
+import * as contracts from '../../packages/contracts/src';
+import { matchLocale, translator } from '../../packages/contracts/src';
+import { en } from '../../packages/contracts/src/messages/en';
+import { es } from '../../packages/contracts/src/messages/es';
 
-const source = join(__dirname, '../../apps/web/src');
-const call = /\b(?:t|msg)\(\s*'((?:[^'\\]|\\.)*)'/g;
+const root = join(__dirname, '../..');
+// Interface text (t/msg/translate), API errors shown in the interface and e-mails.
+const sources = ['apps/web/src', 'apps/api/src', 'packages/contracts/src'].map((dir) =>
+  join(root, dir),
+);
+const apiMessage = /Exception\(\s*'((?:[^'\\]|\\.)*)'/g;
+const progressionText = /\b(?:label|description|requirement): '((?:[^'\\]|\\.)*)'/g;
+const call = /\b(?:t|msg|translate)\(\s*(?:'((?:[^'\\]|\\.)*)'|"((?:[^"\\]|\\.)*)")/g;
 
 function files(dir: string): string[] {
   return readdirSync(dir).flatMap((name) => {
     const path = join(dir, name);
-    if (statSync(path).isDirectory()) return name === 'messages' ? [] : files(path);
+    if (statSync(path).isDirectory())
+      return ['messages', 'generated'].includes(name) ? [] : files(path);
     return /\.(ts|tsx)$/.test(name) ? [path] : [];
   });
 }
 
 function sourceKeys() {
   const keys = new Set<string>();
-  for (const file of files(source)) {
-    for (const match of readFileSync(file, 'utf8').matchAll(call)) {
-      keys.add(match[1]!.replace(/\\'/g, "'").replace(/\\\\/g, '\\'));
+  const add = (text: string) => keys.add(text.replace(/\\(['"])/g, '$1').replace(/\\\\/g, '\\'));
+  for (const file of sources.flatMap(files)) {
+    const code = readFileSync(file, 'utf8');
+    for (const match of code.matchAll(call)) add(match[1] ?? match[2]!);
+    if (file.includes(join('apps', 'api'))) {
+      for (const match of code.matchAll(apiMessage)) add(match[1]!);
+      if (file.includes('progression'))
+        for (const match of code.matchAll(progressionText)) add(match[1]!);
     }
   }
-  for (const labels of [categoryLabels, statusLabels, visualThemeLabels]) {
-    for (const label of Object.values(labels)) keys.add(label);
+  // Label maps from the contracts are rendered with t(map[key]).
+  for (const [name, value] of Object.entries(contracts)) {
+    if (!/Labels$/.test(name) || name === 'localeLabels') continue;
+    for (const label of Object.values(value as Record<string, string>)) keys.add(label);
   }
+  for (const units of Object.values(contracts.goalUnits)) for (const unit of units) keys.add(unit);
   return [...keys];
 }
 

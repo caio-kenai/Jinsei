@@ -1,4 +1,5 @@
 'use client';
+import { useT } from '@/i18n/provider';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Search, LoaderCircle, Plus, ArrowRight } from 'lucide-react';
@@ -17,6 +18,7 @@ export function CatalogSearch({
   onSelect: (item: CatalogResult) => void;
   onManual: (title: string) => void;
 }) {
+  const t = useT();
   const [query, setQuery] = useState('');
   const debounced = useDebouncedValue(query.trim(), 450);
   const results = useQuery({
@@ -33,8 +35,8 @@ export function CatalogSearch({
       <div className="catalog-search">
         <Search size={17} />
         <Input
-          aria-label="Pesquisar no catálogo"
-          placeholder="Pesquise um título…"
+          aria-label={t('Pesquisar no catálogo')}
+          placeholder={t('Pesquise um título…')}
           autoFocus
           value={query}
           onChange={(event) => setQuery(event.target.value)}
@@ -43,12 +45,12 @@ export function CatalogSearch({
       <div className="catalog-results" aria-live="polite">
         {debounced.length < 2 ? (
           <p className="muted" style={{ padding: '25px 4px', fontSize: 12 }}>
-            Digite pelo menos duas letras para encontrar sua próxima experiência.
+            {t('Digite pelo menos duas letras para encontrar sua próxima experiência.')}
           </p>
         ) : results.isFetching ? (
           <div className="empty-state" style={{ padding: 30 }}>
             <LoaderCircle size={20} className="spin" />
-            Consultando o catálogo…
+            {t('Consultando o catálogo…')}
           </div>
         ) : results.error ? (
           <div className="error-banner">{results.error.message}</div>
@@ -88,7 +90,7 @@ export function CatalogSearch({
             ))}
             {results.data?.items.length === 0 && (
               <p className="muted" style={{ padding: '22px 0', fontSize: 12 }}>
-                Nenhum título encontrado. Você pode fazer um cadastro pessoal.
+                {t('Nenhum título encontrado. Você pode fazer um cadastro pessoal.')}
               </p>
             )}
           </>
@@ -96,10 +98,12 @@ export function CatalogSearch({
       </div>
       <button type="button" className="manual-link" onClick={() => onManual(query)}>
         <Plus size={15} />
-        Não encontrou? Cadastrar manualmente
+        {t('Não encontrou? Cadastrar manualmente')}
       </button>
       <p className="attribution">
-        Créditos e origem dos metadados e das capas ficam disponíveis nos detalhes de cada obra.
+        {t(
+          'Créditos e origem dos metadados e das capas ficam disponíveis nos detalhes de cada obra.',
+        )}
       </p>
     </>
   );

@@ -1,5 +1,11 @@
 # Histórico de versões
 
+## 0.1.7 — 2026-11-15
+
+- Todo o app em inglês e espanhol: biblioteca, coleções, metas, jornada, estatísticas, comunidade, obras, rankings, perfis públicos, moderação, apresentação e páginas legais.
+- E-mails de confirmação e de nova senha no idioma salvo na conta.
+- Mensagens de erro, missões, insígnias e títulos da jornada traduzidos.
+
 ## 0.1.6 — 2026-11-14
 
 - Interface em inglês e espanhol, além do português: menu, acesso, recuperação de senha, onboarding, início, configurações, verificação em duas etapas e apoio.

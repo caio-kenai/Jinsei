@@ -1,4 +1,6 @@
 'use client';
+import { currentLocale } from '@/i18n/config';
+import { useT } from '@/i18n/provider';
 import '@/app/profile.css';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
@@ -30,6 +32,7 @@ type Summary = {
   hoursPlayed: number;
 };
 export function ProfileScreen() {
+  const t = useT();
   const { data: user } = useCurrentUser();
   const progression = useProgression();
   const favorites = useQuery({
@@ -57,20 +60,20 @@ export function ProfileScreen() {
             <h1>{user.profile.displayName}</h1>
             <span className="private-pill">
               <LockKeyhole size={11} />
-              Privado
+              {t('Privado')}
             </span>
           </div>
           <p className="profile-username">
             @{user.profile.username}
-            {activeTitle && <span className="profile-title-chip">{activeTitle}</span>}
+            {activeTitle && <span className="profile-title-chip">{t(activeTitle)}</span>}
           </p>
           <p className="profile-bio">
-            {user.profile.bio || 'Suas histórias favoritas dizem um pouco sobre você.'}
+            {user.profile.bio || t('Suas histórias favoritas dizem um pouco sobre você.')}
           </p>
           <span className="profile-joined">
             <CalendarDays size={13} />
-            No Jinsei desde{' '}
-            {new Date(user.createdAt).toLocaleDateString('pt-BR', {
+            {t('No Jinsei desde')}{' '}
+            {new Date(user.createdAt).toLocaleDateString(currentLocale(), {
               month: 'long',
               year: 'numeric',
             })}
@@ -79,56 +82,57 @@ export function ProfileScreen() {
         <Button asChild variant="outline" size="sm">
           <Link href="/settings">
             <Settings size={14} />
-            Editar perfil
+            {t('Editar perfil')}
           </Link>
         </Button>
       </header>
-      <section className="profile-stats" aria-label="Estatísticas da sua biblioteca">
+      <section className="profile-stats" aria-label={t('Estatísticas da sua biblioteca')}>
         <div data-stat="titles">
           <Library size={17} />
           <strong>{summary.data?.total ?? '—'}</strong>
-          <span>Títulos</span>
+          <span>{t('Títulos')}</span>
         </div>
         <div data-stat="completed">
           <CircleCheck size={17} />
           <strong>{summary.data?.byStatus.completed ?? '—'}</strong>
-          <span>Concluídos</span>
+          <span>{t('Concluídos')}</span>
         </div>
         <div data-stat="hours">
           <Clock3 size={17} />
-          <strong>{summary.data?.hoursPlayed.toLocaleString('pt-BR') ?? '—'}</strong>
-          <span>Horas de jogo</span>
+          <strong>{summary.data?.hoursPlayed.toLocaleString(currentLocale()) ?? '—'}</strong>
+          <span>{t('Horas de jogo')}</span>
         </div>
         <div data-stat="rating">
           <StarRating value={summary.data?.averageRating ?? null} size={15} />
           <strong>
-            {summary.data?.averageRating?.toLocaleString('pt-BR', { maximumFractionDigits: 2 }) ??
-              '—'}
+            {summary.data?.averageRating?.toLocaleString(currentLocale(), {
+              maximumFractionDigits: 2,
+            }) ?? '—'}
           </strong>
-          <span>Média das avaliações</span>
+          <span>{t('Média das avaliações')}</span>
         </div>
       </section>
       {summary.error && (
-        <p className="error-banner">Não foi possível carregar suas estatísticas.</p>
+        <p className="error-banner">{t('Não foi possível carregar suas estatísticas.')}</p>
       )}
       <section className="profile-section">
         <div className="section-title">
           <h2>
             <Heart size={17} />
-            Histórias favoritas
+            {t('Histórias favoritas')}
           </h2>
           <Link href="/favorites">
-            Ver todos {favorites.data && `(${favorites.data.total})`}
+            {t('Ver todos')} {favorites.data && `(${favorites.data.total})`}
             <ArrowRight size={13} />
           </Link>
         </div>
         <p className="profile-section-description">
-          Uma seleção de até oito experiências que você marcou como favoritas.
+          {t('Uma seleção de até oito experiências que você marcou como favoritas.')}
         </p>
         {favorites.isPending ? (
           <LoaderCircle className="spin" size={22} />
         ) : favorites.error ? (
-          <p className="error-banner">Não foi possível carregar seus favoritos.</p>
+          <p className="error-banner">{t('Não foi possível carregar seus favoritos.')}</p>
         ) : favorites.data?.items.length ? (
           <div className="profile-favorites">
             {favorites.data.items.map((entry) => (
@@ -144,7 +148,7 @@ export function ProfileScreen() {
                   large
                 />
                 <h3>{entry.title}</h3>
-                <small>{categoryLabels[entry.mediaType]}</small>
+                <small>{t(categoryLabels[entry.mediaType])}</small>
                 <StarRating value={entry.rating} size={12} />
               </Link>
             ))}
@@ -152,24 +156,24 @@ export function ProfileScreen() {
         ) : (
           <div className="profile-empty">
             <Heart size={28} />
-            <h3>O que mais marcou sua jornada?</h3>
-            <p>Favorite títulos da sua biblioteca para exibi-los aqui.</p>
+            <h3>{t('O que mais marcou sua jornada?')}</h3>
+            <p>{t('Favorite títulos da sua biblioteca para exibi-los aqui.')}</p>
             <Button asChild variant="outline" size="sm">
-              <Link href="/library">Explorar minha biblioteca</Link>
+              <Link href="/library">{t('Explorar minha biblioteca')}</Link>
             </Button>
           </div>
         )}
       </section>
       <section className="profile-section">
         <div className="section-title">
-          <h2>Suas últimas experiências</h2>
+          <h2>{t('Suas últimas experiências')}</h2>
           <Link href="/library">
-            Ver biblioteca
+            {t('Ver biblioteca')}
             <ArrowRight size={13} />
           </Link>
         </div>
         {recent.error ? (
-          <p className="error-banner">Não foi possível carregar os registros recentes.</p>
+          <p className="error-banner">{t('Não foi possível carregar os registros recentes.')}</p>
         ) : recent.data?.items.length ? (
           <div className="profile-recent">
             {recent.data.items.map((entry) => (
@@ -181,7 +185,7 @@ export function ProfileScreen() {
                 />
                 <span>
                   <strong>{entry.title}</strong>
-                  <small>{categoryLabels[entry.mediaType]}</small>
+                  <small>{t(categoryLabels[entry.mediaType])}</small>
                 </span>
                 <StatusBadge status={entry.status} />
                 <StarRating value={entry.rating} size={11} />
@@ -189,7 +193,7 @@ export function ProfileScreen() {
             ))}
           </div>
         ) : (
-          <p className="muted">Os títulos da sua biblioteca aparecerão aqui.</p>
+          <p className="muted">{t('Os títulos da sua biblioteca aparecerão aqui.')}</p>
         )}
       </section>
     </div>

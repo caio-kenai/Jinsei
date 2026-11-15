@@ -1,19 +1,22 @@
 'use client';
+import { useT } from '@/i18n/provider';
 import Link from 'next/link';
 import { Check, Plus } from 'lucide-react';
 import { useCollectionMutations, useCollections } from './use-collections';
 
 /** Collections that contain the entry, toggled from its details. */
 export function EntryCollections({ entryId }: { entryId: string }) {
+  const t = useT();
   const result = useCollections(entryId);
   const { addItem, removeItem } = useCollectionMutations();
   const collections = result.data?.collections ?? [];
   return (
     <section className="details-section">
-      <h3>COLEÇÕES</h3>
+      <h3>{t('COLEÇÕES')}</h3>
       {collections.length === 0 ? (
         <p className="muted entry-collections-empty">
-          <Link href="/collections">Crie uma coleção</Link> para reunir este título com outros.
+          <Link href="/collections">{t('Crie uma coleção')}</Link>{' '}
+          {t('para reunir este título com outros.')}
         </p>
       ) : (
         <div className="entry-collections">

@@ -1,4 +1,5 @@
 'use client';
+import { useT } from '@/i18n/provider';
 import { useDeferredValue, useState } from 'react';
 import Link from 'next/link';
 import { AnimatePresence, motion } from 'motion/react';
@@ -24,6 +25,7 @@ import { UserSafetyMenu, useBlocks, useSafetyMutations } from './safety-actions'
 const ease = [0.22, 1, 0.36, 1] as const;
 
 export function FriendsScreen() {
+  const t = useT();
   const [query, setQuery] = useState('');
   const deferred = useDeferredValue(query);
   const search = useUserSearch(deferred);
@@ -46,7 +48,7 @@ export function FriendsScreen() {
         <Button size="sm" variant="ghost" asChild>
           <Link href={`/community/messages?com=${user.id}`}>
             <MessageCircle size={14} />
-            Conversar
+            {t('Conversar')}
           </Link>
         </Button>
       );
@@ -54,7 +56,7 @@ export function FriendsScreen() {
       return (
         <span className="community-pill">
           <Clock size={12} />
-          Pedido enviado
+          {t('Pedido enviado')}
         </span>
       );
     return (
@@ -64,7 +66,7 @@ export function FriendsScreen() {
         onClick={() => user.username && request.mutate(user.username)}
       >
         {state === 'incoming' ? <Check size={14} /> : <UserPlus size={14} />}
-        {state === 'incoming' ? 'Aceitar' : 'Adicionar'}
+        {state === 'incoming' ? t('Aceitar') : t('Adicionar')}
       </Button>
     );
   };
@@ -73,20 +75,22 @@ export function FriendsScreen() {
       <section className="community-card community-search">
         <div className="community-card-title">
           <Search size={16} />
-          <h2>Encontrar pessoas</h2>
+          <h2>{t('Encontrar pessoas')}</h2>
         </div>
         <label className="community-search-field">
           <Search size={15} />
           <Input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Nome ou @usuário"
-            aria-label="Buscar pessoas"
+            placeholder={t('Nome ou @usuário')}
+            aria-label={t('Buscar pessoas')}
           />
           {search.isFetching && <LoaderCircle size={15} className="spin" />}
         </label>
         <p className="community-hint">
-          Perfis públicos aparecem pelo nome. Perfis privados só são encontrados pelo usuário exato.
+          {t(
+            'Perfis públicos aparecem pelo nome. Perfis privados só são encontrados pelo usuário exato.',
+          )}
         </p>
         <AnimatePresence initial={false}>
           {deferred.trim().length >= 2 && search.data && (
@@ -106,7 +110,7 @@ export function FriendsScreen() {
                   </li>
                 ))
               ) : (
-                <li className="community-hint">Ninguém encontrado com esse nome.</li>
+                <li className="community-hint">{t('Ninguém encontrado com esse nome.')}</li>
               )}
             </motion.ul>
           )}
@@ -117,7 +121,7 @@ export function FriendsScreen() {
         <section className="community-card community-requests">
           <div className="community-card-title">
             <UserPlus size={16} />
-            <h2>Pedidos recebidos</h2>
+            <h2>{t('Pedidos recebidos')}</h2>
             <span className="community-badge">{incoming.length}</span>
           </div>
           <ul className="community-people">
@@ -135,16 +139,18 @@ export function FriendsScreen() {
                   <time dateTime={item.createdAt}>{relativeTime(item.createdAt)}</time>
                   <Button size="sm" onClick={() => accept.mutate(item.id)}>
                     <Check size={14} />
-                    Aceitar
+                    {t('Aceitar')}
                   </Button>
                   <Button
                     size="sm"
                     variant="ghost"
                     onClick={() => dismiss.mutate(item.id)}
-                    aria-label={`Recusar pedido de ${item.user.displayName}`}
+                    aria-label={t('Recusar pedido de {displayName}', {
+                      displayName: item.user.displayName,
+                    })}
                   >
                     <X size={14} />
-                    Recusar
+                    {t('Recusar')}
                   </Button>
                 </motion.li>
               ))}
@@ -156,7 +162,7 @@ export function FriendsScreen() {
       <section className="community-card">
         <div className="community-card-title">
           <UsersRound size={16} />
-          <h2>Amigos</h2>
+          <h2>{t('Amigos')}</h2>
           <span className="group-number">{friends.length}</span>
         </div>
         {overview.isPending ? (
@@ -164,8 +170,11 @@ export function FriendsScreen() {
             <LoaderCircle className="spin" />
           </div>
         ) : friends.length === 0 ? (
-          <CommunityEmpty icon={<UsersRound size={24} />} title="Sua lista de amigos está vazia">
-            Busque pelo nome de usuário de alguém para enviar um pedido de amizade.
+          <CommunityEmpty
+            icon={<UsersRound size={24} />}
+            title={t('Sua lista de amigos está vazia')}
+          >
+            {t('Busque pelo nome de usuário de alguém para enviar um pedido de amizade.')}
           </CommunityEmpty>
         ) : (
           <div className="community-friend-grid">
@@ -179,21 +188,31 @@ export function FriendsScreen() {
               >
                 <UserAvatar user={friend} size={56} />
                 <UserName user={friend} />
-                <small>Amigos {relativeTime(friend.since)}</small>
+                <small>
+                  {t('Amigos')} {relativeTime(friend.since)}
+                </small>
                 <div className="community-friend-actions">
                   <Button size="sm" variant="outline" asChild>
                     <Link href={`/community/messages?com=${friend.id}`}>
                       <MessageCircle size={14} />
-                      Conversar
+                      {t('Conversar')}
                     </Link>
                   </Button>
                   <Button
                     size="icon"
                     variant="ghost"
-                    aria-label={`Desfazer amizade com ${friend.displayName}`}
-                    title="Desfazer amizade"
+                    aria-label={t('Desfazer amizade com {displayName}', {
+                      displayName: friend.displayName,
+                    })}
+                    title={t('Desfazer amizade')}
                     onClick={() => {
-                      if (window.confirm(`Desfazer a amizade com ${friend.displayName}?`))
+                      if (
+                        window.confirm(
+                          t('Desfazer a amizade com {displayName}?', {
+                            displayName: friend.displayName,
+                          }),
+                        )
+                      )
                         unfriend.mutate(friend.id);
                     }}
                   >
@@ -211,7 +230,7 @@ export function FriendsScreen() {
         <section className="community-card">
           <div className="community-card-title">
             <Ban size={16} />
-            <h2>Pessoas bloqueadas</h2>
+            <h2>{t('Pessoas bloqueadas')}</h2>
             <span className="group-number">{blocks.length}</span>
           </div>
           <ul className="community-people">
@@ -221,7 +240,7 @@ export function FriendsScreen() {
                 <UserName user={user} />
                 <time dateTime={user.since}>{relativeTime(user.since)}</time>
                 <Button size="sm" variant="ghost" onClick={() => unblock.mutate(user.id)}>
-                  Desbloquear
+                  {t('Desbloquear')}
                 </Button>
               </li>
             ))}
@@ -232,7 +251,7 @@ export function FriendsScreen() {
         <section className="community-card">
           <div className="community-card-title">
             <Clock size={16} />
-            <h2>Pedidos enviados</h2>
+            <h2>{t('Pedidos enviados')}</h2>
           </div>
           <ul className="community-people">
             {outgoing.map((item) => (
@@ -242,7 +261,7 @@ export function FriendsScreen() {
                 <time dateTime={item.createdAt}>{relativeTime(item.createdAt)}</time>
                 <Button size="sm" variant="ghost" onClick={() => dismiss.mutate(item.id)}>
                   <X size={14} />
-                  Cancelar
+                  {t('Cancelar')}
                 </Button>
               </li>
             ))}

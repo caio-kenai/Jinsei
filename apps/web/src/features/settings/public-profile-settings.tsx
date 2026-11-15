@@ -1,5 +1,5 @@
 'use client';
-import { msg } from '@/i18n/config';
+import { issueMessage, msg } from '@/i18n/config';
 import { useState, type CSSProperties } from 'react';
 import Link from 'next/link';
 import { useQueryClient } from '@tanstack/react-query';
@@ -107,7 +107,7 @@ export function PublicProfileSettings({ user }: { user: CurrentUser }) {
       links: links.filter((link) => link.label.trim() || link.url.trim()),
     });
     if (!parsed.success) {
-      setError(parsed.error.issues[0]?.message ?? t('Revise os links do perfil'));
+      setError(issueMessage(parsed.error) ?? t('Revise os links do perfil'));
       return;
     }
     setError('');
@@ -154,13 +154,13 @@ export function PublicProfileSettings({ user }: { user: CurrentUser }) {
       {instance.data?.uploadsEnabled ? (
         <div className="form-grid">
           <ImageField
-            label="Avatar"
+            label={t('Avatar')}
             hint={t('JPEG, PNG ou WebP de até 2 MB.')}
             url={user.profile.avatarUrl}
             path="/users/me/avatar"
           />
           <ImageField
-            label="Banner"
+            label={t('Banner')}
             hint={t('JPEG, PNG ou WebP de até 5 MB, de preferência horizontal.')}
             url={user.profile.bannerUrl}
             path="/users/me/banner"

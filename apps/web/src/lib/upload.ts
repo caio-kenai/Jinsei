@@ -1,3 +1,4 @@
+import { translate } from '@/i18n/config';
 import { ApiError } from './api';
 
 /** Sends one image as multipart form data; the API validates size and real format. */
@@ -9,7 +10,9 @@ export async function uploadImage(path: string, file: File) {
   if (!response.ok)
     throw new ApiError(
       response.status,
-      typeof result.message === 'string' ? result.message : 'Não foi possível enviar a imagem',
+      typeof result.message === 'string'
+        ? result.message
+        : translate('Não foi possível enviar a imagem'),
     );
   return result as { url: string | null };
 }

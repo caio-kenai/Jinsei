@@ -1,4 +1,6 @@
 'use client';
+import { issueMessage, msg } from '@/i18n/config';
+import { useT } from '@/i18n/provider';
 import { useState } from 'react';
 import { endOfMonth, endOfYear, format, startOfMonth, startOfYear } from 'date-fns';
 import {
@@ -20,9 +22,15 @@ import { useCollections } from '@/features/collections/use-collections';
 
 const iso = (date: Date) => format(date, 'yyyy-MM-dd');
 const presets = [
-  { label: 'Este ano', range: () => [startOfYear(new Date()), endOfYear(new Date())] as const },
-  { label: 'Este mês', range: () => [startOfMonth(new Date()), endOfMonth(new Date())] as const },
-  { label: 'Sem prazo', range: () => [new Date(), null] as const },
+  {
+    label: msg('Este ano'),
+    range: () => [startOfYear(new Date()), endOfYear(new Date())] as const,
+  },
+  {
+    label: msg('Este mês'),
+    range: () => [startOfMonth(new Date()), endOfMonth(new Date())] as const,
+  },
+  { label: msg('Sem prazo'), range: () => [new Date(), null] as const },
 ];
 
 export function GoalFormDialog({
@@ -38,6 +46,7 @@ export function GoalFormDialog({
   pending: boolean;
   onSubmit: (input: GoalInput) => void;
 }) {
+  const t = useT();
   const [metric, setMetric] = useState<GoalMetric>(initial?.metric ?? 'titles_completed');
   const [mediaType, setMediaType] = useState<MediaType | ''>(initial?.mediaType ?? '');
   const [collectionId, setCollectionId] = useState(initial?.collectionId ?? '');
@@ -50,9 +59,11 @@ export function GoalFormDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="add-dialog">
-        <DialogTitle className="dialog-title">{initial ? 'Editar meta' : 'Nova meta'}</DialogTitle>
+        <DialogTitle className="dialog-title">
+          {initial ? t('Editar meta') : t('Nova meta')}
+        </DialogTitle>
         <DialogDescription className="dialog-description">
-          O progresso é calculado automaticamente a partir da sua biblioteca.
+          {t('O progresso é calculado automaticamente a partir da sua biblioteca.')}
         </DialogDescription>
         <form
           className="dialog-form"
@@ -70,7 +81,7 @@ export function GoalFormDialog({
               endsOn: endsOn || null,
             });
             if (!parsed.success) {
-              setError(parsed.error.issues[0]?.message ?? 'Revise os dados da meta');
+              setError(issueMessage(parsed.error) ?? t('Revise os dados da meta'));
               return;
             }
             setError('');
@@ -78,19 +89,19 @@ export function GoalFormDialog({
           }}
         >
           <label className="field">
-            Nome
+            {t('Nome')}
             <Input
               name="name"
               required
               autoFocus
               maxLength={80}
               defaultValue={initial?.name}
-              placeholder="Concluir 20 jogos em 2026"
+              placeholder={t('Concluir 20 jogos em 2026')}
             />
           </label>
           <div className="form-grid">
             <label className="field">
-              Objetivo
+              {t('Objetivo')}
               <Select
                 value={metric}
                 onChange={(event) => {
@@ -102,31 +113,32 @@ export function GoalFormDialog({
               >
                 {goalMetrics.map((value) => (
                   <option key={value} value={value}>
-                    {goalMetricLabels[value]}
+                    {t(goalMetricLabels[value])}
                   </option>
                 ))}
               </Select>
             </label>
             {collectionGoal ? (
               <label className="field">
-                Coleção
+                {t('Coleção')}
                 <Select
                   required
                   value={collectionId}
                   onChange={(event) => setCollectionId(event.target.value)}
                 >
-                  <option value="">Escolha uma coleção</option>
+                  <option value="">{t('Escolha uma coleção')}</option>
                   {collections.data?.collections.map((collection) => (
                     <option key={collection.id} value={collection.id}>
                       {collection.name}
                     </option>
                   ))}
                 </Select>
-                <small>A meta acompanha os títulos concluídos da coleção.</small>
+                <small>{t('A meta acompanha os títulos concluídos da coleção.')}</small>
               </label>
             ) : (
               <label className="field">
-                Quantidade ({goalUnits[metric][1]})
+                {t('Quantidade (')}
+                {t(goalUnits[metric][1])})
                 <Input
                   name="target"
                   type="number"
@@ -140,21 +152,21 @@ export function GoalFormDialog({
           </div>
           {scopes.length > 1 && (
             <label className="field">
-              Categoria
+              {t('Categoria')}
               <Select
                 value={mediaType}
                 onChange={(event) => setMediaType(event.target.value as MediaType | '')}
               >
-                <option value="">Todas as categorias</option>
+                <option value="">{t('Todas as categorias')}</option>
                 {scopes.map((type) => (
                   <option key={type} value={type}>
-                    {categoryLabels[type]}
+                    {t(categoryLabels[type])}
                   </option>
                 ))}
               </Select>
             </label>
           )}
-          <div className="goal-presets" role="group" aria-label="Períodos rápidos">
+          <div className="goal-presets" role="group" aria-label={t('Períodos rápidos')}>
             {presets.map((preset) => (
               <button
                 type="button"
@@ -166,13 +178,13 @@ export function GoalFormDialog({
                   setEndsOn(to ? iso(to) : '');
                 }}
               >
-                {preset.label}
+                {t(preset.label)}
               </button>
             ))}
           </div>
           <div className="form-grid">
             <label className="field">
-              Início
+              {t('Início')}
               <Input
                 type="date"
                 required
@@ -181,24 +193,24 @@ export function GoalFormDialog({
               />
             </label>
             <label className="field">
-              Prazo
+              {t('Prazo')}
               <Input
                 type="date"
                 min={startsOn}
                 value={endsOn}
                 onChange={(event) => setEndsOn(event.target.value)}
               />
-              <small>Deixe em branco para uma meta sem prazo.</small>
+              <small>{t('Deixe em branco para uma meta sem prazo.')}</small>
             </label>
           </div>
           <label className="field">
-            Descrição
+            {t('Descrição')}
             <Textarea
               name="description"
               rows={2}
               maxLength={500}
               defaultValue={initial?.description}
-              placeholder="Por que esta meta importa? (opcional)"
+              placeholder={t('Por que esta meta importa? (opcional)')}
             />
           </label>
           {error && (
@@ -208,10 +220,10 @@ export function GoalFormDialog({
           )}
           <div className="dialog-footer">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancelar
+              {t('Cancelar')}
             </Button>
             <Button type="submit" disabled={pending}>
-              {initial ? 'Salvar meta' : 'Criar meta'}
+              {initial ? t('Salvar meta') : t('Criar meta')}
             </Button>
           </div>
         </form>

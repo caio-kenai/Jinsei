@@ -1,4 +1,6 @@
 'use client';
+import { msg } from '@/i18n/config';
+import { useT } from '@/i18n/provider';
 import { useEffect, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import {
@@ -62,15 +64,16 @@ function SectionHeading({
   accent: string;
   text: string;
 }) {
+  const t = useT();
   return (
     <motion.header className="landing-heading" {...reveal} transition={{ duration: 0.7, ease }}>
-      <span className="landing-eyebrow">{eyebrow}</span>
+      <span className="landing-eyebrow">{t(eyebrow)}</span>
       <h2>
-        {title}
+        {t(title)}
         <br />
-        <span>{accent}</span>
+        <span>{t(accent)}</span>
       </h2>
-      <p>{text}</p>
+      <p>{t(text)}</p>
     </motion.header>
   );
 }
@@ -128,11 +131,12 @@ function ViewsArt() {
 
 /** Mini demo: progress measured the way each category is consumed. */
 function ProgressArt() {
+  const t = useT();
   const rows = [
-    { label: 'Horas · Hollow Knight', value: 64, color: categoryPalette.games, Icon: Gamepad2 },
-    { label: 'Episódios · Frieren', value: 82, color: categoryPalette.anime, Icon: Tv },
-    { label: 'Capítulos · Berserk', value: 45, color: categoryPalette.manga, Icon: BookOpen },
-    { label: 'Páginas · Duna', value: 38, color: categoryPalette.books, Icon: BookMarked },
+    { label: t('Horas · Hollow Knight'), value: 64, color: categoryPalette.games, Icon: Gamepad2 },
+    { label: t('Episódios · Frieren'), value: 82, color: categoryPalette.anime, Icon: Tv },
+    { label: t('Capítulos · Berserk'), value: 45, color: categoryPalette.manga, Icon: BookOpen },
+    { label: t('Páginas · Duna'), value: 38, color: categoryPalette.books, Icon: BookMarked },
   ];
   return (
     <div className="bento-art progress-art">
@@ -142,7 +146,7 @@ function ProgressArt() {
             <Icon size={14} />
           </span>
           <div>
-            <small>{label}</small>
+            <small>{t(label)}</small>
             <i>
               <motion.b
                 style={{ background: color }}
@@ -162,12 +166,13 @@ function ProgressArt() {
 
 /** Mini demo: a ranking that reorders itself. */
 function RankingArt() {
+  const t = useT();
   const reduce = useReducedMotion();
   const [items, setItems] = useState([
-    { title: 'Hades', color: categoryPalette.games },
-    { title: 'Frieren', color: categoryPalette.anime },
-    { title: 'Interestelar', color: categoryPalette.movies },
-    { title: 'Dom Casmurro', color: categoryPalette.books },
+    { title: t('Hades'), color: categoryPalette.games },
+    { title: t('Frieren'), color: categoryPalette.anime },
+    { title: t('Interestelar'), color: categoryPalette.movies },
+    { title: t('Dom Casmurro'), color: categoryPalette.books },
   ]);
   useEffect(() => {
     if (reduce) return;
@@ -188,7 +193,7 @@ function RankingArt() {
         >
           <strong>{index + 1}</strong>
           <span style={{ background: item.color }} />
-          {item.title}
+          {t(item.title)}
           {index === 0 && <Trophy size={14} className="ranking-trophy" />}
         </motion.div>
       ))}
@@ -198,6 +203,7 @@ function RankingArt() {
 
 /** Mini demo: goal ring, level and streak. */
 function JourneyArt() {
+  const t = useT();
   const circumference = 2 * Math.PI * 34;
   return (
     <div className="bento-art journey-art">
@@ -216,25 +222,27 @@ function JourneyArt() {
       </svg>
       <div className="journey-art-body">
         <span className="journey-art-level">
-          Nível <NumberTicker value={12} />
+          {t('Nível')} <NumberTicker value={12} />
         </span>
         <span className="journey-art-streak">
           <Flame size={14} />
-          <NumberTicker value={27} /> dias seguidos
+          <NumberTicker value={27} /> {t('dias seguidos')}
         </span>
         <ul>
-          {['Avalie 1 título', 'Avance 3 capítulos', 'Conclua uma meta'].map((mission, index) => (
-            <motion.li
-              key={mission}
-              initial={{ opacity: 0, x: -10 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.3 + index * 0.15, duration: 0.4, ease }}
-            >
-              <span className={index < 2 ? 'done' : ''}>{index < 2 && <Check size={10} />}</span>
-              {mission}
-            </motion.li>
-          ))}
+          {[t('Avalie 1 título'), t('Avance 3 capítulos'), t('Conclua uma meta')].map(
+            (mission, index) => (
+              <motion.li
+                key={mission}
+                initial={{ opacity: 0, x: -10 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.3 + index * 0.15, duration: 0.4, ease }}
+              >
+                <span className={index < 2 ? 'done' : ''}>{index < 2 && <Check size={10} />}</span>
+                {mission}
+              </motion.li>
+            ),
+          )}
         </ul>
       </div>
     </div>
@@ -243,6 +251,7 @@ function JourneyArt() {
 
 /** Mini demo: colorful statistics. */
 function StatsArt() {
+  const t = useT();
   const bars = [32, 58, 41, 76, 64, 88, 52];
   const colors = Object.values(categoryPalette);
   return (
@@ -264,13 +273,13 @@ function StatsArt() {
           <strong>
             <NumberTicker value={248} />
           </strong>
-          títulos
+          {t('títulos')}
         </span>
         <span>
           <strong>
             <NumberTicker value={4.6} decimals={1} />
           </strong>
-          nota média
+          {t('nota média')}
         </span>
       </div>
     </div>
@@ -279,13 +288,14 @@ function StatsArt() {
 
 /** Mini demo: a public profile card. */
 function ProfileArt() {
+  const t = useT();
   return (
     <div className="bento-art profile-art">
       <div className="profile-art-banner" />
       <div className="profile-art-avatar">
         <UserRound size={20} />
       </div>
-      <strong>@alex</strong>
+      <strong>{t('@alex')}</strong>
       <div className="profile-art-tabs">
         {Object.entries(categoryPalette).map(([key, color]) => (
           <i key={key} style={{ background: color }} />
@@ -297,52 +307,59 @@ function ProfileArt() {
 
 const bento = [
   {
-    title: 'Lista, galeria, quadro e calendário',
-    text: 'Veja a mesma biblioteca do jeito que fizer sentido agora, com visualizações salvas.',
+    title: msg('Lista, galeria, quadro e calendário'),
+    text: msg(
+      'Veja a mesma biblioteca do jeito que fizer sentido agora, com visualizações salvas.',
+    ),
     Art: ViewsArt,
     wide: true,
   },
   {
-    title: 'Progresso que entende cada mídia',
-    text: 'Horas, episódios, temporadas, capítulos, volumes, páginas e sessões.',
+    title: msg('Progresso que entende cada mídia'),
+    text: msg('Horas, episódios, temporadas, capítulos, volumes, páginas e sessões.'),
     Art: ProgressArt,
   },
   {
-    title: 'Coleções e rankings',
-    text: 'Monte listas temáticas e seus tops pessoais, misturando categorias.',
+    title: msg('Coleções e rankings'),
+    text: msg('Monte listas temáticas e seus tops pessoais, misturando categorias.'),
     Art: RankingArt,
   },
   {
-    title: 'Metas, missões e sequência',
-    text: 'Níveis, insígnias, missões diárias e uma sequência para manter o ritmo.',
+    title: msg('Metas, missões e sequência'),
+    text: msg('Níveis, insígnias, missões diárias e uma sequência para manter o ritmo.'),
     Art: JourneyArt,
     wide: true,
   },
   {
-    title: 'Estatísticas coloridas',
-    text: 'Sua jornada em números, por status, categoria, nota e mês.',
+    title: msg('Estatísticas coloridas'),
+    text: msg('Sua jornada em números, por status, categoria, nota e mês.'),
     Art: StatsArt,
   },
   {
-    title: 'Perfil para compartilhar',
-    text: 'Mostre favoritos, coleções e resenhas só se e quando quiser.',
+    title: msg('Perfil para compartilhar'),
+    text: msg('Mostre favoritos, coleções e resenhas só se e quando quiser.'),
     Art: ProfileArt,
   },
   {
-    title: 'Amigos, conversas e clubes',
-    text: 'Veja o que seus amigos estão vivendo, converse e reúna gente que gosta das mesmas histórias.',
+    title: msg('Amigos, conversas e clubes'),
+    text: msg(
+      'Veja o que seus amigos estão vivendo, converse e reúna gente que gosta das mesmas histórias.',
+    ),
     Art: CommunityArt,
   },
 ];
 
 export function FeatureBento() {
+  const t = useT();
   return (
     <section className="landing-section marketing-container" id="recursos">
       <SectionHeading
-        eyebrow="TUDO EM UM SÓ LUGAR"
-        title="Feito para quem vive"
-        accent="muitas histórias ao mesmo tempo."
-        text="Do primeiro registro à estatística do ano, cada parte do Jinsei acompanha o seu ritmo."
+        eyebrow={t('TUDO EM UM SÓ LUGAR')}
+        title={t('Feito para quem vive')}
+        accent={t('muitas histórias ao mesmo tempo.')}
+        text={t(
+          'Do primeiro registro à estatística do ano, cada parte do Jinsei acompanha o seu ritmo.',
+        )}
       />
       <div className="bento-grid">
         {bento.map(({ title, text, Art, wide }, index) => (
@@ -358,8 +375,8 @@ export function FeatureBento() {
             }}
           >
             <Art />
-            <h3>{title}</h3>
-            <p>{text}</p>
+            <h3>{t(title)}</h3>
+            <p>{t(text)}</p>
           </motion.article>
         ))}
       </div>
@@ -368,28 +385,29 @@ export function FeatureBento() {
 }
 
 const marqueeItems = [
-  { label: 'Jogos', Icon: Gamepad2, color: categoryPalette.games },
-  { label: 'Animes', Icon: Tv, color: categoryPalette.anime },
-  { label: 'Mangás', Icon: BookOpen, color: categoryPalette.manga },
-  { label: 'Filmes', Icon: Film, color: categoryPalette.movies },
-  { label: 'Séries', Icon: Clapperboard, color: categoryPalette.series },
-  { label: 'Livros', Icon: BookMarked, color: categoryPalette.books },
-  { label: 'Coleções', Icon: FolderHeart, color: '#e5306f' },
-  { label: 'Metas', Icon: Target, color: '#2f7bff' },
-  { label: 'Jornada', Icon: Sparkles, color: '#7050cf' },
+  { label: msg('Jogos'), Icon: Gamepad2, color: categoryPalette.games },
+  { label: msg('Animes'), Icon: Tv, color: categoryPalette.anime },
+  { label: msg('Mangás'), Icon: BookOpen, color: categoryPalette.manga },
+  { label: msg('Filmes'), Icon: Film, color: categoryPalette.movies },
+  { label: msg('Séries'), Icon: Clapperboard, color: categoryPalette.series },
+  { label: msg('Livros'), Icon: BookMarked, color: categoryPalette.books },
+  { label: msg('Coleções'), Icon: FolderHeart, color: '#e5306f' },
+  { label: msg('Metas'), Icon: Target, color: '#2f7bff' },
+  { label: msg('Jornada'), Icon: Sparkles, color: '#7050cf' },
 ];
 const featureItems = [
-  { label: 'Amigos', Icon: UsersRound, color: '#2f7bff' },
-  { label: 'Clubes', Icon: Tent, color: '#f7832b' },
-  { label: 'Rankings', Icon: Trophy, color: '#c77c02' },
-  { label: 'Reviews', Icon: MessageSquareText, color: '#e5306f' },
-  { label: 'Estatísticas', Icon: ChartColumn, color: '#15936a' },
-  { label: 'Temas', Icon: Palette, color: '#7050cf' },
-  { label: 'Perfil público', Icon: UserRound, color: '#0e9aa7' },
-  { label: 'Seus dados', Icon: ShieldCheck, color: '#595d66' },
+  { label: msg('Amigos'), Icon: UsersRound, color: '#2f7bff' },
+  { label: msg('Clubes'), Icon: Tent, color: '#f7832b' },
+  { label: msg('Rankings'), Icon: Trophy, color: '#c77c02' },
+  { label: msg('Reviews'), Icon: MessageSquareText, color: '#e5306f' },
+  { label: msg('Estatísticas'), Icon: ChartColumn, color: '#15936a' },
+  { label: msg('Temas'), Icon: Palette, color: '#7050cf' },
+  { label: msg('Perfil público'), Icon: UserRound, color: '#0e9aa7' },
+  { label: msg('Seus dados'), Icon: ShieldCheck, color: '#595d66' },
 ];
 
 function MarqueeRow({ items, reverse }: { items: typeof marqueeItems; reverse?: boolean }) {
+  const t = useT();
   // Two identical halves, each wider than any screen, make the loop seamless.
   const half = [...items, ...items, ...items];
   return (
@@ -399,7 +417,7 @@ function MarqueeRow({ items, reverse }: { items: typeof marqueeItems; reverse?: 
           {half.map(({ label, Icon, color }, index) => (
             <span key={`${label}-${index}`} style={{ '--chip': color } as React.CSSProperties}>
               <Icon size={16} />
-              {label}
+              {t(label)}
             </span>
           ))}
         </div>
@@ -420,27 +438,28 @@ export function CategoryMarquee() {
 
 const steps = [
   {
-    title: 'Crie sua conta',
-    text: 'Grátis, sem cartão e sem anúncios. Seus dados começam privados.',
+    title: msg('Crie sua conta'),
+    text: msg('Grátis, sem cartão e sem anúncios. Seus dados começam privados.'),
   },
   {
-    title: 'Escolha suas categorias',
-    text: 'Ative só o que você acompanha e defina tema, cores e visualização.',
+    title: msg('Escolha suas categorias'),
+    text: msg('Ative só o que você acompanha e defina tema, cores e visualização.'),
   },
   {
-    title: 'Adicione e acompanhe',
-    text: 'Busque nos catálogos abertos, registre progresso, notas e lembranças.',
+    title: msg('Adicione e acompanhe'),
+    text: msg('Busque nos catálogos abertos, registre progresso, notas e lembranças.'),
   },
 ];
 
 export function HowItWorks() {
+  const t = useT();
   return (
     <section className="landing-section marketing-container">
       <SectionHeading
-        eyebrow="COMO FUNCIONA"
-        title="Três passos."
-        accent="E a sua história ganha um lugar."
-        text="Comece em menos de um minuto e personalize tudo depois, quando quiser."
+        eyebrow={t('COMO FUNCIONA')}
+        title={t('Três passos.')}
+        accent={t('E a sua história ganha um lugar.')}
+        text={t('Comece em menos de um minuto e personalize tudo depois, quando quiser.')}
       />
       <ol className="steps">
         <motion.span
@@ -458,8 +477,8 @@ export function HowItWorks() {
             transition={{ duration: 0.6, delay: 0.2 + index * 0.18, ease }}
           >
             <span className="step-number">{index + 1}</span>
-            <h3>{step.title}</h3>
-            <p>{step.text}</p>
+            <h3>{t(step.title)}</h3>
+            <p>{t(step.text)}</p>
           </motion.li>
         ))}
       </ol>
@@ -470,41 +489,50 @@ export function HowItWorks() {
 const pillars = [
   {
     Icon: HeartHandshake,
-    title: 'Gratuito de verdade',
-    text: 'Sem assinatura, sem recursos pagos e sem anúncios. O apoio é voluntário pelo Buy Me a Monster.',
+    title: msg('Gratuito de verdade'),
+    text: msg(
+      'Sem assinatura, sem recursos pagos e sem anúncios. O apoio é voluntário pelo Buy Me a Monster.',
+    ),
   },
   {
     Icon: Code2,
-    title: 'Código aberto',
-    text: 'Todo o código está no GitHub. Qualquer pessoa pode auditar, sugerir e contribuir.',
+    title: msg('Código aberto'),
+    text: msg('Todo o código está no GitHub. Qualquer pessoa pode auditar, sugerir e contribuir.'),
   },
   {
     Icon: ShieldCheck,
-    title: 'Privacidade e LGPD',
-    text: 'Biblioteca privada por padrão, exportação dos seus dados e exclusão de conta quando quiser.',
+    title: msg('Privacidade e LGPD'),
+    text: msg(
+      'Biblioteca privada por padrão, exportação dos seus dados e exclusão de conta quando quiser.',
+    ),
   },
   {
     Icon: Server,
-    title: 'Hospede você mesmo',
-    text: 'Imagens Docker prontas, PostgreSQL e HTTPS opcional para ter a sua própria instância.',
+    title: msg('Hospede você mesmo'),
+    text: msg(
+      'Imagens Docker prontas, PostgreSQL e HTTPS opcional para ter a sua própria instância.',
+    ),
   },
 ];
 
 export function OpenSourceSection() {
+  const t = useT();
   const numbers = [
     { value: 6, label: 'categorias' },
-    { value: 4, label: 'visualizações' },
-    { value: 0, label: 'anúncios' },
+    { value: 4, label: t('visualizações') },
+    { value: 0, label: t('anúncios') },
     { value: 100, label: '% gratuito' },
   ];
   return (
     <section className="landing-section landing-open">
       <div className="marketing-container">
         <SectionHeading
-          eyebrow="FEITO EM COMUNIDADE"
-          title="Seu, de verdade."
-          accent="Aberto, gratuito e respeitoso."
-          text="O Jinsei não vende seus dados nem sua atenção. Ele existe para organizar a sua jornada."
+          eyebrow={t('FEITO EM COMUNIDADE')}
+          title={t('Seu, de verdade.')}
+          accent={t('Aberto, gratuito e respeitoso.')}
+          text={t(
+            'O Jinsei não vende seus dados nem sua atenção. Ele existe para organizar a sua jornada.',
+          )}
         />
         <div className="open-numbers">
           {numbers.map(({ value, label }, index) => (
@@ -516,7 +544,7 @@ export function OpenSourceSection() {
               <strong>
                 <NumberTicker value={value} />
               </strong>
-              <span>{label}</span>
+              <span>{t(label)}</span>
             </motion.div>
           ))}
         </div>
@@ -530,8 +558,8 @@ export function OpenSourceSection() {
               <span className="open-icon">
                 <Icon size={20} />
               </span>
-              <h3>{title}</h3>
-              <p>{text}</p>
+              <h3>{t(title)}</h3>
+              <p>{t(text)}</p>
             </motion.article>
           ))}
         </div>
@@ -544,7 +572,7 @@ export function OpenSourceSection() {
           transition={{ duration: 0.6, ease }}
         >
           <Globe size={16} />
-          Ver o código no GitHub
+          {t('Ver o código no GitHub')}
         </motion.a>
       </div>
     </section>
@@ -553,46 +581,53 @@ export function OpenSourceSection() {
 
 const faq = [
   {
-    question: 'O Jinsei é mesmo gratuito?',
-    answer:
+    question: msg('O Jinsei é mesmo gratuito?'),
+    answer: msg(
       'Sim. Não há plano pago nem recurso bloqueado. Quem quiser pode apoiar o criador pelo Buy Me a Monster, de forma voluntária.',
+    ),
   },
   {
-    question: 'Quais mídias posso organizar?',
-    answer:
+    question: msg('Quais mídias posso organizar?'),
+    answer: msg(
       'Jogos, animes, mangás, filmes, séries e livros, cada um com o progresso adequado. Você ativa só as categorias que usa.',
+    ),
   },
   {
-    question: 'De onde vêm as capas e informações?',
-    answer:
+    question: msg('De onde vêm as capas e informações?'),
+    answer: msg(
       'De catálogos abertos como Wikidata, TVmaze e Open Library, com os devidos créditos. Também dá para cadastrar manualmente.',
+    ),
   },
   {
-    question: 'Outras pessoas veem minha biblioteca?',
-    answer:
+    question: msg('Outras pessoas veem minha biblioteca?'),
+    answer: msg(
       'Não, ela é privada por padrão. O perfil público só mostra o que você decidir publicar, como favoritos, coleções e resenhas.',
+    ),
   },
   {
-    question: 'Posso levar meus dados embora?',
-    answer:
+    question: msg('Posso levar meus dados embora?'),
+    answer: msg(
       'Pode. Exporte sua biblioteca, coleções, metas e histórico a qualquer momento, ou exclua sua conta nas configurações.',
+    ),
   },
   {
-    question: 'Posso instalar no meu servidor?',
-    answer:
+    question: msg('Posso instalar no meu servidor?'),
+    answer: msg(
       'Sim. Cada versão publica imagens Docker e um pacote self-host com guia de instalação, backup e atualização.',
+    ),
   },
 ];
 
 export function Faq() {
+  const t = useT();
   const [open, setOpen] = useState<number | null>(0);
   return (
     <section className="landing-section marketing-container landing-faq">
       <SectionHeading
-        eyebrow="PERGUNTAS FREQUENTES"
-        title="Ficou alguma dúvida?"
-        accent="A gente responde."
-        text="O essencial sobre o Jinsei, sem letras miúdas."
+        eyebrow={t('PERGUNTAS FREQUENTES')}
+        title={t('Ficou alguma dúvida?')}
+        accent={t('A gente responde.')}
+        text={t('O essencial sobre o Jinsei, sem letras miúdas.')}
       />
       <div className="faq-list">
         {faq.map(({ question, answer }, index) => {
@@ -609,7 +644,7 @@ export function Faq() {
                 aria-expanded={expanded}
                 onClick={() => setOpen(expanded ? null : index)}
               >
-                {question}
+                {t(question)}
                 <ChevronDown size={18} />
               </button>
               <AnimatePresence initial={false}>
@@ -621,7 +656,7 @@ export function Faq() {
                     exit={{ height: 0, opacity: 0 }}
                     transition={{ duration: 0.32, ease }}
                   >
-                    <p>{answer}</p>
+                    <p>{t(answer)}</p>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -631,7 +666,7 @@ export function Faq() {
       </div>
       <p className="faq-privacy">
         <LockKeyhole size={13} />
-        Leia também a política de privacidade e os termos de uso no rodapé.
+        {t('Leia também a política de privacidade e os termos de uso no rodapé.')}
       </p>
     </section>
   );

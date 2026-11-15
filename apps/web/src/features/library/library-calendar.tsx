@@ -1,4 +1,6 @@
 'use client';
+import { currentDateLocale } from '@/i18n/config';
+import { useT } from '@/i18n/provider';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -12,7 +14,6 @@ import {
   startOfMonth,
   startOfWeek,
 } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 import {
   CircleCheck,
   ChevronLeft,
@@ -38,6 +39,7 @@ export function LibraryCalendar({
   favorite?: boolean;
   onOpen: (id: string) => void;
 }) {
+  const t = useT();
   const [month, setMonth] = useState(() => startOfMonth(new Date()));
   const [expanded, setExpanded] = useState<string | null>(null);
   const first = startOfWeek(startOfMonth(month));
@@ -60,22 +62,22 @@ export function LibraryCalendar({
         <Button
           variant="ghost"
           size="icon"
-          aria-label="Mês anterior"
+          aria-label={t('Mês anterior')}
           onClick={() => setMonth(addMonths(month, -1))}
         >
           <ChevronLeft size={15} />
         </Button>
-        <h2>{format(month, "MMMM 'de' yyyy", { locale: ptBR })}</h2>
+        <h2>{format(month, t("MMMM 'de' yyyy"), { locale: currentDateLocale() })}</h2>
         <Button
           variant="ghost"
           size="icon"
-          aria-label="Próximo mês"
+          aria-label={t('Próximo mês')}
           onClick={() => setMonth(addMonths(month, 1))}
         >
           <ChevronRight size={15} />
         </Button>
         <Button variant="outline" size="sm" onClick={() => setMonth(startOfMonth(new Date()))}>
-          Hoje
+          {t('Hoje')}
         </Button>
         {result.isFetching && <LoaderCircle className="spin muted" size={13} />}
         <span className="calendar-legend">
@@ -91,10 +93,10 @@ export function LibraryCalendar({
         </span>
       </div>
       {result.error && <p className="error-banner">{result.error.message}</p>}
-      <div className="calendar-grid" role="grid" aria-label="Calendário da biblioteca">
+      <div className="calendar-grid" role="grid" aria-label={t('Calendário da biblioteca')}>
         {days.slice(0, 7).map((day) => (
           <div className="calendar-weekday" role="columnheader" key={day.toISOString()}>
-            {format(day, 'EEE', { locale: ptBR })}
+            {format(day, 'EEE', { locale: currentDateLocale() })}
           </div>
         ))}
         {days.map((day) => {
@@ -109,7 +111,10 @@ export function LibraryCalendar({
               className={`calendar-day ${isSameMonth(day, month) ? '' : 'outside'} ${
                 isToday(day) ? 'today' : ''
               } ${open ? 'expanded' : ''}`}
-              aria-label={`${format(day, "d 'de' MMMM", { locale: ptBR })}: ${events.length} eventos`}
+              aria-label={t('{day}: {count} eventos', {
+                day: format(day, t("d 'de' MMMM"), { locale: currentDateLocale() }),
+                count: events.length,
+              })}
             >
               <span className="calendar-date">{format(day, 'd')}</span>
               {visible.map((event) => {
@@ -119,7 +124,7 @@ export function LibraryCalendar({
                     key={`${event.kind}:${event.entryId}:${event.date}`}
                     className="calendar-event"
                     data-kind={event.kind}
-                    title={`${calendarEventLabels[event.kind]}: ${event.title}`}
+                    title={`${t(calendarEventLabels[event.kind])}: ${event.title}`}
                     onClick={() => onOpen(event.entryId)}
                   >
                     <Icon size={10} />
@@ -133,7 +138,7 @@ export function LibraryCalendar({
                   onClick={() => setExpanded(open ? null : key)}
                   aria-expanded={open}
                 >
-                  {open ? 'Mostrar menos' : `+${events.length - VISIBLE} mais`}
+                  {open ? t('Mostrar menos') : `+${events.length - VISIBLE} mais`}
                 </button>
               )}
             </div>

@@ -1,4 +1,5 @@
 'use client';
+import { useT } from '@/i18n/provider';
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
@@ -21,6 +22,7 @@ export function ViewingHistory({
   entry: LibraryEntry;
   onStatusChange: (status: LibraryEntry['status']) => void;
 }) {
+  const t = useT();
   const formatDate = useDateFormat().date;
   const initial = entry.progress.kind === 'film' ? entry.progress : null;
   const [viewings, setViewings] = useState<Viewing[]>(initial?.viewings ?? []);
@@ -36,7 +38,12 @@ export function ViewingHistory({
     if (updated.status !== status) {
       setStatus(updated.status);
       onStatusChange(updated.status);
-      toast.success(`${updated.title} agora está em ${statusLabels[updated.status]}`);
+      toast.success(
+        t('{title} agora está em {value}', {
+          title: updated.title,
+          value: t(statusLabels[updated.status]),
+        }),
+      );
     }
     void client.invalidateQueries({ queryKey: ['library'] });
     void client.invalidateQueries({ queryKey: ['summary'] });
@@ -51,7 +58,7 @@ export function ViewingHistory({
       }),
     onSuccess: (updated) => {
       applied(updated);
-      toast.success('Sessão registrada');
+      toast.success(t('Sessão registrada'));
     },
     onError: (error) => toast.error(error.message),
   });
@@ -65,11 +72,13 @@ export function ViewingHistory({
   });
   if (!initial) return null;
   return (
-    <section className="viewing-history" aria-label="Sessões assistidas">
+    <section className="viewing-history" aria-label={t('Sessões assistidas')}>
       <div className="viewing-heading">
-        <h3>Sessões</h3>
+        <h3>{t('Sessões')}</h3>
         <span className="muted">
-          {total ? `Assistido ${total === 1 ? '1 vez' : `${total} vezes`}` : 'Ainda não assistido'}
+          {total
+            ? `Assistido ${total === 1 ? '1 vez' : `${total} vezes`}`
+            : t('Ainda não assistido')}
         </span>
       </div>
       <form
@@ -81,7 +90,7 @@ export function ViewingHistory({
       >
         <Input
           type="date"
-          aria-label="Data da sessão"
+          aria-label={t('Data da sessão')}
           required
           min="1900-01-01"
           max={format(new Date(), 'yyyy-MM-dd')}
@@ -90,7 +99,7 @@ export function ViewingHistory({
         />
         <Button type="submit" variant="outline" disabled={add.isPending}>
           {add.isPending ? <LoaderCircle className="spin" size={14} /> : <CalendarPlus size={14} />}
-          Registrar sessão
+          {t('Registrar sessão')}
         </Button>
       </form>
       {viewings.length > 0 && (
@@ -101,7 +110,9 @@ export function ViewingHistory({
               <button
                 type="button"
                 className="viewing-remove"
-                aria-label={`Remover sessão de ${formatDate(viewing.watchedOn)}`}
+                aria-label={t('Remover sessão de {formatDate}', {
+                  formatDate: formatDate(viewing.watchedOn),
+                })}
                 disabled={remove.isPending}
                 onClick={() => remove.mutate(viewing.id)}
               >
@@ -112,7 +123,9 @@ export function ViewingHistory({
         </ul>
       )}
       {total > viewings.length && (
-        <small className="muted">Exibindo as {viewings.length} sessões mais recentes.</small>
+        <small className="muted">
+          {t('Exibindo as')} {viewings.length} {t('sessões mais recentes.')}
+        </small>
       )}
     </section>
   );

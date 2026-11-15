@@ -1,4 +1,5 @@
 'use client';
+import { useT } from '@/i18n/provider';
 import { useState } from 'react';
 import {
   DndContext,
@@ -74,6 +75,7 @@ export function LibraryBoard({
   onOpen: (id: string) => void;
   onPatch: (id: string, changes: EntryPatchInput) => void;
 }) {
+  const t = useT();
   const [dragging, setDragging] = useState<string | null>(null);
   const [target, setTarget] = useState<DropTarget | null>(null);
   const sensors = useSensors(
@@ -85,20 +87,28 @@ export function LibraryBoard({
     items: entries.filter((entry) => entry.status === status).sort(byRank),
   }));
   const titleOf = (id: string | number) =>
-    entries.find((entry) => entry.id === id)?.title ?? 'Título';
+    entries.find((entry) => entry.id === id)?.title ?? t('Título');
   const announcements: Announcements = {
     onDragStart: ({ active }) => `${titleOf(active.id)} selecionado.`,
     onDragOver: ({ active, over }) =>
       over ? `${titleOf(active.id)} sobre ${describe(over.id)}.` : undefined,
     onDragEnd: ({ active, over }) =>
-      over ? `${titleOf(active.id)} movido para ${describe(over.id)}.` : 'Movimento cancelado.',
-    onDragCancel: ({ active }) => `Movimento de ${titleOf(active.id)} cancelado.`,
+      over
+        ? t('{title} movido para {describe}.', {
+            title: titleOf(active.id),
+            describe: describe(over.id),
+          })
+        : t('Movimento cancelado.'),
+    onDragCancel: ({ active }) =>
+      t('Movimento de {title} cancelado.', { title: titleOf(active.id) }),
   };
   function describe(id: string | number) {
     const key = String(id);
-    if (key.startsWith('column:')) return statusLabels[key.slice(7) as StatusKey];
+    if (key.startsWith('column:')) return t(statusLabels[key.slice(7) as StatusKey]);
     const entry = entries.find((item) => item.id === key);
-    return entry ? `${entry.title}, em ${statusLabels[entry.status]}` : key;
+    return entry
+      ? t('{title}, em {value}', { title: entry.title, value: t(statusLabels[entry.status]) })
+      : key;
   }
   function move(id: string, status: StatusKey, index: number) {
     const entry = entries.find((item) => item.id === id);
@@ -123,8 +133,9 @@ export function LibraryBoard({
       accessibility={{
         announcements,
         screenReaderInstructions: {
-          draggable:
+          draggable: t(
             'Pressione espaço ou Enter para pegar o título, use as setas para mover e espaço para soltar. Esc cancela.',
+          ),
         },
       }}
       onDragStart={({ active: item }) => setDragging(String(item.id))}
@@ -136,7 +147,7 @@ export function LibraryBoard({
       }}
       onDragCancel={reset}
     >
-      <div className="board" aria-label="Quadro por status">
+      <div className="board" aria-label={t('Quadro por status')}>
         {columns.map(({ status, items }) => (
           <BoardColumn
             key={status}
@@ -163,7 +174,7 @@ export function LibraryBoard({
               <div className="drop-placeholder" aria-hidden="true" />
             )}
             {items.length === 0 && target?.status !== status && (
-              <p className="board-empty">Arraste títulos para cá</p>
+              <p className="board-empty">{t('Arraste títulos para cá')}</p>
             )}
           </BoardColumn>
         ))}
@@ -186,12 +197,13 @@ function BoardColumn({
   highlighted: boolean;
   children: React.ReactNode;
 }) {
+  const t = useT();
   const { setNodeRef } = useDroppable({ id: columnId(status), data: { column: status, size } });
   return (
     <section
       ref={setNodeRef}
       className={`board-column ${highlighted ? 'drop-target' : ''}`}
-      aria-label={`${statusLabels[status]}, ${size} títulos`}
+      aria-label={t('{value}, {size} títulos', { value: t(statusLabels[status]), size })}
     >
       <header className="board-column-header">
         <StatusBadge status={status} />
@@ -217,6 +229,7 @@ function BoardCard({
   onOpen: (id: string) => void;
   onMove: (status: StatusKey) => void;
 }) {
+  const t = useT();
   const data: CardData = { status: entry.status, index };
   const draggable = useDraggable({ id: entry.id, data });
   const droppable = useDroppable({ id: entry.id, data });
@@ -229,7 +242,7 @@ function BoardCard({
       className={`board-card ${dragging ? 'dragging' : ''} ${dropBefore ? 'drop-before' : ''}`}
       {...draggable.attributes}
       {...draggable.listeners}
-      aria-roledescription="título arrastável"
+      aria-roledescription={t('título arrastável')}
     >
       <CardContent entry={entry} onOpen={onOpen} onMove={onMove} />
     </article>
@@ -247,6 +260,7 @@ function CardContent({
   onOpen?: (id: string) => void;
   onMove?: (status: StatusKey) => void;
 }) {
+  const t = useT();
   const percent = progressPercent(entry);
   const content = (
     <>
@@ -282,12 +296,12 @@ function CardContent({
         {entry.rating !== null ? (
           <StarRating value={entry.rating} size={10} />
         ) : (
-          <span className="muted">Sem nota</span>
+          <span className="muted">{t('Sem nota')}</span>
         )}
         {!overlay && (
           <select
             className="inline-control board-move"
-            aria-label={`Mover ${entry.title} para`}
+            aria-label={t('Mover {title} para', { title: entry.title })}
             value={entry.status}
             onPointerDown={(event) => event.stopPropagation()}
             onKeyDown={(event) => event.stopPropagation()}
@@ -295,7 +309,7 @@ function CardContent({
           >
             {statusKeys.map((key) => (
               <option key={key} value={key}>
-                {statusLabels[key]}
+                {t(statusLabels[key])}
               </option>
             ))}
           </select>

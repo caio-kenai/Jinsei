@@ -1,4 +1,6 @@
 'use client';
+import { msg } from '@/i18n/config';
+import { useT } from '@/i18n/provider';
 import { currentDateLocale } from '@/i18n/config';
 import type { CSSProperties, ReactNode } from 'react';
 import Link from 'next/link';
@@ -73,13 +75,14 @@ export function UserName({ user }: { user: CommunityUser }) {
 }
 
 const tabs = [
-  { href: '/community', label: 'Atividade', Icon: Activity, color: '#7050cf' },
-  { href: '/community/friends', label: 'Amigos', Icon: UsersRound, color: '#2f7bff' },
-  { href: '/community/messages', label: 'Mensagens', Icon: MessagesSquare, color: '#15936a' },
-  { href: '/community/clubs', label: 'Clubes', Icon: Tent, color: '#f7832b' },
+  { href: '/community', label: msg('Atividade'), Icon: Activity, color: '#7050cf' },
+  { href: '/community/friends', label: msg('Amigos'), Icon: UsersRound, color: '#2f7bff' },
+  { href: '/community/messages', label: msg('Mensagens'), Icon: MessagesSquare, color: '#15936a' },
+  { href: '/community/clubs', label: msg('Clubes'), Icon: Tent, color: '#f7832b' },
 ] as const;
 
 export function CommunityShell({ children }: { children: ReactNode }) {
+  const t = useT();
   const pathname = usePathname();
   const summary = useCommunitySummary().data;
   const badge = (href: string) =>
@@ -98,12 +101,12 @@ export function CommunityShell({ children }: { children: ReactNode }) {
             <Users size={14} />
           </span>
           <div>
-            <h1>Comunidade</h1>
-            <div className="breadcrumb">Amigos, conversas e clubes do Jinsei</div>
+            <h1>{t('Comunidade')}</h1>
+            <div className="breadcrumb">{t('Amigos, conversas e clubes do Jinsei')}</div>
           </div>
         </div>
       </header>
-      <nav className="view-tabs community-tabs" aria-label="Seções da comunidade">
+      <nav className="view-tabs community-tabs" aria-label={t('Seções da comunidade')}>
         {tabs.map(({ href, label, Icon, color }) => (
           <Link
             key={href}
@@ -113,7 +116,7 @@ export function CommunityShell({ children }: { children: ReactNode }) {
             aria-current={active(href) ? 'page' : undefined}
           >
             <Icon size={15} />
-            {label}
+            {t(label)}
             {Boolean(badge(href)) && <span className="community-badge">{badge(href)}</span>}
             {active(href) && (
               <motion.span

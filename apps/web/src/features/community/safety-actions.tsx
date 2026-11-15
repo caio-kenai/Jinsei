@@ -1,4 +1,6 @@
 'use client';
+import { msg } from '@/i18n/config';
+import { useT } from '@/i18n/provider';
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Ban, Flag, LoaderCircle, MoreHorizontal, ShieldCheck } from 'lucide-react';
@@ -25,7 +27,7 @@ const targetLabels: Record<ReportInput['targetType'], string> = {
   user: 'esta pessoa',
   message: 'esta mensagem',
   club: 'este clube',
-  club_post: 'esta publicação',
+  club_post: msg('esta publicação'),
   review: 'esta review',
 };
 
@@ -37,13 +39,14 @@ export function useBlocks() {
 }
 
 export function useSafetyMutations() {
+  const t = useT();
   const client = useQueryClient();
   const refresh = () => void client.invalidateQueries({ queryKey: ['community'] });
   return {
     block: useMutation({
       mutationFn: (userId: string) => api(`/community/blocks/${userId}`, { method: 'POST' }),
       onSuccess: () => {
-        toast.success('Pessoa bloqueada');
+        toast.success(t('Pessoa bloqueada'));
         refresh();
       },
       onError: (error) => toast.error(error.message),
@@ -51,7 +54,7 @@ export function useSafetyMutations() {
     unblock: useMutation({
       mutationFn: (userId: string) => api(`/community/blocks/${userId}`, { method: 'DELETE' }),
       onSuccess: () => {
-        toast.success('Pessoa desbloqueada');
+        toast.success(t('Pessoa desbloqueada'));
         refresh();
       },
       onError: (error) => toast.error(error.message),
@@ -69,6 +72,7 @@ export function ReportDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  const t = useT();
   const [reason, setReason] = useState<ReportInput['reason']>('spam');
   const [details, setDetails] = useState('');
   const send = useMutation({
@@ -78,7 +82,7 @@ export function ReportDialog({
         body: jsonBody({ ...target, reason, details }),
       }),
     onSuccess: () => {
-      toast.success('Denúncia enviada. Obrigado por ajudar a cuidar da comunidade.');
+      toast.success(t('Denúncia enviada. Obrigado por ajudar a cuidar da comunidade.'));
       setDetails('');
       onOpenChange(false);
     },
@@ -88,11 +92,12 @@ export function ReportDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="report-dialog">
         <DialogTitle className="dialog-title">
-          Denunciar {targetLabels[target.targetType]}
+          {t('Denunciar')} {t(targetLabels[target.targetType])}
         </DialogTitle>
         <DialogDescription className="dialog-description">
-          A moderação desta instância recebe uma cópia do conteúdo. Quem você denunciou não fica
-          sabendo quem enviou.
+          {t(
+            'A moderação desta instância recebe uma cópia do conteúdo. Quem você denunciou não fica sabendo quem enviou.',
+          )}
         </DialogDescription>
         <form
           className="report-form"
@@ -101,7 +106,7 @@ export function ReportDialog({
             send.mutate();
           }}
         >
-          <div className="report-reasons" role="radiogroup" aria-label="Motivo">
+          <div className="report-reasons" role="radiogroup" aria-label={t('Motivo')}>
             {reportReasons.map((value) => (
               <button
                 key={value}
@@ -111,27 +116,27 @@ export function ReportDialog({
                 className={cn('report-reason', reason === value && 'active')}
                 onClick={() => setReason(value)}
               >
-                {reportReasonLabels[value]}
+                {t(reportReasonLabels[value])}
               </button>
             ))}
           </div>
           <label className="field">
-            Detalhes (opcional)
+            {t('Detalhes (opcional)')}
             <Textarea
               value={details}
               maxLength={1000}
               rows={3}
-              placeholder="Conte o que aconteceu"
+              placeholder={t('Conte o que aconteceu')}
               onChange={(event) => setDetails(event.target.value)}
             />
           </label>
           <div className="dialog-footer">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancelar
+              {t('Cancelar')}
             </Button>
             <Button type="submit" variant="destructive" disabled={send.isPending}>
               {send.isPending ? <LoaderCircle size={14} className="spin" /> : <Flag size={14} />}
-              Enviar denúncia
+              {t('Enviar denúncia')}
             </Button>
           </div>
         </form>
@@ -144,7 +149,7 @@ export function ReportDialog({
 export function ReportButton({
   target,
   className,
-  label = 'Denunciar',
+  label = msg('Denunciar'),
 }: {
   target: Pick<ReportInput, 'targetType' | 'targetId'>;
   className?: string;
@@ -179,6 +184,7 @@ export function UserSafetyMenu({
   blocked?: boolean;
   className?: string;
 }) {
+  const t = useT();
   const [reporting, setReporting] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const { block, unblock } = useSafetyMutations();
@@ -189,7 +195,7 @@ export function UserSafetyMenu({
           <button
             type="button"
             className={cn('community-icon-link safety-trigger', className)}
-            aria-label={`Mais opções para ${name}`}
+            aria-label={t('Mais opções para {name}', { name })}
           >
             <MoreHorizontal size={16} />
           </button>
@@ -197,17 +203,17 @@ export function UserSafetyMenu({
         <DropdownMenuContent align="end">
           <DropdownMenuItem onSelect={() => setReporting(true)}>
             <Flag size={14} />
-            Denunciar
+            {t('Denunciar')}
           </DropdownMenuItem>
           {blocked ? (
             <DropdownMenuItem onSelect={() => unblock.mutate(userId)}>
               <ShieldCheck size={14} />
-              Desbloquear
+              {t('Desbloquear')}
             </DropdownMenuItem>
           ) : (
             <DropdownMenuItem className="danger-item" onSelect={() => setConfirming(true)}>
               <Ban size={14} />
-              Bloquear
+              {t('Bloquear')}
             </DropdownMenuItem>
           )}
         </DropdownMenuContent>
@@ -221,14 +227,17 @@ export function UserSafetyMenu({
       )}
       <Dialog open={confirming} onOpenChange={setConfirming}>
         <DialogContent>
-          <DialogTitle className="dialog-title">Bloquear {name}?</DialogTitle>
+          <DialogTitle className="dialog-title">
+            {t('Bloquear')} {name}?
+          </DialogTitle>
           <DialogDescription className="dialog-description">
-            Vocês deixam de ser amigos, não podem trocar mensagens nem se encontrar na busca, e as
-            publicações dessa pessoa somem dos clubes para você. Dá para desbloquear quando quiser.
+            {t(
+              'Vocês deixam de ser amigos, não podem trocar mensagens nem se encontrar na busca, e as publicações dessa pessoa somem dos clubes para você. Dá para desbloquear quando quiser.',
+            )}
           </DialogDescription>
           <div className="dialog-footer">
             <Button variant="outline" onClick={() => setConfirming(false)}>
-              Cancelar
+              {t('Cancelar')}
             </Button>
             <Button
               variant="destructive"
@@ -236,7 +245,7 @@ export function UserSafetyMenu({
               disabled={block.isPending}
             >
               <Ban size={14} />
-              Bloquear
+              {t('Bloquear')}
             </Button>
           </div>
         </DialogContent>

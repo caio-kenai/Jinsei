@@ -1,3 +1,6 @@
+'use client';
+import { useT } from '@/i18n/provider';
+import { currentLocale } from '@/i18n/config';
 import Link from 'next/link';
 import { ChevronLeft, ChevronRight, Star, Users } from 'lucide-react';
 import {
@@ -26,20 +29,21 @@ const href = (mediaType: MediaType | undefined, sort: string, page = 1) => {
 };
 
 export function RankingsPage({ ranking, mediaType, sort }: Props) {
+  const t = useT();
   return (
     <div className="public-surface rankings-surface">
       <PublicHeader />
       <main className="marketing-container rankings-page">
         <header className="rankings-heading">
-          <span className="landing-eyebrow">RANKINGS DA COMUNIDADE</span>
+          <span className="landing-eyebrow">{t('RANKINGS DA COMUNIDADE')}</span>
           <h1>
-            As histórias mais <span>amadas do Jinsei</span>
+            {t('As histórias mais')} <span>{t('amadas do Jinsei')}</span>
           </h1>
-          <p>Notas de quem acompanha cada obra, ponderadas pela quantidade de avaliações.</p>
+          <p>{t('Notas de quem acompanha cada obra, ponderadas pela quantidade de avaliações.')}</p>
         </header>
-        <nav className="rankings-tabs" aria-label="Categorias">
+        <nav className="rankings-tabs" aria-label={t('Categorias')}>
           <Link className={!mediaType ? 'active' : ''} href={href(undefined, sort)}>
-            Todas
+            {t('Todas')}
           </Link>
           {mediaTypes.map((type) => {
             const Icon = categoryIcons[type];
@@ -51,7 +55,7 @@ export function RankingsPage({ ranking, mediaType, sort }: Props) {
                 style={{ '--tab-color': categoryColors[type] } as React.CSSProperties}
               >
                 <Icon size={15} />
-                {categoryLabels[type]}
+                {t(categoryLabels[type])}
               </Link>
             );
           })}
@@ -59,11 +63,11 @@ export function RankingsPage({ ranking, mediaType, sort }: Props) {
         <div className="rankings-sort">
           <Link className={sort === 'score' ? 'active' : ''} href={href(mediaType, 'score')}>
             <Star size={14} />
-            Melhor avaliadas
+            {t('Melhor avaliadas')}
           </Link>
           <Link className={sort === 'popular' ? 'active' : ''} href={href(mediaType, 'popular')}>
             <Users size={14} />
-            Mais populares
+            {t('Mais populares')}
           </Link>
         </div>
         {ranking.items.length ? (
@@ -86,7 +90,7 @@ export function RankingsPage({ ranking, mediaType, sort }: Props) {
                       <strong>{item.title}</strong>
                       <small>
                         <Icon size={12} />
-                        {categoryLabels[item.mediaType]}
+                        {t(categoryLabels[item.mediaType])}
                         {item.releaseYear && ` · ${item.releaseYear}`}
                       </small>
                     </span>
@@ -94,15 +98,17 @@ export function RankingsPage({ ranking, mediaType, sort }: Props) {
                       <Star size={15} fill="currentColor" />
                       {item.average === null
                         ? '—'
-                        : item.average.toLocaleString('pt-BR', { maximumFractionDigits: 2 })}
+                        : item.average.toLocaleString(currentLocale(), {
+                            maximumFractionDigits: 2,
+                          })}
                       <small>
-                        {item.ratings.toLocaleString('pt-BR')}{' '}
-                        {item.ratings === 1 ? 'avaliação' : 'avaliações'}
+                        {item.ratings.toLocaleString(currentLocale())}{' '}
+                        {item.ratings === 1 ? t('avaliação') : t('avaliações')}
                       </small>
                     </span>
                     <span className="rankings-members">
                       <Users size={14} />
-                      {item.members.toLocaleString('pt-BR')}
+                      {item.members.toLocaleString(currentLocale())}
                     </span>
                   </Link>
                 </li>
@@ -111,19 +117,21 @@ export function RankingsPage({ ranking, mediaType, sort }: Props) {
           </ol>
         ) : (
           <div className="rankings-empty">
-            <p>Ainda não há obras avaliadas nesta categoria. Que tal ser a primeira pessoa?</p>
+            <p>
+              {t('Ainda não há obras avaliadas nesta categoria. Que tal ser a primeira pessoa?')}
+            </p>
           </div>
         )}
-        <nav className="rankings-pages" aria-label="Páginas">
+        <nav className="rankings-pages" aria-label={t('Páginas')}>
           {ranking.page > 1 && (
             <Link href={href(mediaType, sort, ranking.page - 1)}>
               <ChevronLeft size={15} />
-              Anteriores
+              {t('Anteriores')}
             </Link>
           )}
           {ranking.hasMore && (
             <Link href={href(mediaType, sort, ranking.page + 1)}>
-              Próximas 50
+              {t('Próximas 50')}
               <ChevronRight size={15} />
             </Link>
           )}

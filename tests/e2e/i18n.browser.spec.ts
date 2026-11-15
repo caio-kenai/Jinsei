@@ -41,4 +41,56 @@ test.describe('idioma pelo navegador', () => {
     const me = await page.request.get('http://localhost:3000/api/users/me');
     expect((await me.json()).preferences.locale).toBe('en');
   });
+
+  test('as telas principais não deixam textos em português no inglês', async ({ page }) => {
+    test.setTimeout(120000);
+    const headers = { Origin: 'http://localhost:3000' };
+    const email = `ingles-${randomUUID().slice(0, 8)}@example.test`;
+    await page.request.post('http://localhost:3000/api/auth/register', {
+      data: { email, password: 'Jinsei idiomas 2026!' },
+      headers,
+    });
+    await page.request.post('http://localhost:3000/api/users/me/onboarding', {
+      data: {
+        displayName: 'Polyglot',
+        username: `en-${randomUUID().slice(0, 8)}`,
+        categories: ['games', 'anime', 'books'],
+        theme: 'light',
+        locale: 'en',
+      },
+      headers,
+    });
+    // Words that only appear in Portuguese UI text.
+    const portuguese =
+      /\b(você|não|biblioteca|configurações|títulos?|coleç(ão|ões)|amigos|comunidade|sua|seus)\b/i;
+    const leaks: string[] = [];
+    for (const path of [
+      '/home',
+      '/library',
+      '/collections',
+      '/goals',
+      '/journey',
+      '/statistics',
+      '/community',
+      '/community/friends',
+      '/community/clubs',
+      '/discover',
+      '/profile',
+      '/settings',
+      '/rankings',
+      '/',
+      '/terms',
+    ]) {
+      await page.goto(path);
+      await page.waitForLoadState('networkidle');
+      const text = await page.locator('body').innerText();
+      leaks.push(
+        ...text
+          .split('\n')
+          .filter((line) => portuguese.test(line))
+          .map((line) => `${path}: ${line}`),
+      );
+    }
+    expect(leaks).toEqual([]);
+  });
 });

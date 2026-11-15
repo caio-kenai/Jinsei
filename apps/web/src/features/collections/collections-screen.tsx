@@ -1,4 +1,5 @@
 'use client';
+import { useT } from '@/i18n/provider';
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -10,6 +11,7 @@ import { CollectionFormDialog } from './collection-form-dialog';
 import { useCollectionMutations, useCollections } from './use-collections';
 
 export function CollectionsScreen() {
+  const t = useT();
   const result = useCollections();
   const { create } = useCollectionMutations();
   const [open, setOpen] = useState(false);
@@ -22,14 +24,14 @@ export function CollectionsScreen() {
             <FolderHeart size={17} />
           </span>
           <div>
-            <h1>Coleções</h1>
-            <div className="breadcrumb">Listas, rankings e agrupamentos pessoais</div>
+            <h1>{t('Coleções')}</h1>
+            <div className="breadcrumb">{t('Listas, rankings e agrupamentos pessoais')}</div>
           </div>
         </div>
         <div className="context-actions">
           <Button size="sm" onClick={() => setOpen(true)}>
             <Plus size={14} />
-            Nova coleção
+            {t('Nova coleção')}
           </Button>
         </div>
       </header>
@@ -41,20 +43,22 @@ export function CollectionsScreen() {
         ) : result.error ? (
           <div className="empty-state">
             <p>{result.error.message}</p>
-            <Button onClick={() => void result.refetch()}>Tentar novamente</Button>
+            <Button onClick={() => void result.refetch()}>{t('Tentar novamente')}</Button>
           </div>
         ) : result.data.collections.length === 0 ? (
           <div className="empty-state">
             <span className="empty-state-icon">
               <FolderHeart size={25} />
             </span>
-            <h2>Suas histórias, do seu jeito</h2>
+            <h2>{t('Suas histórias, do seu jeito')}</h2>
             <p>
-              Crie rankings, listas para as férias ou reúna as obras que mudaram sua perspectiva.
+              {t(
+                'Crie rankings, listas para as férias ou reúna as obras que mudaram sua perspectiva.',
+              )}
             </p>
             <Button variant="outline" onClick={() => setOpen(true)}>
               <Plus size={14} />
-              Criar minha primeira coleção
+              {t('Criar minha primeira coleção')}
             </Button>
           </div>
         ) : (
@@ -69,12 +73,12 @@ export function CollectionsScreen() {
                 <span className="collection-card-body">
                   <strong>{collection.name}</strong>
                   <small>
-                    {collection.itemCount} {collection.itemCount === 1 ? 'título' : 'títulos'} ·{' '}
-                    {collectionVisibilityLabels[collection.visibility]}
+                    {collection.itemCount} {collection.itemCount === 1 ? t('título') : t('títulos')}{' '}
+                    · {t(collectionVisibilityLabels[collection.visibility])}
                     {collection.ranked && (
                       <>
                         {' · '}
-                        <ListOrdered size={11} /> Ranking
+                        <ListOrdered size={11} /> {t('Ranking')}
                       </>
                     )}
                   </small>

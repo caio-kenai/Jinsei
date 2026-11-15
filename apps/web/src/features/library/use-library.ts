@@ -1,4 +1,5 @@
 'use client';
+import { useT } from '@/i18n/provider';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   statusLabels,
@@ -12,6 +13,7 @@ import { celebrate } from '@/lib/celebrate';
 import { currentUserOptions } from '@/features/auth/use-current-user';
 
 export function useEntryMutation() {
+  const t = useT();
   const client = useQueryClient();
   return useMutation({
     mutationFn: ({ id, changes }: { id: string; changes: EntryPatchInput }) =>
@@ -40,7 +42,12 @@ export function useEntryMutation() {
       client.setQueryData(['entry', entry.id], entry);
       // Progress can move the title to another status; say so when it was not chosen explicitly.
       if (changes.progress && !changes.status && context?.previousStatus !== entry.status)
-        toast.success(`${entry.title} agora está em ${statusLabels[entry.status]}`);
+        toast.success(
+          t('{title} agora está em {value}', {
+            title: entry.title,
+            value: t(statusLabels[entry.status]),
+          }),
+        );
       if (
         entry.status === 'completed' &&
         context?.previousStatus !== 'completed' &&

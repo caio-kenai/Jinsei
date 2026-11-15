@@ -1,22 +1,25 @@
+'use client';
+import { useT } from '@/i18n/provider';
 import Link from 'next/link';
 import type { PublicCollection } from '@jinsei/contracts';
 import { PublicFooter, PublicHeader } from '@/features/presentation/public-navigation';
 import { PublicWorkCard } from './public-work';
 
 export function PublicCollectionPage({ collection }: { collection: PublicCollection }) {
+  const t = useT();
   return (
     <div className="public-surface public-profile">
       <PublicHeader />
       <main className="marketing-container">
         <header className="public-collection-header">
           <p className="public-username">
-            Coleção de{' '}
+            {t('Coleção de')}{' '}
             <Link href={`/u/${collection.owner.username}`}>{collection.owner.displayName}</Link>
           </p>
           <h1>{collection.name}</h1>
           {collection.description && <p className="public-bio">{collection.description}</p>}
           <p className="public-since">
-            {collection.itemCount} {collection.itemCount === 1 ? 'título' : 'títulos'}
+            {collection.itemCount} {collection.itemCount === 1 ? t('título') : t('títulos')}
             {collection.ranked && ' · Ranking'}
           </p>
         </header>

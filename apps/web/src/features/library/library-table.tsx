@@ -1,4 +1,6 @@
 'use client';
+import { currentDateLocale, msg } from '@/i18n/config';
+import { useT } from '@/i18n/provider';
 import { Fragment } from 'react';
 import {
   flexRender,
@@ -9,7 +11,6 @@ import {
 } from '@tanstack/react-table';
 import { ChevronDown, Heart } from 'lucide-react';
 import { formatDistanceToNowStrict } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 import {
   statusKeys,
   statusLabels,
@@ -24,13 +25,13 @@ import { RatingPicker } from '@/components/shared/star-rating';
 import { ProgressCell } from './progress-cell';
 
 export const columnLabels = {
-  title: 'Nome',
-  status: 'Status',
-  rating: 'Nota',
-  progress: 'Progresso',
-  platforms: 'Plataforma',
-  tags: 'Tags',
-  updatedAt: 'Atualizado',
+  title: msg('Nome'),
+  status: msg('Status'),
+  rating: msg('Nota'),
+  progress: msg('Progresso'),
+  platforms: msg('Plataforma'),
+  tags: msg('Tags'),
+  updatedAt: msg('Atualizado'),
 };
 export function LibraryTable({
   entries,
@@ -47,6 +48,7 @@ export function LibraryTable({
   onOpen: (id: string) => void;
   onPatch: (id: string, changes: EntryPatchInput) => void;
 }) {
+  const t = useT();
   const columns: ColumnDef<LibraryEntry>[] = [
     {
       id: 'select',
@@ -55,7 +57,7 @@ export function LibraryTable({
         <input
           type="checkbox"
           className="row-check"
-          aria-label="Selecionar títulos desta página"
+          aria-label={t('Selecionar títulos desta página')}
           checked={table.getIsAllRowsSelected()}
           onChange={table.getToggleAllRowsSelectedHandler()}
         />
@@ -64,7 +66,7 @@ export function LibraryTable({
         <input
           type="checkbox"
           className="row-check"
-          aria-label={`Selecionar ${row.original.title}`}
+          aria-label={t('Selecionar {title}', { title: row.original.title })}
           checked={row.getIsSelected()}
           onChange={row.getToggleSelectedHandler()}
         />
@@ -72,7 +74,7 @@ export function LibraryTable({
     },
     ...config.columns.map((key): ColumnDef<LibraryEntry> => ({
       id: key,
-      header: columnLabels[key],
+      header: t(columnLabels[key]),
       size: key === 'title' ? 300 : key === 'rating' ? 110 : key === 'progress' ? 175 : 125,
       cell: ({ row }) => {
         const item = row.original;
@@ -100,14 +102,14 @@ export function LibraryTable({
         if (key === 'status')
           return (
             <select
-              aria-label={`Status de ${item.title}`}
+              aria-label={t('Status de {title}', { title: item.title })}
               value={item.status}
               className={`inline-control status-badge status-${item.status}`}
               onChange={(event) => onPatch(item.id, { status: event.target.value as StatusKey })}
             >
               {statusKeys.map((status) => (
                 <option key={status} value={status}>
-                  {statusLabels[status]}
+                  {t(statusLabels[status])}
                 </option>
               ))}
             </select>
@@ -116,7 +118,7 @@ export function LibraryTable({
           return (
             <RatingPicker
               value={item.rating}
-              label={`Nota de ${item.title}`}
+              label={t('Nota de {title}', { title: item.title })}
               onChange={(rating) => onPatch(item.id, { rating })}
             />
           );
@@ -141,7 +143,10 @@ export function LibraryTable({
           );
         return (
           <span className="muted">
-            {formatDistanceToNowStrict(new Date(item.updatedAt), { addSuffix: true, locale: ptBR })}
+            {formatDistanceToNowStrict(new Date(item.updatedAt), {
+              addSuffix: true,
+              locale: currentDateLocale(),
+            })}
           </span>
         );
       },
