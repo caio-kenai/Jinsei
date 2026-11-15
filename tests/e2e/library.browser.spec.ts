@@ -156,7 +156,8 @@ test('capturas reais de lista, galeria, temas e mobile com conta de demonstraç�
   await page.screenshot({ path: 'assets/screenshots/library-list-dark.png' });
   await page.getByRole('button', { name: 'Hollow Knight', exact: true }).click();
   const details = page.getByRole('dialog', { name: 'Detalhes do título' });
-  await expect(details.getByRole('link', { name: 'CheapShark', exact: true })).toBeVisible();
+  // The cover credit names CheapShark, or Steam once the work page found the vertical cover.
+  await expect(details.getByRole('link', { name: /^(CheapShark|Steam)$/ })).toBeVisible();
   await expect(details.getByRole('img', { name: 'Capa de Hollow Knight' })).toBeVisible();
   await page.screenshot({ path: 'assets/screenshots/entry-details.png' });
   await details.getByRole('button', { name: 'Fechar', exact: true }).click();
