@@ -1322,6 +1322,17 @@
   .marketing-header nav {
     gap: 7px;
   }
+  /* Icon-only picker: the native select still opens over the icon. */
+  .marketing-header .language-switcher {
+    width: 34px;
+    justify-content: center;
+    padding: 0;
+  }
+  .marketing-header .language-switcher select {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+  }
   .marketing-header .public-button {
     font-size: 12px;
     padding: 7px 10px;
@@ -1665,4 +1676,48 @@
   background: none;
   text-align: center;
   margin-top: 12px;
+}
+
+/* Language picker (public header and sign-in pages) */
+.language-switcher {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 10px;
+  border: 1px solid var(--public-border, rgb(127 127 127 / 0.22));
+  border-radius: 999px;
+  color: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background-color 150ms ease;
+}
+.language-switcher:hover {
+  background: rgb(127 127 127 / 0.08);
+}
+.language-switcher select {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  padding-right: 2px;
+}
+.language-switcher select:focus-visible {
+  outline: none;
+}
+.language-switcher:focus-within {
+  outline: 2px solid var(--accent, #7f77f1);
+  outline-offset: 2px;
+}
+.language-switcher option {
+  color: #1d1f24;
+}
+.auth-language {
+  position: absolute;
+  top: 18px;
+  right: 20px;
+  z-index: 2;
 }

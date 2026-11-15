@@ -15,26 +15,31 @@ import './community.css';
 import './settings.css';
 import './interactions.css';
 import { AppProviders } from '@/providers/app-providers';
+import { getLocale, getT } from '@/i18n/server';
 
-export const metadata: Metadata = {
-  title: { default: 'Jinsei', template: '%s · Jinsei' },
-  description: 'Sua jornada pela cultura e pelo entretenimento, organizada em um só lugar.',
-  icons: {
-    icon: [32, 64].map((size) => ({
-      url: `/branding/favicon-${size}.png`,
-      type: 'image/png',
-      sizes: `${size}x${size}`,
-    })),
-    apple: { url: '/branding/favicon-180.png', sizes: '180x180' },
-  },
-  robots: { index: false, follow: false },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return {
+    title: { default: 'Jinsei', template: '%s · Jinsei' },
+    description: t('Sua jornada pela cultura e pelo entretenimento, organizada em um só lugar.'),
+    icons: {
+      icon: [32, 64].map((size) => ({
+        url: `/branding/favicon-${size}.png`,
+        type: 'image/png',
+        sizes: `${size}x${size}`,
+      })),
+      apple: { url: '/branding/favicon-180.png', sizes: '180x180' },
+    },
+    robots: { index: false, follow: false },
+  };
+}
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  const locale = await getLocale();
   return (
-    <html lang="pt-BR" suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning>
       <body>
-        <AppProviders>{children}</AppProviders>
+        <AppProviders locale={locale}>{children}</AppProviders>
       </body>
     </html>
   );

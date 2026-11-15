@@ -93,6 +93,7 @@ export class UsersService {
         dateFormat: user.preference.dateFormat,
         timeFormat: user.preference.timeFormat,
         celebrations: user.preference.celebrations,
+        locale: user.preference.locale,
         categories: user.categories.map((category) => category.mediaTypeId),
         onboarded: Boolean(user.preference.onboardedAt),
       },
@@ -117,6 +118,7 @@ export class UsersService {
           dateFormat,
           timeFormat,
           celebrations,
+          locale,
           showFavorites,
           showStatistics,
           showReviews,
@@ -156,6 +158,7 @@ export class UsersService {
             dateFormat,
             timeFormat,
             celebrations,
+            locale,
             ...(onboarding ? { onboardedAt: new Date() } : {}),
           },
         });

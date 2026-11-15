@@ -1,10 +1,10 @@
 'use client';
+import { currentDateLocale } from '@/i18n/config';
 import type { CSSProperties, ReactNode } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion } from 'motion/react';
 import { formatDistanceToNowStrict, parseISO } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 import { Activity, MessagesSquare, UsersRound, Tent, Users } from 'lucide-react';
 import type { CommunityUser } from '@jinsei/contracts';
 import { cn } from '@/lib/utils';
@@ -20,7 +20,7 @@ export const initials = (name: string) =>
     .join('');
 
 export const relativeTime = (value: string) =>
-  formatDistanceToNowStrict(parseISO(value), { locale: ptBR, addSuffix: true });
+  formatDistanceToNowStrict(parseISO(value), { locale: currentDateLocale(), addSuffix: true });
 
 export function UserAvatar({
   user,

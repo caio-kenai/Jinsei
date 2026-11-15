@@ -27,6 +27,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { MediaCover } from '@/features/library/media-cover';
 import { useCommunitySummary } from '@/features/community/use-community';
+import { useT } from '@/i18n/provider';
 
 function Avatar({ user, className }: { user: CurrentUser; className?: string }) {
   return (
@@ -50,6 +51,7 @@ export function UserMenu({
   onLogout: () => Promise<void>;
   onSupport?: () => void;
 }) {
+  const t = useT();
   const [open, setOpen] = useState(false);
   const community = useCommunitySummary().data;
   const pending = (community?.pendingRequests ?? 0) + (community?.unreadMessages ?? 0);
@@ -62,7 +64,7 @@ export function UserMenu({
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
-        <button className="profile-trigger" aria-label="Menu da conta">
+        <button className="profile-trigger" aria-label={t('Menu da conta')}>
           <Avatar user={user} />
           <span className="profile-trigger-status" aria-hidden />
         </button>
@@ -81,7 +83,7 @@ export function UserMenu({
         <DropdownMenuItem asChild className="user-menu-favorites-heading">
           <Link href="/favorites">
             <Heart size={16} />
-            Favoritos
+            {t('Favoritos')}
             <span className="user-menu-count">{favorites.data?.total ?? '—'}</span>
             <ChevronRight size={14} />
           </Link>
@@ -91,7 +93,7 @@ export function UserMenu({
             <LoaderCircle className="spin" size={16} />
           </div>
         ) : favorites.error ? (
-          <p className="user-menu-empty">Não foi possível carregar os favoritos.</p>
+          <p className="user-menu-empty">{t('Não foi possível carregar os favoritos.')}</p>
         ) : favorites.data?.items.length ? (
           <div className="user-menu-favorites">
             {favorites.data.items.map((entry) => (
@@ -112,33 +114,33 @@ export function UserMenu({
             ))}
           </div>
         ) : (
-          <p className="user-menu-empty">Marque suas histórias preferidas com um coração.</p>
+          <p className="user-menu-empty">{t('Marque suas histórias preferidas com um coração.')}</p>
         )}
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
           <Link href="/profile">
             <UserRound size={16} />
-            Meu perfil
+            {t('Meu perfil')}
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <Link href="/community">
             <Users size={16} />
-            Comunidade
+            {t('Comunidade')}
             {pending > 0 && <span className="community-badge user-menu-badge">{pending}</span>}
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <Link href="/settings">
             <Settings size={16} />
-            Configurações
+            {t('Configurações')}
           </Link>
         </DropdownMenuItem>
         {user.isAdmin && (
           <DropdownMenuItem asChild>
             <Link href="/admin/moderation">
               <ShieldAlert size={16} />
-              Moderação
+              {t('Moderação')}
             </Link>
           </DropdownMenuItem>
         )}
@@ -146,20 +148,20 @@ export function UserMenu({
           <DropdownMenuItem asChild>
             <Link href="/settings/instance">
               <Server size={16} />
-              Administrar instância
+              {t('Administrar instância')}
             </Link>
           </DropdownMenuItem>
         )}
         {onSupport && (
           <DropdownMenuItem onSelect={onSupport}>
             <CupSoda size={16} />
-            Buy Me a Monster
+            {t('Buy Me a Monster')}
           </DropdownMenuItem>
         )}
         <DropdownMenuSeparator />
         <DropdownMenuItem onSelect={() => void onLogout()} className="user-menu-logout">
           <LogOut size={16} />
-          Sair
+          {t('Sair')}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

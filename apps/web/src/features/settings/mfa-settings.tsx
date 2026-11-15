@@ -9,16 +9,19 @@ import { api, jsonBody } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
+import { useT } from '@/i18n/provider';
 
 type Step = 'idle' | 'setup' | 'codes' | 'disable' | 'regenerate';
 
 function RecoveryCodes({ codes, onDone }: { codes: string[]; onDone: () => void }) {
+  const t = useT();
   const text = codes.join('\n');
   return (
     <div className="mfa-codes">
       <p>
-        Guarde estes códigos em um lugar seguro. Cada um entra uma única vez se você perder o
-        celular. Eles não serão mostrados de novo.
+        {t(
+          'Guarde estes códigos em um lugar seguro. Cada um entra uma única vez se você perder o celular. Eles não serão mostrados de novo.',
+        )}
       </p>
       <ol>
         {codes.map((code) => (
@@ -33,23 +36,25 @@ function RecoveryCodes({ codes, onDone }: { codes: string[]; onDone: () => void 
           variant="outline"
           size="sm"
           onClick={() =>
-            void navigator.clipboard.writeText(text).then(() => toast.success('Códigos copiados'))
+            void navigator.clipboard
+              .writeText(text)
+              .then(() => toast.success(t('Códigos copiados')))
           }
         >
           <Copy size={14} />
-          Copiar
+          {t('Copiar')}
         </Button>
         <Button type="button" variant="outline" size="sm" asChild>
           <a
-            href={`data:text/plain;charset=utf-8,${encodeURIComponent(`Jinsei — códigos de recuperação\n\n${text}\n`)}`}
+            href={`data:text/plain;charset=utf-8,${encodeURIComponent(`Jinsei — ${t('códigos de recuperação')}\n\n${text}\n`)}`}
             download="jinsei-codigos-de-recuperacao.txt"
           >
             <Download size={14} />
-            Baixar
+            {t('Baixar')}
           </a>
         </Button>
         <Button type="button" size="sm" onClick={onDone}>
-          Guardei os códigos
+          {t('Guardei os códigos')}
         </Button>
       </div>
     </div>
@@ -58,6 +63,7 @@ function RecoveryCodes({ codes, onDone }: { codes: string[]; onDone: () => void 
 
 /** Two-step login: setup with QR code, recovery codes and turning it off. */
 export function MfaSettings() {
+  const t = useT();
   const client = useQueryClient();
   const status = useQuery({
     queryKey: ['mfa'],
@@ -93,7 +99,7 @@ export function MfaSettings() {
       setCode('');
       setStep('codes');
       refresh();
-      toast.success('Verificação em duas etapas ativada');
+      toast.success(t('Verificação em duas etapas ativada'));
     },
     onError: (error) => toast.error(error.message),
   });
@@ -117,7 +123,7 @@ export function MfaSettings() {
     onSuccess: () => {
       close();
       refresh();
-      toast.success('Verificação em duas etapas desativada');
+      toast.success(t('Verificação em duas etapas desativada'));
     },
     onError: (error) => toast.error(error.message),
   });
@@ -127,7 +133,7 @@ export function MfaSettings() {
       <div className="settings-sessions-head">
         <span className="mfa-title">
           {enabled ? <ShieldCheck size={16} /> : <ShieldOff size={16} />}
-          <strong>Verificação em duas etapas</strong>
+          <strong>{t('Verificação em duas etapas')}</strong>
           <em className={enabled ? 'is-on' : ''}>{enabled ? 'Ativa' : 'Desativada'}</em>
         </span>
         {status.isPending ? (
@@ -136,44 +142,52 @@ export function MfaSettings() {
           <span className="mfa-actions">
             <Button size="sm" variant="ghost" onClick={() => setStep('regenerate')}>
               <KeyRound size={14} />
-              Novos códigos
+              {t('Novos códigos')}
             </Button>
             <Button size="sm" variant="outline" onClick={() => setStep('disable')}>
-              Desativar
+              {t('Desativar')}
             </Button>
           </span>
         ) : (
           <Button size="sm" onClick={() => setup.mutate()} disabled={setup.isPending}>
             {setup.isPending && <LoaderCircle size={14} className="spin" />}
-            Ativar
+            {t('Ativar')}
           </Button>
         )}
       </div>
       <p className="mfa-hint">
         {enabled
-          ? `Ao entrar, o Jinsei pede um código do seu aplicativo autenticador. Restam ${status.data?.remainingRecoveryCodes ?? 0} códigos de recuperação.`
-          : 'Proteja a conta pedindo um código do celular (Google Authenticator, Authy, 1Password e similares) além da senha.'}
+          ? t(
+              'Ao entrar, o Jinsei pede um código do seu aplicativo autenticador. Restam {count} códigos de recuperação.',
+              { count: status.data?.remainingRecoveryCodes ?? 0 },
+            )
+          : t(
+              'Proteja a conta pedindo um código do celular (Google Authenticator, Authy, 1Password e similares) além da senha.',
+            )}
       </p>
 
       <Dialog open={step !== 'idle'} onOpenChange={(open) => !open && step !== 'codes' && close()}>
         <DialogContent className="mfa-dialog">
           {step === 'setup' && setup.data && (
             <>
-              <DialogTitle className="dialog-title">Ative a verificação em duas etapas</DialogTitle>
+              <DialogTitle className="dialog-title">
+                {t('Ative a verificação em duas etapas')}
+              </DialogTitle>
               <DialogDescription className="dialog-description">
-                Leia o QR Code com seu aplicativo autenticador e digite o código de 6 dígitos que
-                aparecer.
+                {t(
+                  'Leia o QR Code com seu aplicativo autenticador e digite o código de 6 dígitos que aparecer.',
+                )}
               </DialogDescription>
               <div className="mfa-qr">
                 <QRCodeSVG
                   value={setup.data.uri}
                   size={176}
                   level="M"
-                  title="QR Code para o aplicativo autenticador"
+                  title={t('QR Code para o aplicativo autenticador')}
                 />
               </div>
               <p className="mfa-secret">
-                Sem câmera? Digite a chave:{' '}
+                {t('Sem câmera? Digite a chave:')}{' '}
                 <code>{setup.data.secret.match(/.{1,4}/g)?.join(' ')}</code>
               </p>
               <form
@@ -188,17 +202,17 @@ export function MfaSettings() {
                   inputMode="numeric"
                   autoComplete="one-time-code"
                   placeholder="000000"
-                  aria-label="Código do aplicativo"
+                  aria-label={t('Código do aplicativo')}
                   className="mfa-code-input"
                   autoFocus
                 />
                 <div className="dialog-footer">
                   <Button type="button" variant="outline" onClick={close}>
-                    Cancelar
+                    {t('Cancelar')}
                   </Button>
                   <Button type="submit" disabled={code.length !== 6 || enable.isPending}>
                     {enable.isPending && <LoaderCircle size={14} className="spin" />}
-                    Confirmar e ativar
+                    {t('Confirmar e ativar')}
                   </Button>
                 </div>
               </form>
@@ -206,9 +220,9 @@ export function MfaSettings() {
           )}
           {step === 'codes' && (
             <>
-              <DialogTitle className="dialog-title">Códigos de recuperação</DialogTitle>
+              <DialogTitle className="dialog-title">{t('Códigos de recuperação')}</DialogTitle>
               <DialogDescription className="dialog-description">
-                Use um deles no lugar do código do aplicativo, se precisar.
+                {t('Use um deles no lugar do código do aplicativo, se precisar.')}
               </DialogDescription>
               <RecoveryCodes
                 codes={codes}
@@ -223,13 +237,15 @@ export function MfaSettings() {
             <>
               <DialogTitle className="dialog-title">
                 {step === 'disable'
-                  ? 'Desativar a verificação em duas etapas?'
-                  : 'Gerar novos códigos'}
+                  ? t('Desativar a verificação em duas etapas?')
+                  : t('Gerar novos códigos')}
               </DialogTitle>
               <DialogDescription className="dialog-description">
                 {step === 'disable'
-                  ? 'Confirme sua senha e um código do aplicativo ou de recuperação.'
-                  : 'Os códigos atuais deixam de funcionar. Confirme com um código do aplicativo.'}
+                  ? t('Confirme sua senha e um código do aplicativo ou de recuperação.')
+                  : t(
+                      'Os códigos atuais deixam de funcionar. Confirme com um código do aplicativo.',
+                    )}
               </DialogDescription>
               <form
                 className="mfa-form"
@@ -241,7 +257,7 @@ export function MfaSettings() {
               >
                 {step === 'disable' && (
                   <label className="field">
-                    Senha
+                    {t('Senha')}
                     <Input
                       type="password"
                       autoComplete="current-password"
@@ -252,25 +268,25 @@ export function MfaSettings() {
                   </label>
                 )}
                 <label className="field">
-                  Código
+                  {t('Código')}
                   <Input
                     value={code}
                     onChange={(event) => setCode(event.target.value.trim().slice(0, 12))}
                     autoComplete="one-time-code"
-                    placeholder="000000 ou xxxx-xxxx"
+                    placeholder={t('000000 ou xxxx-xxxx')}
                     required
                   />
                 </label>
                 <div className="dialog-footer">
                   <Button type="button" variant="outline" onClick={close}>
-                    Cancelar
+                    {t('Cancelar')}
                   </Button>
                   <Button
                     type="submit"
                     variant={step === 'disable' ? 'destructive' : 'default'}
                     disabled={code.length < 6 || disable.isPending || regenerate.isPending}
                   >
-                    {step === 'disable' ? 'Desativar' : 'Gerar códigos'}
+                    {step === 'disable' ? 'Desativar' : t('Gerar códigos')}
                   </Button>
                 </div>
               </form>

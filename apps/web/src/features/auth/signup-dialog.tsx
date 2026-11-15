@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/compone
 import { emailSchema } from '@jinsei/contracts';
 import { useState } from 'react';
 import { useSignupDraft } from './signup-draft';
+import { useT } from '@/i18n/provider';
 
 export function SignupDialog({
   open,
@@ -14,6 +15,7 @@ export function SignupDialog({
   open: boolean;
   onOpenChange: (value: boolean) => void;
 }) {
+  const t = useT();
   const router = useRouter();
   const draft = useSignupDraft();
   const [error, setError] = useState('');
@@ -21,16 +23,16 @@ export function SignupDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="signup-dialog public-surface">
         <Brand compact />
-        <DialogTitle className="signup-title">Cadastre-se GRATUITAMENTE!</DialogTitle>
+        <DialogTitle className="signup-title">{t('Cadastre-se GRATUITAMENTE!')}</DialogTitle>
         <DialogDescription className="signup-description">
-          Já tem uma conta? <Link href="/login">Entrar</Link>
+          {t('Já tem uma conta?')} <Link href="/login">{t('Entrar')}</Link>
         </DialogDescription>
         <form
           onSubmit={(event) => {
             event.preventDefault();
             const parsed = emailSchema.safeParse(new FormData(event.currentTarget).get('email'));
             if (!parsed.success) {
-              setError('Informe um e-mail válido');
+              setError(t('Informe um e-mail válido'));
               return;
             }
             draft.setEmail(parsed.data);
@@ -41,8 +43,8 @@ export function SignupDialog({
             name="email"
             type="email"
             autoComplete="email"
-            aria-label="Seu e-mail"
-            placeholder="Insira o seu e-mail"
+            aria-label={t('Seu e-mail')}
+            placeholder={t('Insira o seu e-mail')}
             required
             className="public-input"
           />
@@ -52,7 +54,7 @@ export function SignupDialog({
             </p>
           )}
           <button type="submit" className="public-button">
-            Cadastre-se GRATUITAMENTE!
+            {t('Cadastre-se GRATUITAMENTE!')}
           </button>
         </form>
       </DialogContent>
