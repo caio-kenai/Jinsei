@@ -1,6 +1,6 @@
 # Histórico de versões
 
-## 0.1.10 — 2026-11-15
+## 0.2.0 — 2026-11-15
 
 - Os limites de requisições da API passam a valer por visitante. Antes, todos dividiam o mesmo limite, e um pico de acessos fazia as páginas das obras responderem 404.
 
