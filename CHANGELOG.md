@@ -1,5 +1,12 @@
 # Histórico de versões
 
+## 0.1.3 — 2026-11-14
+
+- Confirmação de e-mail no cadastro, com aviso e reenvio dentro do app.
+- Recuperação de senha por link de uso único, que encerra todas as sessões.
+- Amizades, conversas e clubes passam a exigir e-mail confirmado quando a instância envia e-mails.
+- Configuração SMTP no self-host, com exemplo para o Gmail.
+
 ## 0.1.2 — 2026-11-14
 
 - Apresentação: o ícone da categoria muda junto na prévia, as faixas de categorias e recursos são infinitas e mais espaçadas e a grade de recursos ganhou o cartão de comunidade.

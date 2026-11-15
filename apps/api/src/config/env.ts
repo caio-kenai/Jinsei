@@ -34,6 +34,17 @@ const schema = z.object({
   // Local development falls back to the MinIO root credentials of Docker Compose.
   S3_ACCESS_KEY: z.string().default(process.env.MINIO_ROOT_USER ?? ''),
   S3_SECRET_KEY: z.string().default(process.env.MINIO_ROOT_PASSWORD ?? ''),
+  // Outgoing e-mail for verification and password recovery (any SMTP server).
+  SMTP_HOST: z.string().default(''),
+  SMTP_PORT: z.coerce.number().int().min(1).max(65535).default(587),
+  SMTP_SECURE: z.enum(['true', 'false']).default('false'),
+  SMTP_USER: z.string().default(''),
+  SMTP_PASSWORD: z.string().default(''),
+  SMTP_FROM: z.string().default(''),
+  // Development and tests only: write e-mails as JSON files instead of sending them.
+  MAIL_CAPTURE_DIR: z.string().default(''),
+  // Whether community actions wait for a confirmed e-mail when e-mail is configured.
+  EMAIL_VERIFICATION: z.enum(['required', 'optional']).default('required'),
   // Folder for uploaded images when no S3-compatible service is configured.
   MEDIA_DIR: z.string().default(''),
   // Multiplies every rate limit; only raise it for automated test runs.
@@ -55,4 +66,7 @@ if (
   !['localhost', '127.0.0.1', '[::1]'].includes(new URL(env.WEB_ORIGIN).hostname)
 ) {
   throw new Error('WEB_ORIGIN deve usar HTTPS em produção');
+}
+if (env.NODE_ENV === 'production' && env.MAIL_CAPTURE_DIR) {
+  throw new Error('MAIL_CAPTURE_DIR é somente para desenvolvimento e testes');
 }

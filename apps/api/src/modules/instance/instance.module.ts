@@ -17,6 +17,7 @@ import { env } from '../../config/env';
 import { Public, CurrentUserId } from '../auth/session.guard';
 import { ApiZodBody, ZodPipe } from '../../common/zod.pipe';
 import { storageEnabled } from '../uploads/storage';
+import { mailEnabled } from '../mail/mail.service';
 
 @Injectable()
 export class InstanceService {
@@ -48,6 +49,7 @@ export class InstanceService {
       version: appVersion,
       publicUrl: env.WEB_ORIGIN,
       uploadsEnabled: storageEnabled,
+      mailEnabled,
     };
   }
   async requireAdmin(userId: string) {

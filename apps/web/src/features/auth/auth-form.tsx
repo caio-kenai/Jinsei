@@ -133,6 +133,11 @@ export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
               </button>
             </div>
             {errors.password && <p className="public-field-error">{errors.password.message}</p>}
+            {!registering && instance.data?.mailEnabled && (
+              <Link className="auth-forgot" href="/forgot-password">
+                Esqueceu a senha?
+              </Link>
+            )}
           </div>
           {error && (
             <p className="public-field-error" role="alert">

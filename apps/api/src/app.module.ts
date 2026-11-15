@@ -3,6 +3,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { PrismaModule, PrismaService } from './prisma/prisma.service';
 import { AuthModule } from './modules/auth/auth.module';
+import { MailModule } from './modules/mail/mail.module';
 import { UsersModule } from './modules/users/users.module';
 import { Public, SessionGuard } from './modules/auth/session.guard';
 import { CatalogModule } from './modules/catalog/catalog.module';
@@ -42,6 +43,7 @@ class HealthController {
     WorksModule,
     CommunityModule,
     PrismaModule,
+    MailModule,
     AuthModule,
     UsersModule,
     ThrottlerModule.forRoot([perMinute(180)]),

@@ -24,6 +24,8 @@ import {
 import { CurrentUserId, type AuthenticatedRequest } from '../auth/session.guard';
 import { ApiZodBody, ZodPipe } from '../../common/zod.pipe';
 import { UsersService } from './users.service';
+import { AccountEmailService } from '../auth/account-email.service';
+import { RateLimit } from '../../common/rate-limit';
 import { cookieOptions } from '../auth/auth.controller';
 import { SESSION_COOKIE } from '../auth/session.guard';
 
@@ -31,7 +33,10 @@ import { SESSION_COOKIE } from '../auth/session.guard';
 @ApiCookieAuth()
 @Controller('users/me')
 export class UsersController {
-  constructor(@Inject(UsersService) private readonly users: UsersService) {}
+  constructor(
+    @Inject(UsersService) private readonly users: UsersService,
+    @Inject(AccountEmailService) private readonly accountEmail: AccountEmailService,
+  ) {}
   @Get()
   me(@CurrentUserId() userId: string) {
     return this.users.me(userId);
@@ -59,6 +64,12 @@ export class UsersController {
   @Header('Content-Disposition', 'attachment; filename="jinsei-data.json"')
   export(@CurrentUserId() userId: string) {
     return this.users.export(userId);
+  }
+
+  @Post('email/verification')
+  @RateLimit(3)
+  resendVerification(@CurrentUserId() userId: string) {
+    return this.accountEmail.sendVerification(userId);
   }
 
   @Get('sessions')

@@ -32,6 +32,7 @@ import { Brand } from '@/components/shared/brand';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { useCurrentUser } from '@/features/auth/use-current-user';
+import { EmailVerificationBanner } from '@/features/auth/account-recovery';
 import { useCommunitySummary } from '@/features/community/use-community';
 import { usePreferences } from '@/features/auth/use-preferences';
 import { api } from '@/lib/api';
@@ -312,6 +313,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <UserMenu user={user} onLogout={logout} onSupport={() => setSupportOpen(true)} />
           </div>
         </header>
+        <EmailVerificationBanner />
         <main id="main-content" className="workspace-content">
           {children}
         </main>

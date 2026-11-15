@@ -1,6 +1,6 @@
 # Hospedar seu próprio Jinsei
 
-A versão atual é **0.1.2**. Os pacotes oficiais são imagens Linux **amd64** para a API e o frontend, publicadas no [GitHub Packages](https://github.com/caio-kenai?tab=packages&repo_name=Jinsei). Use uma versão fixa ao atualizar. ARM64 ainda não foi validado.
+A versão atual é **0.1.3**. Os pacotes oficiais são imagens Linux **amd64** para a API e o frontend, publicadas no [GitHub Packages](https://github.com/caio-kenai?tab=packages&repo_name=Jinsei). Use uma versão fixa ao atualizar. ARM64 ainda não foi validado.
 
 Cada release também traz `Jinsei-<versão>-selfhost.zip`, com apenas os arquivos necessários para instalar (compose, exemplo de ambiente, Caddy, licença e documentação), e o arquivo `SHA256SUMS` para conferir o download com `sha256sum -c SHA256SUMS`.
 
@@ -15,7 +15,7 @@ Você controla o banco, o domínio e as políticas da sua instalação. A admini
 ## Instalação local com imagens prontas
 
 ```sh
-git clone --branch v0.1.2 https://github.com/caio-kenai/Jinsei.git
+git clone --branch v0.1.3 https://github.com/caio-kenai/Jinsei.git
 cd Jinsei
 cp .env.selfhost.example .env.selfhost
 ```
@@ -24,7 +24,7 @@ No PowerShell, use `Copy-Item .env.selfhost.example .env.selfhost`. Edite esse a
 
 | Variável                      | Configuração                                                                                    |
 | ----------------------------- | ----------------------------------------------------------------------------------------------- |
-| `JINSEI_VERSION`              | `0.1.2`, a versão das duas imagens                                                              |
+| `JINSEI_VERSION`              | `0.1.3`, a versão das duas imagens                                                              |
 | `POSTGRES_PASSWORD`           | Senha aleatória própria; use letras e números para evitar caracteres reservados na URL do banco |
 | `PUBLIC_ORIGIN`               | `http://localhost:3000` para acesso somente local                                               |
 | `JINSEI_BIND` / `JINSEI_PORT` | `127.0.0.1` / `3000` por padrão                                                                 |
@@ -75,6 +75,21 @@ O **Buy Me a Monster** já vem configurado com o Pix oficial do criador do Jinse
 
 Não execute o seed de demonstração em produção.
 
+## E-mail
+
+Com um servidor SMTP, o Jinsei envia a confirmação de e-mail no cadastro e os links de recuperação de senha. Defina em `.env.selfhost`:
+
+```sh
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=seu-endereco@gmail.com
+SMTP_PASSWORD=senha-de-app
+SMTP_FROM="Jinsei <seu-endereco@gmail.com>"
+```
+
+No Gmail, use uma senha de app (a conta precisa de verificação em duas etapas). Use `SMTP_SECURE=true` com a porta 465. Os links valem 48 horas (confirmação) e 1 hora (senha) e só funcionam uma vez; redefinir a senha encerra todas as sessões. Com e-mail ativo, amizades, conversas e clubes esperam a confirmação do endereço; defina `EMAIL_VERIFICATION=optional` para não exigir. Contas criadas antes da atualização ficam confirmadas. Sem `SMTP_HOST`, esses recursos ficam desligados e o restante funciona normalmente.
+
 ## Imagens enviadas
 
 Avatar, banner e capas de coleção funcionam sem configuração extra: por padrão as imagens ficam no volume `media` do Docker (`MEDIA_DIR=/data/media` dentro do contêiner da API). A API valida o formato real do arquivo e entrega as imagens em `/api/media/<id>`, então a pasta nunca precisa ser pública.
@@ -118,8 +133,8 @@ Reverter apenas a imagem não reverte uma migração. Em caso de incompatibilida
 ## Compilar suas imagens
 
 ```sh
-docker build -f docker/app/Dockerfile --target api -t local/jinsei-api:0.1.2 .
-docker build -f docker/app/Dockerfile --target web -t local/jinsei-web:0.1.2 .
+docker build -f docker/app/Dockerfile --target api -t local/jinsei-api:0.1.3 .
+docker build -f docker/app/Dockerfile --target web -t local/jinsei-web:0.1.3 .
 ```
 
 Defina `JINSEI_REGISTRY=local` na sua configuração e use `up -d --wait --pull never`. Ambas as imagens executam como usuário `node`, sem root. A construção instala dependências e gera o frontend; não requer credenciais dos catálogos.

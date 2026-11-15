@@ -23,6 +23,8 @@ export default defineConfig({
               THROTTLE_SCALE: '50',
               // Uploads use a temporary folder unless an S3 service is configured.
               MEDIA_DIR: process.env.MEDIA_DIR ?? join(tmpdir(), 'jinsei-e2e-media'),
+              // E-mails are written to files so tests can follow their links.
+              MAIL_CAPTURE_DIR: join(tmpdir(), 'jinsei-e2e-mail'),
             },
             url: 'http://127.0.0.1:4000/api/health',
             reuseExistingServer: !process.env.CI,
