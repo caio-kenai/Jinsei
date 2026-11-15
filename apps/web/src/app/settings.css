@@ -534,3 +534,96 @@
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
+
+/* Two-step login. */
+.mfa-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.mfa-title > svg {
+  color: #0e9aa7;
+}
+.mfa-title em {
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--muted);
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 650;
+}
+.mfa-title em.is-on {
+  background: color-mix(in srgb, #15936a 15%, transparent);
+  color: #15936a;
+}
+.mfa-actions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.mfa-hint {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.mfa-dialog {
+  width: min(460px, calc(100vw - 32px));
+}
+.mfa-qr {
+  display: flex;
+  justify-content: center;
+  margin: 18px auto 10px;
+  padding: 14px;
+  width: fit-content;
+  border-radius: 14px;
+  background: #fff;
+  border: 1px solid #ececf0;
+}
+.mfa-secret {
+  text-align: center;
+  color: var(--muted);
+  font-size: 12px;
+  margin-bottom: 14px;
+}
+.mfa-secret code,
+.mfa-codes code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--foreground);
+  letter-spacing: 0.04em;
+}
+.mfa-code-input {
+  text-align: center;
+  font-size: 22px;
+  letter-spacing: 8px;
+}
+.mfa-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 14px;
+}
+.mfa-codes {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 12px;
+}
+.mfa-codes > p {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.mfa-codes ol {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  list-style: none;
+  padding: 14px;
+  border-radius: 12px;
+  background: var(--hover);
+}
+.mfa-codes li {
+  text-align: center;
+  font-size: 14px;
+}

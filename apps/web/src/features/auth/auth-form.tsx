@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQueryClient } from '@tanstack/react-query';
-import { registrationSchema, type RegistrationInput } from '@jinsei/contracts';
+import { registrationSchema, type LoginResult, type RegistrationInput } from '@jinsei/contracts';
 import { Eye, EyeOff, LoaderCircle } from 'lucide-react';
 import { api, jsonBody } from '@/lib/api';
 import { currentUserOptions } from './use-current-user';
@@ -19,6 +19,9 @@ export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
   const draft = useSignupDraft();
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [challenge, setChallenge] = useState('');
+  const [code, setCode] = useState('');
+  const [verifying, setVerifying] = useState(false);
   const router = useRouter();
   const client = useQueryClient();
   const {
@@ -29,6 +32,29 @@ export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
     resolver: zodResolver(registrationSchema),
     defaultValues: { email: draft.email },
   });
+  async function enter() {
+    draft.setEmail('');
+    await client.invalidateQueries({ queryKey: ['me'] });
+    const user = await client.fetchQuery(currentUserOptions);
+    router.replace(user.preferences.onboarded ? '/home' : '/onboarding');
+  }
+  async function confirmCode(event: React.FormEvent) {
+    event.preventDefault();
+    setError('');
+    setVerifying(true);
+    try {
+      await api('/auth/login/mfa', { method: 'POST', body: jsonBody({ challenge, code }) });
+      await enter();
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Código inválido');
+      if (error instanceof Error && /expirou|tentativas/.test(error.message)) {
+        setChallenge('');
+        setCode('');
+      }
+    } finally {
+      setVerifying(false);
+    }
+  }
   async function submit(input: RegistrationInput) {
     setError('');
     if (registering && !input.displayName) {
@@ -36,14 +62,15 @@ export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
       return;
     }
     try {
-      await api(`/auth/${mode}`, {
+      const result = await api<LoginResult>(`/auth/${mode}`, {
         method: 'POST',
         body: jsonBody(registering ? input : { email: input.email, password: input.password }),
       });
-      draft.setEmail('');
-      await client.invalidateQueries({ queryKey: ['me'] });
-      const user = await client.fetchQuery(currentUserOptions);
-      router.replace(user.preferences.onboarded ? '/home' : '/onboarding');
+      if ('mfaRequired' in result) {
+        setChallenge(result.challenge);
+        return;
+      }
+      await enter();
     } catch (error) {
       setError(
         error instanceof Error ? error.message : 'Não foi possível entrar. Tente novamente.',
@@ -69,97 +96,147 @@ export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
             Novos cadastros estão desativados nesta instância. Entre com uma conta existente.
           </p>
         )}
-        <form onSubmit={handleSubmit(submit)}>
-          {registering && (
+        {challenge ? (
+          <form onSubmit={confirmCode} className="mfa-login">
+            <p className="auth-switch">
+              Digite o código de 6 dígitos do seu aplicativo autenticador ou um código de
+              recuperação.
+            </p>
             <div className="public-field">
-              <label className="sr-only" htmlFor="auth-name">
-                Nome completo
+              <label className="sr-only" htmlFor="auth-code">
+                Código de verificação
               </label>
               <input
-                id="auth-name"
-                className="public-input"
-                aria-label="Nome completo"
-                autoComplete="name"
-                placeholder="Nome completo"
-                minLength={2}
-                maxLength={60}
+                id="auth-code"
+                className="public-input mfa-login-input"
+                aria-label="Código de verificação"
+                placeholder="000000"
+                autoComplete="one-time-code"
+                inputMode="text"
+                autoFocus
+                maxLength={12}
                 required
-                {...register('displayName')}
+                value={code}
+                onChange={(event) => setCode(event.target.value.trim())}
               />
-              {errors.displayName && (
-                <p className="public-field-error">{errors.displayName.message}</p>
+            </div>
+            {error && (
+              <p className="public-field-error" role="alert">
+                {error}
+              </p>
+            )}
+            <button
+              className="public-button auth-submit"
+              type="submit"
+              disabled={verifying || code.length < 6}
+            >
+              {verifying ? <LoaderCircle size={17} className="spin" /> : 'Verificar e entrar'}
+            </button>
+            <button
+              type="button"
+              className="auth-forgot mfa-back"
+              onClick={() => {
+                setChallenge('');
+                setCode('');
+                setError('');
+              }}
+            >
+              Voltar
+            </button>
+          </form>
+        ) : (
+          <form onSubmit={handleSubmit(submit)}>
+            {registering && (
+              <div className="public-field">
+                <label className="sr-only" htmlFor="auth-name">
+                  Nome completo
+                </label>
+                <input
+                  id="auth-name"
+                  className="public-input"
+                  aria-label="Nome completo"
+                  autoComplete="name"
+                  placeholder="Nome completo"
+                  minLength={2}
+                  maxLength={60}
+                  required
+                  {...register('displayName')}
+                />
+                {errors.displayName && (
+                  <p className="public-field-error">{errors.displayName.message}</p>
+                )}
+              </div>
+            )}
+            <div className="public-field">
+              <label className="sr-only" htmlFor="auth-email">
+                E-mail
+              </label>
+              <input
+                id="auth-email"
+                type="email"
+                className="public-input"
+                aria-label="E-mail"
+                placeholder="Seu e-mail"
+                autoComplete="email"
+                required
+                {...register('email')}
+              />
+              {errors.email && <p className="public-field-error">{errors.email.message}</p>}
+            </div>
+            <div className="public-field">
+              <label className="sr-only" htmlFor="auth-password">
+                Senha
+              </label>
+              <div className="password-field">
+                <input
+                  id="auth-password"
+                  type={showPassword ? 'text' : 'password'}
+                  className="public-input"
+                  aria-label="Senha"
+                  placeholder="Senha"
+                  minLength={12}
+                  maxLength={128}
+                  autoComplete={registering ? 'new-password' : 'current-password'}
+                  required
+                  {...register('password')}
+                />
+                <button
+                  type="button"
+                  aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                </button>
+              </div>
+              {errors.password && <p className="public-field-error">{errors.password.message}</p>}
+              {!registering && instance.data?.mailEnabled && (
+                <Link className="auth-forgot" href="/forgot-password">
+                  Esqueceu a senha?
+                </Link>
               )}
             </div>
-          )}
-          <div className="public-field">
-            <label className="sr-only" htmlFor="auth-email">
-              E-mail
-            </label>
-            <input
-              id="auth-email"
-              type="email"
-              className="public-input"
-              aria-label="E-mail"
-              placeholder="Seu e-mail"
-              autoComplete="email"
-              required
-              {...register('email')}
-            />
-            {errors.email && <p className="public-field-error">{errors.email.message}</p>}
-          </div>
-          <div className="public-field">
-            <label className="sr-only" htmlFor="auth-password">
-              Senha
-            </label>
-            <div className="password-field">
-              <input
-                id="auth-password"
-                type={showPassword ? 'text' : 'password'}
-                className="public-input"
-                aria-label="Senha"
-                placeholder="Senha"
-                minLength={12}
-                maxLength={128}
-                autoComplete={registering ? 'new-password' : 'current-password'}
-                required
-                {...register('password')}
-              />
-              <button
-                type="button"
-                aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
-              </button>
-            </div>
-            {errors.password && <p className="public-field-error">{errors.password.message}</p>}
-            {!registering && instance.data?.mailEnabled && (
-              <Link className="auth-forgot" href="/forgot-password">
-                Esqueceu a senha?
-              </Link>
+            {error && (
+              <p className="public-field-error" role="alert">
+                {error}
+              </p>
             )}
-          </div>
-          {error && (
-            <p className="public-field-error" role="alert">
-              {error}
-            </p>
-          )}
-          <button
-            className="public-button auth-submit"
-            type="submit"
-            disabled={
-              isSubmitting || (registering && instance.data?.registrationsEnabled === false)
-            }
-          >
-            {isSubmitting ? (
-              <LoaderCircle size={17} className="spin" />
-            ) : registering ? (
-              'Cadastrar-se com e-mail'
-            ) : (
-              'Entrar'
-            )}
-          </button>
-        </form>
+            <button
+              className="public-button auth-submit"
+              type="submit"
+              disabled={
+                isSubmitting || (registering && instance.data?.registrationsEnabled === false)
+              }
+            >
+              {isSubmitting ? (
+                <LoaderCircle size={17} className="spin" />
+              ) : registering ? (
+                'Cadastrar-se com e-mail'
+              ) : (
+                'Entrar'
+              )}
+            </button>
+          </form>
+        )}
         {registering && (
           <p className="auth-password-hint">
             Use pelo menos 12 caracteres para proteger sua conta.
