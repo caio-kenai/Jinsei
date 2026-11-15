@@ -57,6 +57,11 @@ O projeto está em desenvolvimento ativo (série 0.1). Todas as categorias compa
 - Exportação de dados (incluindo amizades, mensagens e clubes), alteração de senha com revogação de sessões, encerramento de sessões e exclusão de conta.
 - Buy Me a Monster: apoio voluntário por Pix ao criador do Jinsei, presente em todas as instalações.
 - Instalação self-host com Docker e administração da identidade, cadastros e consultas externas da instância.
+- Apps para Windows, macOS, Linux e Android que se conectam a qualquer instância, com página de downloads em `/download`.
+
+## Apps para computador e Android
+
+Baixe o Jinsei para Windows, macOS, Linux ou Android na [última release](https://github.com/caio-kenai/Jinsei/releases/latest) ou pela página `/download` da sua instância. Os apps funcionam online e se conectam ao servidor que você escolher. Veja como funcionam e como compilá-los em [docs/APPS.md](docs/APPS.md).
 
 ## Hospede seu próprio servidor
 
@@ -109,7 +114,7 @@ As imagens das obras pertencem aos respectivos titulares e seguem as condições
 
 ## Tecnologias
 
-Monorepo pnpm com Next.js App Router, React, TypeScript, Tailwind CSS, componentes Radix UI, TanStack Query e Table, Motion, dnd-kit, Recharts e Lucide. API NestJS com validação Zod, Prisma e PostgreSQL. Contratos compartilhados em `packages/contracts`. Docker Compose fornece PostgreSQL e um serviço S3 local para desenvolvimento.
+Monorepo pnpm com Next.js App Router, React, TypeScript, Tailwind CSS, componentes Radix UI, TanStack Query e Table, Motion, dnd-kit, Recharts e Lucide. API NestJS com validação Zod, Prisma e PostgreSQL. Contratos compartilhados em `packages/contracts`. Apps de computador com Tauri 2 e Rust; app Android com Kotlin e Jetpack Compose. Docker Compose fornece PostgreSQL e um serviço S3 local para desenvolvimento.
 
 ## Instalação
 
