@@ -8,7 +8,7 @@ Use commits objetivos em português, por exemplo `Feat: Adiciona filtro por favo
 
 Contratos de API ficam em `packages/contracts` (Zod) e são compartilhados pela API e pela interface; recompile com `pnpm --filter @jinsei/contracts build` ao alterá-los. Novas telas devem reutilizar os componentes e estilos existentes, funcionar nos temas claro e escuro, respeitar `prefers-reduced-motion` e manter foco visível e rótulos acessíveis.
 
-A interface é traduzida para português (padrão), inglês e espanhol. Escreva os textos em português dentro de `t('…')` (de `useT()` ou `useI18n()`); variáveis usam chaves, como `t('Capa de {title}', { title })`. Textos fora de componentes, como listas de opções, usam `msg('…')` e são exibidos com `t(label)`. Acrescente a tradução de cada texto novo em `apps/web/src/i18n/messages/en.ts` e `es.ts`; `pnpm test` aponta o que faltar.
+A interface é traduzida para português (padrão), inglês e espanhol. Escreva os textos em português dentro de `t('…')` (de `useT()` ou `useI18n()`); variáveis usam chaves, como `t('Capa de {title}', { title })`. Textos fora de componentes, como listas de opções, usam `msg('…')` e são exibidos com `t(label)`. Mensagens de erro da API, e-mails e textos da jornada também usam o português como chave. Acrescente a tradução de cada texto novo em `packages/contracts/src/messages/en.ts` e `es.ts`; `pnpm test` aponta o que faltar.
 
 Recursos sociais exigem cuidado redobrado: nunca exponha e-mail, anotações, tags ou títulos manuais; respeite as opções de privacidade do perfil e cubra com testes quem pode ver ou alterar cada dado. Inclua os novos dados pessoais na exportação e na exclusão de conta.
 
