@@ -84,9 +84,14 @@ export class AccountEmailService {
     if (!mailEnabled) return { ok: true };
     const user = await this.db.user.findUnique({
       where: { email },
-      select: { id: true, email: true, profile: { select: { displayName: true } } },
+      select: {
+        id: true,
+        email: true,
+        suspendedAt: true,
+        profile: { select: { displayName: true } },
+      },
     });
-    if (user) {
+    if (user && !user.suspendedAt) {
       const token = await this.issue(user.id, 'reset');
       await this.mail.send(user.email, {
         subject: 'Redefina sua senha do Jinsei',

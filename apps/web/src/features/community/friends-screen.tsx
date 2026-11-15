@@ -3,6 +3,7 @@ import { useDeferredValue, useState } from 'react';
 import Link from 'next/link';
 import { AnimatePresence, motion } from 'motion/react';
 import {
+  Ban,
   Check,
   Clock,
   LoaderCircle,
@@ -18,6 +19,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { CommunityEmpty, UserAvatar, UserName, relativeTime } from './community-ui';
 import { useCommunityMutations, useFriends, useUserSearch } from './use-community';
+import { UserSafetyMenu, useBlocks, useSafetyMutations } from './safety-actions';
 
 const ease = [0.22, 1, 0.36, 1] as const;
 
@@ -27,6 +29,8 @@ export function FriendsScreen() {
   const search = useUserSearch(deferred);
   const overview = useFriends();
   const { request, accept, dismiss, unfriend } = useCommunityMutations();
+  const blocks = useBlocks().data?.users ?? [];
+  const { unblock } = useSafetyMutations();
   const friends = overview.data?.friends ?? [];
   const requests = overview.data?.requests ?? [];
   const incoming = requests.filter((item) => item.direction === 'incoming');
@@ -195,6 +199,7 @@ export function FriendsScreen() {
                   >
                     <UserMinus size={15} />
                   </Button>
+                  <UserSafetyMenu userId={friend.id} name={friend.displayName} />
                 </div>
               </motion.article>
             ))}
@@ -202,6 +207,27 @@ export function FriendsScreen() {
         )}
       </section>
 
+      {blocks.length > 0 && (
+        <section className="community-card">
+          <div className="community-card-title">
+            <Ban size={16} />
+            <h2>Pessoas bloqueadas</h2>
+            <span className="group-number">{blocks.length}</span>
+          </div>
+          <ul className="community-people">
+            {blocks.map((user) => (
+              <li key={user.id}>
+                <UserAvatar user={user} />
+                <UserName user={user} />
+                <time dateTime={user.since}>{relativeTime(user.since)}</time>
+                <Button size="sm" variant="ghost" onClick={() => unblock.mutate(user.id)}>
+                  Desbloquear
+                </Button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
       {outgoing.length > 0 && (
         <section className="community-card">
           <div className="community-card-title">

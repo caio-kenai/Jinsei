@@ -13,6 +13,7 @@ Use a aba Security do repositório e a opção de relato privado, se estiver hab
 - **Autorização:** a API exige a origem configurada em operações de escrita, limita tentativas por minuto e deriva o proprietário de cada registro da sessão. Bibliotecas, anotações, tags e visualizações de outras contas não são acessíveis por identificador. A administração da instância exige o papel de administrador conferido pelo servidor.
 - **Perfil público e obras:** só é publicado o que a pessoa ativa: perfil público, seções escolhidas e reviews marcadas como públicas. Títulos cadastrados manualmente nunca aparecem em páginas públicas ou rankings.
 - **Comunidade:** buscas mostram somente nome, usuário e avatar; perfis privados só são encontrados pelo usuário exato e o e-mail nunca é exposto. Mensagens privadas exigem amizade aceita, e terceiros recebem 404 ao tentar abrir uma conversa. Publicações em clubes exigem participação, e quem criou o clube pode removê-las. Pedidos, mensagens, publicações e criação de clubes têm limites próprios.
+- **Bloqueio e moderação:** bloquear desfaz a amizade e esconde as duas pessoas uma da outra na busca, nas conversas, na atividade e nos clubes. Denúncias guardam uma cópia do texto denunciado e não revelam quem denunciou; mensagens privadas só podem ser denunciadas por quem as recebeu. Administradores arquivam, removem conteúdo, suspendem e reativam contas, e cada ação fica registrada. Contas suspensas perdem as sessões e somem do perfil público e das reviews.
 - **Imagens enviadas:** o formato real do arquivo é verificado (JPEG, PNG ou WebP), o tamanho é limitado e as imagens são entregues pela API com `nosniff` e uma CSP restritiva. No armazenamento local, os nomes são gerados pelo servidor e caminhos fora da pasta de mídia são recusados.
 - **Dados pessoais:** a exportação inclui biblioteca, preferências, coleções, metas e dados da comunidade. A exclusão de conta remove os registros pessoais no banco ativo, as imagens enviadas, as mensagens e os clubes criados pela pessoa.
 
@@ -22,6 +23,6 @@ Defina HTTPS, segredos e credenciais próprios, backups e restauração (banco e
 
 ## Limitações conhecidas
 
-Bloqueio e denúncia de usuários e moderação pela administração da instância ainda não estão implementados. Recuperação de senha e confirmação de e-mail dependem de um servidor SMTP configurado. Mensagens não têm criptografia de ponta a ponta: ficam no banco da instância. Imagens externas de catálogos podem informar o IP do navegador aos seus provedores.
+Recuperação de senha e confirmação de e-mail dependem de um servidor SMTP configurado. Mensagens não têm criptografia de ponta a ponta: ficam no banco da instância. Imagens externas de catálogos podem informar o IP do navegador aos seus provedores.
 
 O adaptador PostgreSQL atual pode emitir um aviso de depreciação sobre consultas concorrentes em transações; os testes de integridade passam. React Compiler não está habilitado; o lint sinaliza a limitação conhecida da API TanStack Table para compilação automática.

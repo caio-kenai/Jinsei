@@ -24,12 +24,15 @@ import { NumberTicker } from '@/components/motion/number-ticker';
 import { ClubFormDialog, clubColor } from './clubs-screen';
 import { CommunityEmpty, UserAvatar, UserName, relativeTime } from './community-ui';
 import { useClub, useCommunityMutations } from './use-community';
+import { ReportButton } from './safety-actions';
+import { useCurrentUser } from '@/features/auth/use-current-user';
 
 const ease = [0.22, 1, 0.36, 1] as const;
 
 export function ClubScreen({ slug }: { slug: string }) {
   const router = useRouter();
   const club = useClub(slug);
+  const me = useCurrentUser().data?.id;
   const { join, leave, post, removePost, removeClub } = useCommunityMutations();
   const [draft, setDraft] = useState('');
   const [editing, setEditing] = useState(false);
@@ -93,6 +96,13 @@ export function ClubScreen({ slug }: { slug: string }) {
           </div>
         </div>
         <div className="community-club-actions">
+          {data.role !== 'owner' && (
+            <ReportButton
+              target={{ targetType: 'club', targetId: data.id }}
+              label="Denunciar clube"
+              className="club-report"
+            />
+          )}
           {data.role === 'owner' ? (
             <>
               <Button size="sm" variant="outline" onClick={() => setEditing(true)}>
@@ -177,6 +187,12 @@ export function ClubScreen({ slug }: { slug: string }) {
                       <div className="community-feed-head">
                         <UserName user={item.author} />
                         <time dateTime={item.createdAt}>{relativeTime(item.createdAt)}</time>
+                        {item.author.id !== me && (
+                          <ReportButton
+                            target={{ targetType: 'club_post', targetId: item.id }}
+                            label="Denunciar publicação"
+                          />
+                        )}
                         {item.canDelete && (
                           <button
                             className="community-icon-link"

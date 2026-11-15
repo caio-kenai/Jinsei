@@ -1,5 +1,12 @@
 # Histórico de versões
 
+## 0.1.5 — 2026-11-14
+
+- Bloqueio de pessoas: desfaz a amizade e esconde as duas pessoas uma da outra na comunidade.
+- Denúncias de perfis, mensagens, clubes, publicações e reviews.
+- Área de moderação para administradores: denúncias, remoção de conteúdo, suspensão e reativação de contas, papéis e registro das ações.
+- Contas suspensas não entram e somem do perfil público e das reviews.
+
 ## 0.1.4 — 2026-11-14
 
 - Verificação em duas etapas com aplicativo autenticador, QR Code e 10 códigos de recuperação.

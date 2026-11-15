@@ -7,7 +7,7 @@ import {
 } from './progress';
 export * from './progress';
 export * from './support';
-export const appVersion = '0.1.4';
+export const appVersion = '0.1.5';
 
 export const healthSchema = z.object({ status: z.literal('ok'), service: z.literal('jinsei-api') });
 
@@ -951,7 +951,14 @@ export const communityUserSchema = z.object({
   isPublic: z.boolean(),
 });
 export type CommunityUser = z.infer<typeof communityUserSchema>;
-export const relationshipStates = ['self', 'none', 'outgoing', 'incoming', 'friends'] as const;
+export const relationshipStates = [
+  'self',
+  'none',
+  'outgoing',
+  'incoming',
+  'friends',
+  'blocked',
+] as const;
 export const relationshipSchema = z.object({
   state: z.enum(relationshipStates),
   requestId: z.string().nullable(),
@@ -1071,3 +1078,89 @@ export const accountSessionSchema = z.object({
   current: z.boolean(),
 });
 export type AccountSession = z.infer<typeof accountSessionSchema>;
+
+/* Safety: blocks, reports and moderation. */
+export const reportTargets = ['user', 'message', 'club', 'club_post', 'review'] as const;
+export const reportReasons = ['spam', 'harassment', 'hate', 'sexual', 'violence', 'other'] as const;
+export const reportReasonLabels: Record<(typeof reportReasons)[number], string> = {
+  spam: 'Spam ou propaganda',
+  harassment: 'Assédio ou intimidação',
+  hate: 'Discurso de ódio',
+  sexual: 'Conteúdo sexual',
+  violence: 'Violência ou ameaça',
+  other: 'Outro motivo',
+};
+export const reportInputSchema = z
+  .object({
+    targetType: z.enum(reportTargets),
+    targetId: z.string().min(1).max(60),
+    reason: z.enum(reportReasons),
+    details: z.string().trim().max(1000).default(''),
+  })
+  .strict();
+export type ReportInput = z.input<typeof reportInputSchema>;
+export const blockedUserSchema = communityUserSchema.extend({ since: z.string() });
+export type BlockedUser = z.infer<typeof blockedUserSchema>;
+export const reportStatuses = ['open', 'resolved', 'dismissed'] as const;
+export const moderationActions = ['dismiss', 'remove_content', 'suspend_user'] as const;
+export const moderationActionLabels: Record<(typeof moderationActions)[number], string> = {
+  dismiss: 'Arquivar sem ação',
+  remove_content: 'Remover o conteúdo',
+  suspend_user: 'Suspender a conta',
+};
+export const reportResolutionSchema = z
+  .object({ action: z.enum(moderationActions), note: z.string().trim().max(500).default('') })
+  .strict();
+export type ReportResolution = z.input<typeof reportResolutionSchema>;
+export const moderationUserSchema = z.object({
+  id: z.string(),
+  email: z.string(),
+  username: z.string().nullable(),
+  displayName: z.string(),
+  avatarUrl: z.string().nullable(),
+  role: z.enum(['user', 'admin']),
+  createdAt: z.string(),
+  emailVerified: z.boolean(),
+  mfaEnabled: z.boolean(),
+  suspendedAt: z.string().nullable(),
+  suspensionReason: z.string().nullable(),
+  reports: z.number(),
+});
+export type ModerationUser = z.infer<typeof moderationUserSchema>;
+export const moderationReportSchema = z.object({
+  id: z.string(),
+  targetType: z.enum(reportTargets),
+  targetId: z.string(),
+  reason: z.enum(reportReasons),
+  details: z.string(),
+  snapshot: z.string(),
+  status: z.enum(reportStatuses),
+  resolution: z.string().nullable(),
+  createdAt: z.string(),
+  resolvedAt: z.string().nullable(),
+  reporter: communityUserSchema.nullable(),
+  targetUser: moderationUserSchema.nullable(),
+  contentAvailable: z.boolean(),
+});
+export type ModerationReport = z.infer<typeof moderationReportSchema>;
+export const moderationLogSchema = z.object({
+  id: z.string(),
+  action: z.string(),
+  targetType: z.string(),
+  targetId: z.string(),
+  note: z.string(),
+  createdAt: z.string(),
+  moderator: communityUserSchema.nullable(),
+});
+export type ModerationLogEntry = z.infer<typeof moderationLogSchema>;
+export const moderationSummarySchema = z.object({
+  openReports: z.number(),
+  suspendedUsers: z.number(),
+  users: z.number(),
+  admins: z.number(),
+});
+export type ModerationSummary = z.infer<typeof moderationSummarySchema>;
+export const suspensionInputSchema = z
+  .object({ reason: z.string().trim().min(3).max(500) })
+  .strict();
+export const roleInputSchema = z.object({ role: z.enum(['user', 'admin']) }).strict();

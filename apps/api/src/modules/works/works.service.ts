@@ -160,7 +160,7 @@ export class WorksService {
       mediaId,
       reviewPublic: true,
       review: { not: '' },
-      user: { profile: { isPublic: true, username: { not: null } } },
+      user: { suspendedAt: null, profile: { isPublic: true, username: { not: null } } },
     } satisfies Prisma.UserMediaEntryWhereInput;
     const [entries, counts] = await Promise.all([
       this.db.userMediaEntry.findMany({

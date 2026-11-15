@@ -17,6 +17,7 @@ import { UploadsModule } from './modules/uploads/uploads.module';
 import { ProfilesModule } from './modules/profiles/profiles.module';
 import { WorksModule } from './modules/works/works.module';
 import { CommunityModule } from './modules/community/community.module';
+import { ModerationModule } from './modules/moderation/moderation.module';
 import { perMinute } from './common/rate-limit';
 
 @Controller('health')
@@ -42,6 +43,7 @@ class HealthController {
     ProfilesModule,
     WorksModule,
     CommunityModule,
+    ModerationModule,
     PrismaModule,
     MailModule,
     AuthModule,
