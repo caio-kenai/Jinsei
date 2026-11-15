@@ -1,4 +1,5 @@
 'use client';
+import { useT } from '@/i18n/provider';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import type {
@@ -101,6 +102,7 @@ export function useClub(slug: string) {
 }
 
 export function useCommunityMutations() {
+  const t = useT();
   const client = useQueryClient();
   const refresh = () => void client.invalidateQueries({ queryKey: ['community'] });
   return {
@@ -110,8 +112,10 @@ export function useCommunityMutations() {
       onSuccess: (relationship) => {
         toast.success(
           relationship.state === 'friends'
-            ? `Você e ${relationship.user.displayName} agora são amigos`
-            : 'Pedido de amizade enviado',
+            ? t('Você e {displayName} agora são amigos', {
+                displayName: relationship.user.displayName,
+              })
+            : t('Pedido de amizade enviado'),
         );
         refresh();
       },
@@ -121,7 +125,7 @@ export function useCommunityMutations() {
       mutationFn: (id: string) =>
         api(`/community/friends/requests/${id}/accept`, { method: 'POST' }),
       onSuccess: () => {
-        toast.success('Pedido aceito');
+        toast.success(t('Pedido aceito'));
         refresh();
       },
       onError,

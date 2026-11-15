@@ -1,4 +1,5 @@
 'use client';
+import { useT } from '@/i18n/provider';
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus, LoaderCircle, ArrowLeft } from 'lucide-react';
@@ -59,6 +60,7 @@ function AddEntryContent({
   initialItem?: CatalogResult;
   onDone: (entry: LibraryEntry) => void;
 }) {
+  const t = useT();
   const [selected, setSelected] = useState<CatalogResult | undefined>(initialItem);
   const [manual, setManual] = useState(false);
   const [title, setTitle] = useState('');
@@ -72,7 +74,7 @@ function AddEntryContent({
     onSuccess: (entry) => {
       void client.invalidateQueries({ queryKey: ['library'] });
       void client.invalidateQueries({ queryKey: ['summary'] });
-      toast.success('Título adicionado à sua biblioteca');
+      toast.success(t('Título adicionado à sua biblioteca'));
       onDone(entry);
     },
     onError: (error) => setError(error.message),
@@ -105,7 +107,7 @@ function AddEntryContent({
     };
     const parsed = entryCreateSchema.safeParse(input);
     if (!parsed.success) {
-      setError(parsed.error.issues[0]?.message ?? 'Revise os dados');
+      setError(parsed.error.issues[0]?.message ?? t('Revise os dados'));
       return;
     }
     create.mutate(parsed.data);
@@ -113,22 +115,22 @@ function AddEntryContent({
   const editing = manual || Boolean(selected);
   return (
     <DialogContent className="add-dialog">
-      <DialogTitle className="dialog-title">Adicionar à biblioteca</DialogTitle>
+      <DialogTitle className="dialog-title">{t('Adicionar à biblioteca')}</DialogTitle>
       <DialogDescription className="dialog-description">
-        Encontre uma obra ou crie um registro pessoal. A escolha é sua.
+        {t('Encontre uma obra ou crie um registro pessoal. A escolha é sua.')}
       </DialogDescription>
       {!editing ? (
         <>
           <label className="field">
-            Categoria
+            {t('Categoria')}
             <Select
-              aria-label="Categoria"
+              aria-label={t('Categoria')}
               value={mediaType}
               onChange={(event) => setMediaType(event.target.value as MediaType)}
             >
               {mediaTypes.map((type) => (
                 <option key={type} value={type}>
-                  {categoryLabels[type]}
+                  {t(categoryLabels[type])}
                 </option>
               ))}
             </Select>
@@ -154,57 +156,68 @@ function AddEntryContent({
             }}
           >
             <ArrowLeft size={13} />
-            Voltar à busca
+            {t('Voltar à busca')}
           </Button>
           <form onSubmit={submit} className="dialog-form" style={{ marginTop: 14 }}>
             {manual ? (
               <>
                 <label className="field">
-                  Nome do título
+                  {t('Nome do título')}
                   <Input
                     autoFocus
                     required
                     name="title"
                     defaultValue={title}
                     maxLength={200}
-                    placeholder="Como se chama essa experiência?"
+                    placeholder={t('Como se chama essa experiência?')}
                   />
                 </label>
                 <div className="form-grid">
                   <label className="field">
-                    Ano de lançamento
-                    <Input name="year" type="number" min={1900} max={2100} placeholder="Opcional" />
+                    {t('Ano de lançamento')}
+                    <Input
+                      name="year"
+                      type="number"
+                      min={1900}
+                      max={2100}
+                      placeholder={t('Opcional')}
+                    />
                   </label>
                   {mediaType === 'games' && (
                     <label className="field">
-                      Plataformas
-                      <Input name="platforms" placeholder="PC, PlayStation, Nintendo Switch…" />
+                      {t('Plataformas')}
+                      <Input
+                        name="platforms"
+                        placeholder={t('PC, PlayStation, Nintendo Switch…')}
+                      />
                     </label>
                   )}
                 </div>
                 <ManualMetadataFields mediaType={mediaType} />
                 <label className="field">
-                  URL da capa
+                  {t('URL da capa')}
                   <Input
                     name="coverUrl"
                     type="url"
                     placeholder="https://…"
                     maxLength={2000}
-                    aria-label="URL da capa"
+                    aria-label={t('URL da capa')}
                   />
                   <small>
-                    Opcional. Informe uma imagem que você tenha permissão para utilizar.
+                    {t('Opcional. Informe uma imagem que você tenha permissão para utilizar.')}
                   </small>
                 </label>
                 <label className="field">
-                  Descrição
+                  {t('Descrição')}
                   <Textarea
                     name="description"
                     maxLength={3000}
-                    placeholder="Uma breve descrição (opcional)"
+                    placeholder={t('Uma breve descrição (opcional)')}
                   />
                 </label>
-                <small className="muted">Este cadastro será visível somente para você.</small>
+                <small className="muted">
+                  {t('Este cadastro será visível somente para você.')}
+                </small>
               </>
             ) : (
               selected && (
@@ -213,7 +226,8 @@ function AddEntryContent({
                   <span>
                     <strong>{selected.title}</strong>
                     <small>
-                      {selected.attribution.label} · {selected.releaseYear ?? 'Ano não informado'}
+                      {selected.attribution.label} ·{' '}
+                      {selected.releaseYear ?? t('Ano não informado')}
                     </small>
                   </span>
                 </div>
@@ -221,17 +235,17 @@ function AddEntryContent({
             )}
             <div className="form-grid">
               <label className="field">
-                Status
-                <Select name="status" aria-label="Status" defaultValue="planned">
+                {t('Status')}
+                <Select name="status" aria-label={t('Status')} defaultValue="planned">
                   {statusKeys.map((status) => (
                     <option key={status} value={status}>
-                      {statusLabels[status]}
+                      {t(statusLabels[status])}
                     </option>
                   ))}
                 </Select>
               </label>
               <div className="field">
-                <span>Sua nota</span>
+                <span>{t('Sua nota')}</span>
                 <StarRatingInput value={rating} onChange={setRating} />
               </div>
             </div>
@@ -247,7 +261,7 @@ function AddEntryContent({
                 ) : (
                   <Plus size={15} />
                 )}
-                Adicionar à biblioteca
+                {t('Adicionar à biblioteca')}
               </Button>
             </div>
           </form>

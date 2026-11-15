@@ -1,4 +1,6 @@
 'use client';
+import { currentLocale, msg, translate } from '@/i18n/config';
+import { useT } from '@/i18n/provider';
 import '@/app/ratings.css';
 import { useState } from 'react';
 import { Popover } from 'radix-ui';
@@ -6,7 +8,7 @@ import { Star, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export function formatStars(value: number | null) {
-  if (value === null) return 'Sem avaliação';
+  if (value === null) return translate('Sem avaliação');
   const quarter = Math.round(value * 4);
   const whole = Math.floor(quarter / 4);
   return `${whole || (quarter === 0 ? '0' : '')}${['', '¼', '½', '¾'][quarter % 4]}`;
@@ -20,14 +22,21 @@ export function StarRating({
   size?: number;
   showValue?: boolean;
 }) {
+  const t = useT();
   return (
     <span
       className={`star-rating ${value === null ? 'unrated' : ''}`}
       role="img"
       aria-label={
-        value === null ? 'Sem avaliação' : `${value.toLocaleString('pt-BR')} de 5 estrelas`
+        value === null
+          ? t('Sem avaliação')
+          : t('{rating} de 5 estrelas', { rating: value.toLocaleString(currentLocale()) })
       }
-      title={value === null ? 'Sem avaliação' : `${formatStars(value)} de 5 estrelas`}
+      title={
+        value === null
+          ? t('Sem avaliação')
+          : t('{rating} de 5 estrelas', { rating: formatStars(value) })
+      }
     >
       <span className="rating-stars" aria-hidden="true">
         {Array.from({ length: 5 }, (_, index) => (
@@ -53,12 +62,13 @@ export function StarRating({
 export function StarRatingInput({
   value,
   onChange,
-  label = 'Sua nota',
+  label = msg('Sua nota'),
 }: {
   value: number | null;
   onChange: (value: number | null) => void;
   label?: string;
 }) {
+  const t = useT();
   const [preview, setPreview] = useState<number | null>(null);
   const shown = preview ?? value;
   return (
@@ -73,7 +83,9 @@ export function StarRatingInput({
           value={value ?? 0}
           aria-label={label}
           aria-valuetext={
-            value === null ? 'Sem avaliação' : `${value.toLocaleString('pt-BR')} de 5 estrelas`
+            value === null
+              ? t('Sem avaliação')
+              : t('{rating} de 5 estrelas', { rating: value.toLocaleString(currentLocale()) })
           }
           onChange={(event) => {
             const next = Number(event.target.value);
@@ -120,6 +132,7 @@ export function RatingPicker({
   onChange: (value: number | null) => void;
   label: string;
 }) {
+  const t = useT();
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState(value);
   return (
@@ -137,12 +150,12 @@ export function RatingPicker({
       </Popover.Trigger>
       <Popover.Portal>
         <Popover.Content className="rating-popover" sideOffset={8} align="start" aria-label={label}>
-          <h3>Sua avaliação</h3>
-          <p>Escolha de ¼ a 5 estrelas.</p>
+          <h3>{t('Sua avaliação')}</h3>
+          <p>{t('Escolha de ¼ a 5 estrelas.')}</p>
           <StarRatingInput value={draft} onChange={setDraft} label={label} />
           <div className="rating-popover-actions">
             <Button size="sm" variant="ghost" onClick={() => setOpen(false)}>
-              Cancelar
+              {t('Cancelar')}
             </Button>
             <Button
               size="sm"
@@ -151,7 +164,7 @@ export function RatingPicker({
                 setOpen(false);
               }}
             >
-              Salvar nota
+              {t('Salvar nota')}
             </Button>
           </div>
         </Popover.Content>

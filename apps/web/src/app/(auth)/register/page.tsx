@@ -1,6 +1,10 @@
 import type { Metadata } from 'next';
+import { getT } from '@/i18n/server';
 import { AuthForm } from '@/features/auth/auth-form';
-export const metadata: Metadata = { title: 'Criar conta' };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return { title: t('Criar conta') };
+}
 export default function Page() {
   return <AuthForm mode="register" />;
 }

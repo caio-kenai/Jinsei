@@ -1,4 +1,6 @@
 'use client';
+import { currentDateLocale, currentLocale, msg } from '@/i18n/config';
+import { useT } from '@/i18n/provider';
 import { useCurrentUser } from '@/features/auth/use-current-user';
 import { ReportButton } from '@/features/community/safety-actions';
 import { useState } from 'react';
@@ -6,7 +8,6 @@ import Link from 'next/link';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { AnimatePresence, motion } from 'motion/react';
 import { format, parseISO } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 import {
   BookmarkPlus,
   Check,
@@ -56,6 +57,7 @@ const initials = (name: string) =>
     .join('');
 
 function LibraryButton({ work }: { work: PublicWorkPage }) {
+  const t = useT();
   const client = useQueryClient();
   const [signup, setSignup] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -83,9 +85,9 @@ function LibraryButton({ work }: { work: PublicWorkPage }) {
       });
       client.setQueryData(['work-entry', work.id], { entry: created });
       void client.invalidateQueries({ queryKey: ['library'] });
-      toast.success('Adicionado à sua biblioteca');
+      toast.success(t('Adicionado à sua biblioteca'));
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Não foi possível adicionar');
+      toast.error(error instanceof Error ? error.message : t('Não foi possível adicionar'));
     } finally {
       setBusy(false);
     }
@@ -103,14 +105,14 @@ function LibraryButton({ work }: { work: PublicWorkPage }) {
         href={`/library/${work.mediaType}?entry=${entry.id}`}
       >
         <Check size={15} />
-        Na sua biblioteca · {statusLabels[entry.status]}
+        {t('Na sua biblioteca ·')} {t(statusLabels[entry.status])}
       </Link>
     );
   return (
     <>
       <button type="button" className="work-library-button" onClick={add} disabled={busy}>
         {busy ? <LoaderCircle size={15} className="spin" /> : <BookmarkPlus size={15} />}
-        Adicionar à minha biblioteca
+        {t('Adicionar à minha biblioteca')}
       </button>
       <SignupDialog open={signup} onOpenChange={setSignup} />
     </>
@@ -118,6 +120,7 @@ function LibraryButton({ work }: { work: PublicWorkPage }) {
 }
 
 function Review({ review }: { review: WorkReview }) {
+  const t = useT();
   const [open, setOpen] = useState(false);
   const signedIn = Boolean(useCurrentUser().data);
   const long = review.text.length > 420;
@@ -142,7 +145,9 @@ function Review({ review }: { review: WorkReview }) {
           <small>@{review.author.username}</small>
         </Link>
         <time dateTime={review.updatedAt}>
-          {format(parseISO(review.updatedAt), "d 'de' MMM yyyy", { locale: ptBR })}
+          {format(parseISO(review.updatedAt), t("d 'de' MMM yyyy"), {
+            locale: currentDateLocale(),
+          })}
         </time>
         {signedIn && <ReportButton target={{ targetType: 'review', targetId: review.id }} />}
       </header>
@@ -150,7 +155,7 @@ function Review({ review }: { review: WorkReview }) {
         {review.recommendation && Icon && (
           <span className={`work-recommendation is-${review.recommendation}`}>
             <Icon size={13} />
-            {recommendationLabels[review.recommendation]}
+            {t(recommendationLabels[review.recommendation])}
           </span>
         )}
         <StatusBadge status={review.status} />
@@ -159,7 +164,7 @@ function Review({ review }: { review: WorkReview }) {
       <p className={open || !long ? '' : 'is-clamped'}>{review.text}</p>
       {long && (
         <button type="button" className="work-review-more" onClick={() => setOpen(!open)}>
-          {open ? 'Mostrar menos' : 'Ler mais'}
+          {open ? t('Mostrar menos') : t('Ler mais')}
           <ChevronDown size={14} style={{ transform: open ? 'rotate(180deg)' : undefined }} />
         </button>
       )}
@@ -168,12 +173,13 @@ function Review({ review }: { review: WorkReview }) {
 }
 
 const tabs = [
-  { id: 'overview', label: 'Visão geral' },
-  { id: 'cast', label: 'Personagens e equipe' },
-  { id: 'reviews', label: 'Reviews' },
+  { id: 'overview', label: msg('Visão geral') },
+  { id: 'cast', label: msg('Personagens e equipe') },
+  { id: 'reviews', label: msg('Reviews') },
 ] as const;
 
 export function WorkPage({ work }: { work: PublicWorkPage }) {
+  const t = useT();
   const [tab, setTab] = useState<(typeof tabs)[number]['id']>('overview');
   const { community, detail } = work;
   const Icon = categoryIcons[work.mediaType];
@@ -182,34 +188,36 @@ export function WorkPage({ work }: { work: PublicWorkPage }) {
   const statusTotal = Object.values(community.statuses).reduce((sum, value) => sum + value, 0);
   const scores = [
     {
-      label: 'Nota Jinsei',
+      label: t('Nota Jinsei'),
       value: community.average,
       decimals: 2,
       suffix: ' ★',
-      hint: `${community.ratings.toLocaleString('pt-BR')} ${community.ratings === 1 ? 'avaliação' : 'avaliações'}`,
+      hint: t(community.ratings === 1 ? '{count} avaliação' : '{count} avaliações', {
+        count: community.ratings.toLocaleString(currentLocale()),
+      }),
       Icon: Star,
       color: '#e8a400',
     },
     {
-      label: 'Ranking',
+      label: t('Ranking'),
       value: community.rank,
       prefix: '#',
-      hint: categoryLabels[work.mediaType],
+      hint: t(categoryLabels[work.mediaType]),
       Icon: Trophy,
       color: '#7050cf',
     },
     {
-      label: 'Popularidade',
+      label: t('Popularidade'),
       value: community.popularity,
       prefix: '#',
-      hint: 'por membros',
+      hint: t('por membros'),
       Icon: Medal,
       color: '#e5306f',
     },
     {
-      label: 'Membros',
+      label: t('Membros'),
       value: community.members,
-      hint: `${community.favorites.toLocaleString('pt-BR')} favoritos`,
+      hint: `${community.favorites.toLocaleString(currentLocale())} favoritos`,
       Icon: Users,
       color: '#2f7bff',
     },
@@ -243,11 +251,11 @@ export function WorkPage({ work }: { work: PublicWorkPage }) {
           </motion.div>
           <LibraryButton work={work} />
           <section className="work-facts">
-            <h2>Informações</h2>
+            <h2>{t('Informações')}</h2>
             <dl>
               <div>
-                <dt>Categoria</dt>
-                <dd>{categoryLabels[work.mediaType]}</dd>
+                <dt>{t('Categoria')}</dt>
+                <dd>{t(categoryLabels[work.mediaType])}</dd>
               </div>
               {detail.facts.map((fact) => (
                 <div key={fact.label}>
@@ -259,7 +267,7 @@ export function WorkPage({ work }: { work: PublicWorkPage }) {
           </section>
           {detail.genres.length > 0 && (
             <section className="work-facts">
-              <h2>Gêneros</h2>
+              <h2>{t('Gêneros')}</h2>
               <div className="work-genres">
                 {detail.genres.map((genre) => (
                   <span key={genre}>{genre}</span>
@@ -269,7 +277,7 @@ export function WorkPage({ work }: { work: PublicWorkPage }) {
           )}
           {detail.links.length > 0 && (
             <section className="work-facts">
-              <h2>Links</h2>
+              <h2>{t('Links')}</h2>
               <div className="work-links">
                 {detail.links.map((link) => (
                   <a key={link.url} href={link.url} target="_blank" rel="noreferrer">
@@ -290,7 +298,7 @@ export function WorkPage({ work }: { work: PublicWorkPage }) {
           >
             <span className="work-type">
               <Icon size={14} />
-              {categoryLabels[work.mediaType]}
+              {t(categoryLabels[work.mediaType])}
               {work.releaseYear && <> · {work.releaseYear}</>}
             </span>
             <h1>{work.title}</h1>
@@ -348,7 +356,7 @@ export function WorkPage({ work }: { work: PublicWorkPage }) {
                   <NumberTicker value={detail.externalScore.value} decimals={1} />
                   <small>/{detail.externalScore.max}</small>
                 </strong>
-                <small>nota externa</small>
+                <small>{t('nota externa')}</small>
               </motion.div>
             )}
           </div>
@@ -363,7 +371,7 @@ export function WorkPage({ work }: { work: PublicWorkPage }) {
                       initial={{ width: 0 }}
                       animate={{ width: `${(community.statuses[status] / statusTotal) * 100}%` }}
                       transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-                      title={`${statusLabels[status]}: ${community.statuses[status]}`}
+                      title={`${t(statusLabels[status])}: ${community.statuses[status]}`}
                     />
                   ) : null,
                 )}
@@ -372,14 +380,14 @@ export function WorkPage({ work }: { work: PublicWorkPage }) {
                 {statusKeys.map((status) => (
                   <li key={status}>
                     <i style={{ background: statusColors[status] }} />
-                    {statusLabels[status]}
-                    <strong>{community.statuses[status].toLocaleString('pt-BR')}</strong>
+                    {t(statusLabels[status])}
+                    <strong>{community.statuses[status].toLocaleString(currentLocale())}</strong>
                   </li>
                 ))}
               </ul>
             </div>
           )}
-          <nav className="work-tabs" role="tablist" aria-label="Seções da obra">
+          <nav className="work-tabs" role="tablist" aria-label={t('Seções da obra')}>
             {tabs.map((item) => (
               <button
                 key={item.id}
@@ -388,7 +396,7 @@ export function WorkPage({ work }: { work: PublicWorkPage }) {
                 className={tab === item.id ? 'active' : ''}
                 onClick={() => setTab(item.id)}
               >
-                {item.label}
+                {t(item.label)}
                 {item.id === 'reviews' && totalReviews > 0 && <span>{totalReviews}</span>}
                 {tab === item.id && <motion.i layoutId="work-tab" className="work-tab-indicator" />}
               </button>
@@ -405,21 +413,21 @@ export function WorkPage({ work }: { work: PublicWorkPage }) {
               {tab === 'overview' && (
                 <>
                   <section className="work-section">
-                    <h2>Sinopse</h2>
+                    <h2>{t('Sinopse')}</h2>
                     {detail.synopsis ? (
                       detail.synopsis
                         .split(/\n{2,}/)
                         .map((paragraph) => <p key={paragraph}>{paragraph}</p>)
                     ) : (
-                      <p className="muted">Ainda não temos uma sinopse para esta obra.</p>
+                      <p className="muted">{t('Ainda não temos uma sinopse para esta obra.')}</p>
                     )}
                   </section>
                   {detail.characters.length > 0 && (
                     <section className="work-section">
                       <div className="work-section-title">
-                        <h2>Personagens principais</h2>
+                        <h2>{t('Personagens principais')}</h2>
                         <button type="button" onClick={() => setTab('cast')}>
-                          Ver todos
+                          {t('Ver todos')}
                         </button>
                       </div>
                       <div className="work-character-strip">
@@ -440,9 +448,9 @@ export function WorkPage({ work }: { work: PublicWorkPage }) {
                   {work.reviews.length > 0 && (
                     <section className="work-section">
                       <div className="work-section-title">
-                        <h2>Review em destaque</h2>
+                        <h2>{t('Review em destaque')}</h2>
                         <button type="button" onClick={() => setTab('reviews')}>
-                          Ver todas
+                          {t('Ver todas')}
                         </button>
                       </div>
                       <Review review={work.reviews[0]} />
@@ -453,7 +461,7 @@ export function WorkPage({ work }: { work: PublicWorkPage }) {
               {tab === 'cast' && (
                 <>
                   <section className="work-section">
-                    <h2>Personagens e elenco</h2>
+                    <h2>{t('Personagens e elenco')}</h2>
                     {detail.characters.length ? (
                       <div className="work-cast">
                         {detail.characters.map((character) => (
@@ -493,13 +501,13 @@ export function WorkPage({ work }: { work: PublicWorkPage }) {
                       </div>
                     ) : (
                       <p className="muted">
-                        Os catálogos abertos não trazem personagens desta obra.
+                        {t('Os catálogos abertos não trazem personagens desta obra.')}
                       </p>
                     )}
                   </section>
                   {detail.staff.length > 0 && (
                     <section className="work-section">
-                      <h2>Equipe</h2>
+                      <h2>{t('Equipe')}</h2>
                       <div className="work-cast">
                         {detail.staff.map((person) => (
                           <div key={`${person.name}-${person.role}`} className="work-cast-row">
@@ -524,7 +532,7 @@ export function WorkPage({ work }: { work: PublicWorkPage }) {
               )}
               {tab === 'reviews' && (
                 <section className="work-section">
-                  <h2>Reviews da comunidade</h2>
+                  <h2>{t('Reviews da comunidade')}</h2>
                   {totalReviews > 0 && (
                     <div className="work-review-summary">
                       {(Object.keys(recommendationLabels) as Recommendation[]).map((key) => {
@@ -532,7 +540,7 @@ export function WorkPage({ work }: { work: PublicWorkPage }) {
                         return (
                           <span key={key} className={`work-recommendation is-${key}`}>
                             <ReviewIcon size={13} />
-                            {work.reviewCounts[key]} {recommendationLabels[key]}
+                            {work.reviewCounts[key]} {t(recommendationLabels[key])}
                           </span>
                         );
                       })}
@@ -555,8 +563,9 @@ export function WorkPage({ work }: { work: PublicWorkPage }) {
                     </div>
                   ) : (
                     <p className="muted">
-                      Ninguém publicou uma review ainda. Adicione a obra à sua biblioteca e escreva
-                      a primeira nos detalhes do título.
+                      {t(
+                        'Ninguém publicou uma review ainda. Adicione a obra à sua biblioteca e escreva a primeira nos detalhes do título.',
+                      )}
                     </p>
                   )}
                 </section>
@@ -564,7 +573,7 @@ export function WorkPage({ work }: { work: PublicWorkPage }) {
             </motion.div>
           </AnimatePresence>
           <p className="work-attribution">
-            Informações de{' '}
+            {t('Informações de')}{' '}
             {detail.source ? (
               detail.source.url ? (
                 <a href={detail.source.url} target="_blank" rel="noreferrer">
@@ -580,8 +589,9 @@ export function WorkPage({ work }: { work: PublicWorkPage }) {
             ) : (
               work.attribution.label
             )}{' '}
-            · {detail.source?.license ?? work.attribution.license}. Notas e reviews da comunidade do
-            Jinsei. <Link href="/rankings">Ver rankings</Link>
+            · {detail.source?.license ?? work.attribution.license}
+            {t('. Notas e reviews da comunidade do Jinsei.')}{' '}
+            <Link href="/rankings">{t('Ver rankings')}</Link>
           </p>
         </div>
       </main>

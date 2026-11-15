@@ -154,13 +154,13 @@ export function PublicProfileSettings({ user }: { user: CurrentUser }) {
       {instance.data?.uploadsEnabled ? (
         <div className="form-grid">
           <ImageField
-            label="Avatar"
+            label={t('Avatar')}
             hint={t('JPEG, PNG ou WebP de até 2 MB.')}
             url={user.profile.avatarUrl}
             path="/users/me/avatar"
           />
           <ImageField
-            label="Banner"
+            label={t('Banner')}
             hint={t('JPEG, PNG ou WebP de até 5 MB, de preferência horizontal.')}
             url={user.profile.bannerUrl}
             path="/users/me/banner"

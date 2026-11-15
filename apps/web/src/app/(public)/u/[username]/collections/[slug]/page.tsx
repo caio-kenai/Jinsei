@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { getT } from '@/i18n/server';
 import { notFound } from 'next/navigation';
 import type { PublicCollection } from '@jinsei/contracts';
 import { absolute, serverApi, siteUrl } from '@/lib/server-api';
@@ -12,14 +13,18 @@ const load = async (username: string, slug: string) =>
   );
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
+  const t = await getT();
   const { username, slug } = await params;
   const [collection, origin] = await Promise.all([load(username, slug), siteUrl()]);
   if (!collection)
-    return { title: 'Coleção não encontrada', robots: { index: false, follow: false } };
+    return { title: t('Coleção não encontrada'), robots: { index: false, follow: false } };
   const title = `${collection.name} · ${collection.owner.displayName}`;
   const description =
     collection.description ||
-    `${collection.itemCount} títulos reunidos por ${collection.owner.displayName} no Jinsei.`;
+    t('{count} títulos reunidos por {name} no Jinsei.', {
+      count: collection.itemCount,
+      name: collection.owner.displayName,
+    });
   const image = absolute(origin, collection.coverUrl ?? collection.covers[0] ?? null);
   const path = `/u/${collection.owner.username}/collections/${collection.slug}`;
   return {

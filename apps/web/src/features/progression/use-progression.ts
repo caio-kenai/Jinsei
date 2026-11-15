@@ -1,4 +1,5 @@
 'use client';
+import { useT } from '@/i18n/provider';
 import { useEffect, useRef } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -17,6 +18,7 @@ export function useProgression() {
 
 /** Announces new badges and levels once, as they happen. */
 export function useProgressionAnnouncements() {
+  const t = useT();
   const { data } = useProgression();
   const celebrations = useCurrentUser().data?.preferences.celebrations ?? true;
   const level = useRef<number | null>(null);
@@ -26,12 +28,14 @@ export function useProgressionAnnouncements() {
     for (const key of data.unlocked) {
       const badge = data.badges.find((item) => item.key === key);
       if (badge) {
-        toast.success(`Nova insígnia: ${badge.label}`, { description: badge.description });
+        toast.success(t('Nova insígnia: {label}', { label: badge.label }), {
+          description: badge.description,
+        });
         party = true;
       }
     }
     if (level.current !== null && data.level > level.current) {
-      toast.success(`Você alcançou o nível ${data.level}!`);
+      toast.success(t('Você alcançou o nível {level}!', { level: data.level }));
       party = true;
     }
     level.current = data.level;

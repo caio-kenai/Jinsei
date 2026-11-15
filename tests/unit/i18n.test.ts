@@ -1,13 +1,13 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { categoryLabels, statusLabels, visualThemeLabels } from '../../packages/contracts/src';
+import * as contracts from '../../packages/contracts/src';
 import { matchLocale, translator } from '../../apps/web/src/i18n/config';
 import { en } from '../../apps/web/src/i18n/messages/en';
 import { es } from '../../apps/web/src/i18n/messages/es';
 
 const source = join(__dirname, '../../apps/web/src');
-const call = /\b(?:t|msg)\(\s*'((?:[^'\\]|\\.)*)'/g;
+const call = /\b(?:t|msg|translate)\(\s*(?:'((?:[^'\\]|\\.)*)'|"((?:[^"\\]|\\.)*)")/g;
 
 function files(dir: string): string[] {
   return readdirSync(dir).flatMap((name) => {
@@ -21,12 +21,16 @@ function sourceKeys() {
   const keys = new Set<string>();
   for (const file of files(source)) {
     for (const match of readFileSync(file, 'utf8').matchAll(call)) {
-      keys.add(match[1]!.replace(/\\'/g, "'").replace(/\\\\/g, '\\'));
+      const text = match[1] ?? match[2]!;
+      keys.add(text.replace(/\\(['"])/g, '$1').replace(/\\\\/g, '\\'));
     }
   }
-  for (const labels of [categoryLabels, statusLabels, visualThemeLabels]) {
-    for (const label of Object.values(labels)) keys.add(label);
+  // Label maps from the contracts are rendered with t(map[key]).
+  for (const [name, value] of Object.entries(contracts)) {
+    if (!/Labels$/.test(name) || name === 'localeLabels') continue;
+    for (const label of Object.values(value as Record<string, string>)) keys.add(label);
   }
+  for (const units of Object.values(contracts.goalUnits)) for (const unit of units) keys.add(unit);
   return [...keys];
 }
 

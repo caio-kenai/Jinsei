@@ -1,4 +1,5 @@
 'use client';
+import { useT } from '@/i18n/provider';
 import { useDateFormat } from '@/lib/date-format';
 import { Check, LoaderCircle, Lock, Sparkles } from 'lucide-react';
 import { missionPeriodLabels, missionPeriods } from '@jinsei/contracts';
@@ -8,6 +9,7 @@ import { LevelCard, MissionList, StreakCard } from './journey-widgets';
 import { useActiveTitle, useProgression } from './use-progression';
 
 export function JourneyScreen() {
+  const t = useT();
   const formatDate = useDateFormat().date;
   const result = useProgression();
   const title = useActiveTitle();
@@ -21,7 +23,7 @@ export function JourneyScreen() {
     return (
       <div className="empty-state">
         <p>{result.error.message}</p>
-        <Button onClick={() => void result.refetch()}>Tentar novamente</Button>
+        <Button onClick={() => void result.refetch()}>{t('Tentar novamente')}</Button>
       </div>
     );
   const progression = result.data;
@@ -34,8 +36,8 @@ export function JourneyScreen() {
             <Sparkles size={17} />
           </span>
           <div>
-            <h1>Jornada</h1>
-            <div className="breadcrumb">Níveis, missões, sequência e conquistas</div>
+            <h1>{t('Jornada')}</h1>
+            <div className="breadcrumb">{t('Níveis, missões, sequência e conquistas')}</div>
           </div>
         </div>
       </header>
@@ -47,7 +49,7 @@ export function JourneyScreen() {
         <div className="mission-columns">
           {missionPeriods.map((period) => (
             <section key={period} className="journey-card mission-card" data-period={period}>
-              <h2 className="journey-section-title">{missionPeriodLabels[period]}</h2>
+              <h2 className="journey-section-title">{t(missionPeriodLabels[period])}</h2>
               <MissionList
                 missions={progression.missions.filter((mission) => mission.period === period)}
               />
@@ -56,9 +58,9 @@ export function JourneyScreen() {
         </div>
         <section className="journey-section">
           <div className="section-title">
-            <h2>Insígnias</h2>
+            <h2>{t('Insígnias')}</h2>
             <span className="group-number">
-              {unlocked} de {progression.badges.length}
+              {t('{unlocked} de {total}', { unlocked, total: progression.badges.length })}
             </span>
           </div>
           <div className="badge-grid">
@@ -88,10 +90,10 @@ export function JourneyScreen() {
         </section>
         <section className="journey-section">
           <div className="section-title">
-            <h2>Títulos</h2>
+            <h2>{t('Títulos')}</h2>
           </div>
           <p className="muted journey-hint">
-            O título escolhido aparece na sua jornada e no seu perfil.
+            {t('O título escolhido aparece na sua jornada e no seu perfil.')}
           </p>
           <div className="title-list">
             {progression.titles.map((item) => {

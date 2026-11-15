@@ -1,5 +1,5 @@
+import { currentDateLocale, currentLocale, msg, translate } from '@/i18n/config';
 import { format, parseISO } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 import {
   progressRatio,
   releaseStatusLabels,
@@ -8,12 +8,13 @@ import {
   type ProgressInput,
 } from '@jinsei/contracts';
 
-const number = (value: number) => value.toLocaleString('pt-BR');
+const number = (value: number) => value.toLocaleString(currentLocale());
 const list = (values: string[], limit = 3) =>
   values.length > limit
     ? `${values.slice(0, limit).join(', ')} +${values.length - limit}`
     : values.join(', ');
-export const shortDate = (value: string) => format(parseISO(value), 'd MMM yyyy', { locale: ptBR });
+export const shortDate = (value: string) =>
+  format(parseISO(value), translate('d MMM yyyy'), { locale: currentDateLocale() });
 export const runtime = (minutes: number) =>
   minutes >= 60 ? `${Math.floor(minutes / 60)} h ${minutes % 60} min` : `${minutes} min`;
 
@@ -27,7 +28,9 @@ export function episodePosition(entry: LibraryEntry): string | null {
   if (entry.progress.kind !== 'episodic' || entry.metadata.kind !== 'episodic') return null;
   if (entry.metadata.seasons.filter((season) => season.number > 0).length < 2) return null;
   const position = seasonPosition(entry.progress.episodesWatched, entry.metadata.seasons);
-  return position ? `T${position.season} · E${position.episode}` : null;
+  return position
+    ? translate('T{season} · E{episode}', { season: position.season, episode: position.episode })
+    : null;
 }
 
 export function progressSummary(entry: LibraryEntry): string {
@@ -38,23 +41,38 @@ export function progressSummary(entry: LibraryEntry): string {
     case 'episodic': {
       const total = metadata.kind === 'episodic' ? metadata.totalEpisodes : null;
       const watched = number(progress.episodesWatched);
-      return total ? `${watched}/${number(total)} ep.` : `${watched} ep.`;
+      return total
+        ? translate('{watched}/{total} ep.', { watched, total: number(total) })
+        : translate('{watched} ep.', { watched });
     }
     case 'reading': {
       const totals = metadata.kind === 'reading' ? metadata : null;
       if (entry.mediaType === 'books') {
         const read = number(progress.pagesRead);
-        return totals?.totalPages ? `${read}/${number(totals.totalPages)} pág.` : `${read} pág.`;
+        return totals?.totalPages
+          ? translate('{read}/{total} pág.', { read, total: number(totals.totalPages) })
+          : translate('{read} pág.', { read });
       }
       const chapters = totals?.totalChapters
-        ? `Cap. ${number(progress.chaptersRead)}/${number(totals.totalChapters)}`
-        : `Cap. ${number(progress.chaptersRead)}`;
-      return progress.volumesRead ? `${chapters} · Vol. ${number(progress.volumesRead)}` : chapters;
+        ? translate('Cap. {read}/{total}', {
+            read: number(progress.chaptersRead),
+            total: number(totals.totalChapters),
+          })
+        : translate('Cap. {read}', { read: number(progress.chaptersRead) });
+      return progress.volumesRead
+        ? translate('{chapters} · Vol. {volumes}', {
+            chapters,
+            volumes: number(progress.volumesRead),
+          })
+        : chapters;
     }
     case 'film':
       return progress.timesWatched
-        ? `${progress.timesWatched}× · ${shortDate(progress.lastWatchedOn!)}`
-        : 'Não assistido';
+        ? translate('{times}× · {date}', {
+            times: progress.timesWatched,
+            date: shortDate(progress.lastWatchedOn!),
+          })
+        : translate('Não assistido');
   }
 }
 
@@ -65,7 +83,7 @@ export function nextStep(entry: LibraryEntry): { label: string; progress: Progre
     const total = metadata.kind === 'episodic' ? metadata.totalEpisodes : null;
     if (total && progress.episodesWatched >= total) return null;
     return {
-      label: '+1 episódio',
+      label: translate('+1 episódio'),
       progress: { kind: 'episodic', episodesWatched: progress.episodesWatched + 1 },
     };
   }
@@ -73,7 +91,7 @@ export function nextStep(entry: LibraryEntry): { label: string; progress: Progre
     const total = metadata.kind === 'reading' ? metadata.totalChapters : null;
     if (total && progress.chaptersRead >= total) return null;
     return {
-      label: '+1 capítulo',
+      label: translate('+1 capítulo'),
       progress: { ...progress, chaptersRead: progress.chaptersRead + 1 },
     };
   }
@@ -100,33 +118,36 @@ export function metadataFacts(entry: LibraryEntry): { label: string; value: stri
   const facts: [string, string | number | null][] = [];
   switch (metadata.kind) {
     case 'game':
-      facts.push(['Desenvolvimento', list(metadata.developers)]);
-      facts.push(['Publicação', list(metadata.publishers)]);
+      facts.push([msg('Desenvolvimento'), list(metadata.developers)]);
+      facts.push([msg('Publicação'), list(metadata.publishers)]);
       break;
     case 'episodic':
-      facts.push(['Episódios', metadata.totalEpisodes]);
-      facts.push(['Temporadas', metadata.totalSeasons]);
-      facts.push(['Produção', list(metadata.studios)]);
+      facts.push([msg('Episódios'), metadata.totalEpisodes]);
+      facts.push([msg('Temporadas'), metadata.totalSeasons]);
+      facts.push([msg('Produção'), list(metadata.studios)]);
       if (metadata.releaseStatus !== 'unknown')
-        facts.push(['Situação', releaseStatusLabels[metadata.releaseStatus]]);
+        facts.push([msg('Situação'), translate(releaseStatusLabels[metadata.releaseStatus])]);
       break;
     case 'reading':
-      facts.push(['Autoria', list(metadata.authors)]);
-      facts.push(['Editora', list(metadata.publishers, 2)]);
-      facts.push(['Capítulos', metadata.totalChapters]);
-      facts.push(['Volumes', metadata.totalVolumes]);
-      facts.push(['Páginas', metadata.totalPages]);
+      facts.push([msg('Autoria'), list(metadata.authors)]);
+      facts.push([msg('Editora'), list(metadata.publishers, 2)]);
+      facts.push([msg('Capítulos'), metadata.totalChapters]);
+      facts.push([msg('Volumes'), metadata.totalVolumes]);
+      facts.push([msg('Páginas'), metadata.totalPages]);
       if (metadata.releaseStatus !== 'unknown')
-        facts.push(['Situação', releaseStatusLabels[metadata.releaseStatus]]);
+        facts.push([msg('Situação'), translate(releaseStatusLabels[metadata.releaseStatus])]);
       break;
     case 'film':
-      facts.push(['Direção', list(metadata.directors)]);
-      facts.push(['Duração', metadata.runtimeMinutes ? runtime(metadata.runtimeMinutes) : null]);
+      facts.push([msg('Direção'), list(metadata.directors)]);
+      facts.push([
+        msg('Duração'),
+        metadata.runtimeMinutes ? runtime(metadata.runtimeMinutes) : null,
+      ]);
       break;
   }
   return facts.flatMap(([label, value]) =>
     value === null || value === ''
       ? []
-      : [{ label, value: typeof value === 'number' ? number(value) : value }],
+      : [{ label: translate(label), value: typeof value === 'number' ? number(value) : value }],
   );
 }

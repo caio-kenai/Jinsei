@@ -1,4 +1,5 @@
 'use client';
+import { useT } from '@/i18n/provider';
 import { useState } from 'react';
 import {
   CalendarDays,
@@ -66,10 +67,11 @@ export function ViewTabs({
   onLayout: (layout: Layout) => void;
   activeLayout: Layout;
 }) {
+  const t = useT();
   const [renaming, setRenaming] = useState<SavedView | null>(null);
   const [name, setName] = useState('');
   return (
-    <div className="view-tabs" role="tablist" aria-label="Visualizações da biblioteca">
+    <div className="view-tabs" role="tablist" aria-label={t('Visualizações da biblioteca')}>
       {views.map((view) => {
         const active = view.id === activeId;
         const layout = active ? activeLayout : view.config.layout;
@@ -83,7 +85,7 @@ export function ViewTabs({
               onClick={() => onActivate(view)}
             >
               <Icon size={14} style={{ color: layoutColors[layout] }} />
-              {view.name}
+              {view.id.startsWith('default:') ? t(view.name) : view.name}
               {active && (
                 <motion.span
                   layoutId="view-tab-indicator"
@@ -95,18 +97,21 @@ export function ViewTabs({
             {active && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="view-tab-menu" aria-label={`Opções de ${view.name}`}>
+                  <button
+                    className="view-tab-menu"
+                    aria-label={t('Opções de {name}', { name: view.name })}
+                  >
                     <ChevronDown size={12} />
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
-                  <DropdownMenuLabel>Exibir como</DropdownMenuLabel>
+                  <DropdownMenuLabel>{t('Exibir como')}</DropdownMenuLabel>
                   {availableLayouts.map((layout) => {
                     const LayoutIcon = layoutIcons[layout];
                     return (
                       <DropdownMenuItem key={layout} onSelect={() => onLayout(layout)}>
                         <LayoutIcon size={13} style={{ color: layoutColors[layout] }} />
-                        {layoutLabels[layout]}
+                        {t(layoutLabels[layout])}
                         {layout === activeLayout ? ' ✓' : ''}
                       </DropdownMenuItem>
                     );
@@ -119,15 +124,15 @@ export function ViewTabs({
                     }}
                   >
                     <Pencil size={13} />
-                    Renomear
+                    {t('Renomear')}
                   </DropdownMenuItem>
                   <DropdownMenuItem onSelect={() => onDuplicate(view)}>
                     <Copy size={13} />
-                    Duplicar
+                    {t('Duplicar')}
                   </DropdownMenuItem>
                   <DropdownMenuItem onSelect={() => onDelete(view)}>
                     <Trash2 size={13} />
-                    Excluir visualização
+                    {t('Excluir visualização')}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -139,28 +144,30 @@ export function ViewTabs({
         <DropdownMenuTrigger asChild>
           <button className="view-tab view-tab-add">
             <Plus size={13} />
-            Visualização
+            {t('Visualização')}
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent>
-          <DropdownMenuLabel>Nova visualização</DropdownMenuLabel>
+          <DropdownMenuLabel>{t('Nova visualização')}</DropdownMenuLabel>
           {availableLayouts.map((layout) => {
             const LayoutIcon = layoutIcons[layout];
             return (
               <DropdownMenuItem key={layout} onSelect={() => onCreate(layout)}>
                 <LayoutIcon size={13} style={{ color: layoutColors[layout] }} />
-                {layoutLabels[layout]}
+                {t(layoutLabels[layout])}
               </DropdownMenuItem>
             );
           })}
         </DropdownMenuContent>
       </DropdownMenu>
-      <span className="view-count">{count} títulos</span>
+      <span className="view-count">
+        {count} {t('títulos')}
+      </span>
       <Dialog open={Boolean(renaming)} onOpenChange={(open) => !open && setRenaming(null)}>
         <DialogContent>
-          <DialogTitle className="dialog-title">Renomear visualização</DialogTitle>
+          <DialogTitle className="dialog-title">{t('Renomear visualização')}</DialogTitle>
           <DialogDescription className="dialog-description">
-            Escolha um nome curto para encontrar esta visualização depois.
+            {t('Escolha um nome curto para encontrar esta visualização depois.')}
           </DialogDescription>
           <form
             className="dialog-form"
@@ -172,16 +179,16 @@ export function ViewTabs({
           >
             <Input
               autoFocus
-              aria-label="Nome da visualização"
+              aria-label={t('Nome da visualização')}
               value={name}
               maxLength={40}
               onChange={(event) => setName(event.target.value)}
             />
             <div className="dialog-footer">
               <Button type="button" variant="outline" onClick={() => setRenaming(null)}>
-                Cancelar
+                {t('Cancelar')}
               </Button>
-              <Button type="submit">Salvar nome</Button>
+              <Button type="submit">{t('Salvar nome')}</Button>
             </div>
           </form>
         </DialogContent>

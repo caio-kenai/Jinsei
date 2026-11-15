@@ -1,4 +1,6 @@
 'use client';
+import { msg } from '@/i18n/config';
+import { useT } from '@/i18n/provider';
 import { useState } from 'react';
 import { LoaderCircle, Plus, Target } from 'lucide-react';
 import { toast } from 'sonner';
@@ -10,12 +12,13 @@ import { GoalFormDialog } from './goal-form-dialog';
 import { useGoalMutations, useGoals } from './use-goals';
 
 const sections = [
-  { title: 'Em andamento', states: ['active'] },
-  { title: 'Concluídas', states: ['achieved'] },
-  { title: 'Encerradas e arquivadas', states: ['expired', 'archived'] },
+  { title: msg('Em andamento'), states: ['active'] },
+  { title: msg('Concluídas'), states: ['achieved'] },
+  { title: msg('Encerradas e arquivadas'), states: ['expired', 'archived'] },
 ] as const;
 
 export function GoalsScreen() {
+  const t = useT();
   const result = useGoals();
   const { create, update, remove } = useGoalMutations();
   const [form, setForm] = useState<{ goal?: Goal } | null>(null);
@@ -28,14 +31,14 @@ export function GoalsScreen() {
             <Target size={17} />
           </span>
           <div>
-            <h1>Metas</h1>
-            <div className="breadcrumb">Objetivos acompanhados pela sua biblioteca</div>
+            <h1>{t('Metas')}</h1>
+            <div className="breadcrumb">{t('Objetivos acompanhados pela sua biblioteca')}</div>
           </div>
         </div>
         <div className="context-actions">
           <Button size="sm" onClick={() => setForm({})}>
             <Plus size={14} />
-            Nova meta
+            {t('Nova meta')}
           </Button>
         </div>
       </header>
@@ -47,18 +50,22 @@ export function GoalsScreen() {
         ) : result.error ? (
           <div className="empty-state">
             <p>{result.error.message}</p>
-            <Button onClick={() => void result.refetch()}>Tentar novamente</Button>
+            <Button onClick={() => void result.refetch()}>{t('Tentar novamente')}</Button>
           </div>
         ) : result.data.goals.length === 0 ? (
           <div className="empty-state">
             <span className="empty-state-icon">
               <Target size={25} />
             </span>
-            <h2>Aonde você quer chegar?</h2>
-            <p>Concluir 20 jogos no ano, ler 100 capítulos, terminar uma coleção. Você escolhe.</p>
+            <h2>{t('Aonde você quer chegar?')}</h2>
+            <p>
+              {t(
+                'Concluir 20 jogos no ano, ler 100 capítulos, terminar uma coleção. Você escolhe.',
+              )}
+            </p>
             <Button variant="outline" onClick={() => setForm({})}>
               <Plus size={14} />
-              Criar minha primeira meta
+              {t('Criar minha primeira meta')}
             </Button>
           </div>
         ) : (
@@ -70,7 +77,7 @@ export function GoalsScreen() {
             return (
               <section key={section.title} className="goal-section">
                 <div className="section-title">
-                  <h2>{section.title}</h2>
+                  <h2>{t(section.title)}</h2>
                   <span className="group-number">{goals.length}</span>
                 </div>
                 <div className="goal-grid">
@@ -104,7 +111,7 @@ export function GoalsScreen() {
             const options = {
               onSuccess: () => {
                 setForm(null);
-                toast.success(form.goal ? 'Meta atualizada' : 'Meta criada');
+                toast.success(form.goal ? t('Meta atualizada') : t('Meta criada'));
               },
             };
             if (form.goal) update.mutate({ id: form.goal.id, changes: input }, options);
@@ -114,13 +121,13 @@ export function GoalsScreen() {
       )}
       <Dialog open={Boolean(deleting)} onOpenChange={(open) => !open && setDeleting(null)}>
         <DialogContent>
-          <DialogTitle className="dialog-title">Excluir esta meta?</DialogTitle>
+          <DialogTitle className="dialog-title">{t('Excluir esta meta?')}</DialogTitle>
           <DialogDescription className="dialog-description">
-            {deleting?.name} será removida. Sua biblioteca não é alterada.
+            {deleting?.name} {t('será removida. Sua biblioteca não é alterada.')}
           </DialogDescription>
           <div className="dialog-footer">
             <Button variant="outline" onClick={() => setDeleting(null)}>
-              Cancelar
+              {t('Cancelar')}
             </Button>
             <Button
               variant="destructive"
@@ -129,12 +136,12 @@ export function GoalsScreen() {
                 remove.mutate(deleting.id, {
                   onSuccess: () => {
                     setDeleting(null);
-                    toast.success('Meta excluída');
+                    toast.success(t('Meta excluída'));
                   },
                 })
               }
             >
-              Excluir meta
+              {t('Excluir meta')}
             </Button>
           </div>
         </DialogContent>

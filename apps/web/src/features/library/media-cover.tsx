@@ -1,4 +1,5 @@
 'use client';
+import { useT } from '@/i18n/provider';
 import { useState, type CSSProperties } from 'react';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
@@ -14,13 +15,14 @@ export function MediaCover({
   large?: boolean;
   layout?: 'portrait' | 'landscape';
 }) {
+  const t = useT();
   const [failedUrl, setFailedUrl] = useState<string | null>(null);
   const colors = ['#3e5768', '#755562', '#3e635b', '#6c5e48', '#55516f', '#425e78'];
   const hash = [...title].reduce((sum, char) => sum + char.charCodeAt(0), 0);
   return (
     <span
       className={cn('cover', large && 'cover-large', layout === 'landscape' && 'cover-landscape')}
-      title={!url || failedUrl === url ? `Capa indisponível: ${title}` : undefined}
+      title={!url || failedUrl === url ? t('Capa indisponível: {title}', { title }) : undefined}
       style={{ '--cover-color': colors[hash % colors.length] } as CSSProperties}
     >
       {url && failedUrl !== url && large && (
@@ -34,7 +36,7 @@ export function MediaCover({
       {url && failedUrl !== url ? (
         <Image
           src={url}
-          alt={`Capa de ${title}`}
+          alt={t('Capa de {title}', { title })}
           width={large ? 240 : 52}
           height={large ? 320 : 70}
           unoptimized
@@ -50,7 +52,7 @@ export function MediaCover({
             .map((part) => part[0])
             .join('')
             .toUpperCase()}
-          {large && <small>SEM CAPA</small>}
+          {large && <small>{t('SEM CAPA')}</small>}
         </span>
       )}
     </span>

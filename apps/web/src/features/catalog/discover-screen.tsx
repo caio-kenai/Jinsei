@@ -1,4 +1,5 @@
 'use client';
+import { useT } from '@/i18n/provider';
 import { useState } from 'react';
 import { categoryLabels, mediaTypes, type MediaType, type CatalogResult } from '@jinsei/contracts';
 import { Select } from '@/components/ui/input';
@@ -6,6 +7,7 @@ import { CatalogSearch } from './catalog-search';
 import { AddEntryDialog } from '@/features/library/add-entry-dialog';
 import { EntryDetails } from '@/features/library/entry-details';
 export function DiscoverScreen() {
+  const t = useT();
   const [mediaType, setMediaType] = useState<MediaType>('games');
   const [item, setItem] = useState<CatalogResult>();
   const [add, setAdd] = useState(false);
@@ -14,20 +16,20 @@ export function DiscoverScreen() {
     <div className="discover-page" style={{ maxWidth: 850 }}>
       <header className="page-heading">
         <span className="eyebrow" style={{ marginBottom: 8 }}>
-          O PRÓXIMO CAPÍTULO
+          {t('O PRÓXIMO CAPÍTULO')}
         </span>
-        <h1>O que você quer descobrir?</h1>
-        <p>Encontre histórias para viver, jogar e lembrar.</p>
+        <h1>{t('O que você quer descobrir?')}</h1>
+        <p>{t('Encontre histórias para viver, jogar e lembrar.')}</p>
       </header>
       <label className="field" style={{ maxWidth: 200 }}>
-        Categoria
+        {t('Categoria')}
         <Select
           value={mediaType}
           onChange={(event) => setMediaType(event.target.value as MediaType)}
         >
           {mediaTypes.map((type) => (
             <option value={type} key={type}>
-              {categoryLabels[type]}
+              {t(categoryLabels[type])}
             </option>
           ))}
         </Select>

@@ -1,4 +1,6 @@
 'use client';
+import { msg } from '@/i18n/config';
+import { useT } from '@/i18n/provider';
 import { useEffect, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'motion/react';
@@ -57,88 +59,143 @@ const examples: Record<
 > = {
   games: [
     {
-      title: 'Hollow Knight',
+      title: msg('Hollow Knight'),
       status: 'in_progress',
       rating: 4.75,
       progress: 64,
-      tag: 'Metroidvania',
+      tag: msg('Metroidvania'),
     },
-    { title: 'Stardew Valley', status: 'in_progress', rating: 4.5, progress: 42, tag: 'Relaxante' },
-    { title: 'Celeste', status: 'planned', rating: null, progress: 0, tag: 'Indie' },
-    { title: 'Hades', status: 'completed', rating: 5, progress: 100, tag: 'Roguelike' },
-    { title: 'Outer Wilds', status: 'planned', rating: null, progress: 0, tag: 'Exploração' },
-  ],
-  anime: [
     {
-      title: 'Frieren: Beyond Journey’s End',
+      title: msg('Stardew Valley'),
       status: 'in_progress',
-      rating: 4.75,
-      progress: 60,
-      tag: 'Fantasia',
+      rating: 4.5,
+      progress: 42,
+      tag: msg('Relaxante'),
     },
+    { title: msg('Celeste'), status: 'planned', rating: null, progress: 0, tag: msg('Indie') },
+    { title: msg('Hades'), status: 'completed', rating: 5, progress: 100, tag: msg('Roguelike') },
     {
-      title: 'Fullmetal Alchemist: Brotherhood',
-      status: 'completed',
-      rating: 5,
-      progress: 100,
-      tag: 'Aventura',
-    },
-    { title: 'Cowboy Bebop', status: 'planned', rating: null, progress: 0, tag: 'Clássico' },
-  ],
-  manga: [
-    { title: 'Berserk', status: 'in_progress', rating: 5, progress: 45, tag: 'Fantasia' },
-    {
-      title: 'Fullmetal Alchemist',
-      status: 'completed',
-      rating: 4.75,
-      progress: 100,
-      tag: 'Aventura',
-    },
-    { title: 'Naruto', status: 'planned', rating: null, progress: 0, tag: 'Shōnen' },
-  ],
-  movies: [
-    { title: 'Metrópolis', status: 'planned', rating: null, progress: 0, tag: 'Clássico' },
-    {
-      title: 'A viagem de Chihiro',
-      status: 'completed',
-      rating: 5,
-      progress: 100,
-      tag: 'Animação',
-    },
-    {
-      title: 'Interestelar',
-      status: 'completed',
-      rating: 4.75,
-      progress: 100,
-      tag: 'Ficção científica',
-    },
-    {
-      title: 'O fabuloso destino de Amélie Poulain',
+      title: msg('Outer Wilds'),
       status: 'planned',
       rating: null,
       progress: 0,
-      tag: 'Para depois',
+      tag: msg('Exploração'),
+    },
+  ],
+  anime: [
+    {
+      title: msg('Frieren: Beyond Journey’s End'),
+      status: 'in_progress',
+      rating: 4.75,
+      progress: 60,
+      tag: msg('Fantasia'),
+    },
+    {
+      title: msg('Fullmetal Alchemist: Brotherhood'),
+      status: 'completed',
+      rating: 5,
+      progress: 100,
+      tag: msg('Aventura'),
+    },
+    {
+      title: msg('Cowboy Bebop'),
+      status: 'planned',
+      rating: null,
+      progress: 0,
+      tag: msg('Clássico'),
+    },
+  ],
+  manga: [
+    { title: msg('Berserk'), status: 'in_progress', rating: 5, progress: 45, tag: msg('Fantasia') },
+    {
+      title: msg('Fullmetal Alchemist'),
+      status: 'completed',
+      rating: 4.75,
+      progress: 100,
+      tag: msg('Aventura'),
+    },
+    { title: msg('Naruto'), status: 'planned', rating: null, progress: 0, tag: 'Shōnen' },
+  ],
+  movies: [
+    {
+      title: msg('Metrópolis'),
+      status: 'planned',
+      rating: null,
+      progress: 0,
+      tag: msg('Clássico'),
+    },
+    {
+      title: msg('A viagem de Chihiro'),
+      status: 'completed',
+      rating: 5,
+      progress: 100,
+      tag: msg('Animação'),
+    },
+    {
+      title: msg('Interestelar'),
+      status: 'completed',
+      rating: 4.75,
+      progress: 100,
+      tag: msg('Ficção científica'),
+    },
+    {
+      title: msg('O fabuloso destino de Amélie Poulain'),
+      status: 'planned',
+      rating: null,
+      progress: 0,
+      tag: msg('Para depois'),
     },
   ],
   series: [
-    { title: 'Breaking Bad', status: 'completed', rating: 5, progress: 100, tag: 'Drama' },
-    { title: 'Severance', status: 'in_progress', rating: 4.5, progress: 50, tag: 'Mistério' },
-    { title: 'Dark', status: 'planned', rating: null, progress: 0, tag: 'Ficção científica' },
+    {
+      title: msg('Breaking Bad'),
+      status: 'completed',
+      rating: 5,
+      progress: 100,
+      tag: msg('Drama'),
+    },
+    {
+      title: msg('Severance'),
+      status: 'in_progress',
+      rating: 4.5,
+      progress: 50,
+      tag: msg('Mistério'),
+    },
+    {
+      title: msg('Dark'),
+      status: 'planned',
+      rating: null,
+      progress: 0,
+      tag: msg('Ficção científica'),
+    },
   ],
   books: [
-    { title: 'Dom Casmurro', status: 'completed', rating: 5, progress: 100, tag: 'Clássico' },
     {
-      title: 'Grande Sertão: Veredas',
+      title: msg('Dom Casmurro'),
+      status: 'completed',
+      rating: 5,
+      progress: 100,
+      tag: msg('Clássico'),
+    },
+    {
+      title: msg('Grande Sertão: Veredas'),
       status: 'in_progress',
       rating: 4.5,
       progress: 38,
-      tag: 'Literatura brasileira',
+      tag: msg('Literatura brasileira'),
     },
-    { title: 'Duna', status: 'planned', rating: null, progress: 0, tag: 'Ficção científica' },
+    {
+      title: msg('Duna'),
+      status: 'planned',
+      rating: null,
+      progress: 0,
+      tag: msg('Ficção científica'),
+    },
   ],
 };
 
 function ProductDemo() {
+  const t = useT();
   const { data: catalog = [] } = useQuery({
     queryKey: ['showcase'],
     queryFn: () => api<CatalogResult[]>('/catalog/showcase'),
@@ -163,7 +220,7 @@ function ProductDemo() {
   const CategoryIcon = categories.find((item) => item.id === category)!.Icon;
   return (
     <div className="marketing-demo" id="como-funciona">
-      <nav className="demo-categories" aria-label="Categorias da demonstração">
+      <nav className="demo-categories" aria-label={t('Categorias da demonstração')}>
         {categories.map(({ id, Icon }) => (
           <button
             key={id}
@@ -171,47 +228,48 @@ function ProductDemo() {
             onClick={() => setCategory(id)}
           >
             <span>{category === id ? <Check size={12} /> : <CirclePlus size={13} />}</span>
-            {categoryLabels[id]}
+            {t(categoryLabels[id])}
             <Icon className="demo-category-icon" size={16} />
           </button>
         ))}
         <div className="demo-nav-note">
           <LockKeyhole size={14} />
-          Sua biblioteca,
+          {t('Sua biblioteca,')}
           <br />
-          do seu jeito.
+          {t('do seu jeito.')}
         </div>
       </nav>
       <div className="demo-frame">
         <div className="demo-window-bar">
           <span className="demo-space-avatar">J</span>
           <span>
-            Meu espaço
+            {t('Meu espaço')}
             <ChevronDown size={11} />
           </span>
           <span className="demo-search">
             <Search size={12} />
-            Pesquisar<kbd>⌘ K</kbd>
+            {t('Pesquisar')}
+            <kbd>⌘ K</kbd>
           </span>
-          <span className="demo-avatar">AC</span>
+          <span className="demo-avatar">{t('AC')}</span>
         </div>
         <div className="demo-app-body">
           <aside className="demo-rail">
             <span className="demo-rail-active">
               <Library size={17} />
-              <small>Biblioteca</small>
+              <small>{t('Biblioteca')}</small>
             </span>
             <span>
               <Heart size={17} />
-              <small>Favoritos</small>
+              <small>{t('Favoritos')}</small>
             </span>
             <span>
               <Search size={17} />
-              <small>Descobrir</small>
+              <small>{t('Descobrir')}</small>
             </span>
             <span>
               <SlidersHorizontal size={17} />
-              <small>Ajustes</small>
+              <small>{t('Ajustes')}</small>
             </span>
           </aside>
           <div className="demo-workspace">
@@ -226,7 +284,7 @@ function ProductDemo() {
               >
                 <CategoryIcon size={13} />
               </motion.span>
-              <strong>{categoryLabels[category]}</strong>
+              <strong>{t(categoryLabels[category])}</strong>
               <ChevronDown size={12} />
               <Star size={13} />
             </div>
@@ -236,31 +294,31 @@ function ProductDemo() {
                 className={layout === 'list' ? 'active' : ''}
               >
                 <List size={13} />
-                Lista
+                {t('Lista')}
               </button>
               <button
                 onClick={() => setLayout('gallery')}
                 className={layout === 'gallery' ? 'active' : ''}
               >
                 <LayoutGrid size={13} />
-                Galeria
+                {t('Galeria')}
               </button>
-              <span>Biblioteca de exemplo</span>
+              <span>{t('Biblioteca de exemplo')}</span>
             </div>
             <div className="demo-toolbar">
               <span>
                 <SlidersHorizontal size={12} />
-                Filtro
+                {t('Filtro')}
               </span>
-              <span className="demo-add">+ Adicionar título</span>
+              <span className="demo-add">{t('+ Adicionar título')}</span>
             </div>
             {layout === 'list' ? (
               <div className="demo-list">
                 <div className="demo-table-heading">
-                  <span>Nome</span>
-                  <span>Status</span>
-                  <span>Nota</span>
-                  <span>Progresso</span>
+                  <span>{t('Nome')}</span>
+                  <span>{t('Status')}</span>
+                  <span>{t('Nota')}</span>
+                  <span>{t('Progresso')}</span>
                 </div>
                 {entries.map((item, index) => (
                   <div
@@ -269,7 +327,7 @@ function ProductDemo() {
                   >
                     <span className="demo-row-name">
                       <span className={`demo-status-circle ${item.status}`} />
-                      {item.title}
+                      {t(item.title)}
                     </span>
                     <StatusBadge status={item.status} />
                     <StarRating value={item.rating} size={10} />
@@ -283,7 +341,7 @@ function ProductDemo() {
                 ))}
                 <div className="demo-add-row">
                   <CirclePlus size={12} />
-                  Adicionar título
+                  {t('Adicionar título')}
                 </div>
               </div>
             ) : (
@@ -291,13 +349,13 @@ function ProductDemo() {
                 {entries.map((item) => (
                   <div className="demo-poster" key={item.title}>
                     <MediaCover
-                      title={item.title}
+                      title={t(item.title)}
                       url={coverFor(item.title)?.coverUrl ?? null}
                       layout={coverFor(item.title)?.coverAttribution?.layout}
                       large
                     />
-                    <span>{item.title}</span>
-                    <small>{item.tag}</small>
+                    <span>{t(item.title)}</span>
+                    <small>{t(item.tag)}</small>
                     {coverFor(item.title)?.coverAttribution && (
                       <small className="demo-cover-credit">
                         <a
@@ -323,7 +381,8 @@ function ProductDemo() {
                 <Check size={13} />
               </span>
               <div>
-                Suas experiências, organizadas.<small>Lista e galeria. Uma só biblioteca.</small>
+                {t('Suas experiências, organizadas.')}
+                <small>{t('Lista e galeria. Uma só biblioteca.')}</small>
               </div>
             </div>
           </div>
@@ -334,6 +393,7 @@ function ProductDemo() {
 }
 
 export function MarketingSite() {
+  const t = useT();
   const [signup, setSignup] = useState(false);
   const root = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -372,11 +432,11 @@ export function MarketingSite() {
             rel="noreferrer"
           >
             <span className="pill-color-dot" />
-            <span className="shiny-text">Gratuito. Open source. Seu.</span>
+            <span className="shiny-text">{t('Gratuito. Open source. Seu.')}</span>
             <ChevronRight size={14} />
           </a>
-          <h1 aria-label="Um lugar para todas as suas histórias">
-            <BlurText lines={['Um lugar para todas', 'as suas histórias']} delay={0.1} />
+          <h1 aria-label={t('Um lugar para todas as suas histórias')}>
+            <BlurText lines={[t('Um lugar para todas'), t('as suas histórias')]} delay={0.1} />
           </h1>
           <motion.p
             className="marketing-hero-subtitle"
@@ -385,10 +445,12 @@ export function MarketingSite() {
             transition={{ duration: 0.6, delay: 0.55, ease: [0.22, 1, 0.36, 1] }}
           >
             <span className="sr-only">
-              Jogos, animes, mangás, filmes, séries, livros e muito mais.
+              {t('Jogos, animes, mangás, filmes, séries, livros e muito mais.')}
             </span>
-            <RotatingWord words={['Jogos', 'Animes', 'Mangás', 'Filmes', 'Séries', 'Livros']} />
-            <span aria-hidden="true"> e muito mais.</span>
+            <RotatingWord
+              words={[t('Jogos'), t('Animes'), t('Mangás'), t('Filmes'), t('Séries'), t('Livros')]}
+            />
+            <span aria-hidden="true"> {t('e muito mais.')}</span>
           </motion.p>
           <motion.div
             className="marketing-hero-cta"
@@ -396,8 +458,8 @@ export function MarketingSite() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.75, ease: [0.22, 1, 0.36, 1] }}
           >
-            <GlowButton onClick={() => setSignup(true)}>Comece agora. É GRÁTIS</GlowButton>
-            <span>Sem assinatura. Sem cartão de crédito.</span>
+            <GlowButton onClick={() => setSignup(true)}>{t('Comece agora. É GRÁTIS')}</GlowButton>
+            <span>{t('Sem assinatura. Sem cartão de crédito.')}</span>
           </motion.div>
         </section>
         <section className="marketing-showcase">
@@ -406,11 +468,11 @@ export function MarketingSite() {
               <ProductDemo />
             </ScrollLift>
             <div className="marketing-category-strip">
-              <span>PARA TODAS AS SUAS HISTÓRIAS</span>
+              <span>{t('PARA TODAS AS SUAS HISTÓRIAS')}</span>
               {categories.map(({ id, Icon }) => (
                 <div key={id}>
                   <Icon size={23} />
-                  {categoryLabels[id]}
+                  {t(categoryLabels[id])}
                 </div>
               ))}
             </div>
@@ -421,32 +483,34 @@ export function MarketingSite() {
         <section className="marketing-section marketing-container" data-reveal>
           <header className="marketing-section-heading">
             <h2>
-              Menos listas espalhadas.
+              {t('Menos listas espalhadas.')}
               <br />
-              <span>Mais histórias para viver.</span>
+              <span>{t('Mais histórias para viver.')}</span>
             </h2>
             <p>
-              Encontre o que você quer começar. Lembre do que já te marcou.
+              {t('Encontre o que você quer começar. Lembre do que já te marcou.')}
               <br />
-              Mantenha cada experiência no seu lugar.
+              {t('Mantenha cada experiência no seu lugar.')}
             </p>
           </header>
           <div className="marketing-experience">
             <div className="experience-copy">
               <span className="marketing-section-tag">
                 <Library size={15} />
-                Sua biblioteca
+                {t('Sua biblioteca')}
               </span>
               <h3>
-                De “um dia eu começo”
-                <br />a “nunca vou esquecer”.
+                {t('De “um dia eu começo”')}
+                <br />
+                {t('a “nunca vou esquecer”.')}
               </h3>
               <p>
-                Organize seus títulos por status, guarde suas notas e registre seu progresso. Cada
-                detalhe acompanha a sua jornada.
+                {t(
+                  'Organize seus títulos por status, guarde suas notas e registre seu progresso. Cada detalhe acompanha a sua jornada.',
+                )}
               </p>
               <button className="public-text-link" onClick={() => setSignup(true)}>
-                Crie sua biblioteca
+                {t('Crie sua biblioteca')}
                 <ArrowRight size={16} />
               </button>
             </div>
@@ -458,38 +522,42 @@ export function MarketingSite() {
           <div className="marketing-container">
             <header className="marketing-section-heading">
               <h2>
-                Sua biblioteca.
+                {t('Sua biblioteca.')}
                 <br />
-                <span>As suas regras.</span>
+                <span>{t('As suas regras.')}</span>
               </h2>
               <p>
-                Escolha suas categorias, sua visualização e o seu tema.
-                <br />O Jinsei se adapta a você.
+                {t('Escolha suas categorias, sua visualização e o seu tema.')}
+                <br />
+                {t('O Jinsei se adapta a você.')}
               </p>
             </header>
             <div className="marketing-feature-grid">
               <SpotlightCard>
                 <ViewsSwitchArt />
-                <h3>Uma biblioteca, diferentes olhares.</h3>
+                <h3>{t('Uma biblioteca, diferentes olhares.')}</h3>
                 <p>
-                  Alterne entre a clareza da lista e o visual da galeria. Seus registros continuam
-                  no mesmo lugar.
+                  {t(
+                    'Alterne entre a clareza da lista e o visual da galeria. Seus registros continuam no mesmo lugar.',
+                  )}
                 </p>
               </SpotlightCard>
               <SpotlightCard>
                 <AccentArt />
-                <h3>Do seu jeito, em cada detalhe.</h3>
+                <h3>{t('Do seu jeito, em cada detalhe.')}</h3>
                 <p>
-                  Temas claro e escuro, cores e categorias configuráveis. Um espaço que combina com
-                  você.
+                  {t(
+                    'Temas claro e escuro, cores e categorias configuráveis. Um espaço que combina com você.',
+                  )}
                 </p>
               </SpotlightCard>
               <SpotlightCard>
                 <PrivacyArt />
-                <h3>Suas histórias pertencem a você.</h3>
+                <h3>{t('Suas histórias pertencem a você.')}</h3>
                 <p>
-                  Biblioteca privada, anotações pessoais e exportação dos seus dados. Você mantém o
-                  controle.
+                  {t(
+                    'Biblioteca privada, anotações pessoais e exportação dos seus dados. Você mantém o controle.',
+                  )}
                 </p>
               </SpotlightCard>
             </div>

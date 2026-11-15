@@ -1,4 +1,5 @@
 'use client';
+import { useT } from '@/i18n/provider';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Check, LoaderCircle, Plus, Search } from 'lucide-react';
@@ -22,6 +23,7 @@ export function AddItemsDialog({
   existing: Set<string>;
   onAdd: (entryId: string) => void;
 }) {
+  const t = useT();
   const [query, setQuery] = useState('');
   const debounced = useDebouncedValue(query);
   const result = useQuery({
@@ -35,18 +37,18 @@ export function AddItemsDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="add-dialog">
-        <DialogTitle className="dialog-title">Adicionar títulos</DialogTitle>
+        <DialogTitle className="dialog-title">{t('Adicionar títulos')}</DialogTitle>
         <DialogDescription className="dialog-description">
-          Escolha títulos da sua biblioteca. Eles continuam com seus dados originais.
+          {t('Escolha títulos da sua biblioteca. Eles continuam com seus dados originais.')}
         </DialogDescription>
         <label className="library-search picker-search">
           <Search size={12} />
           <Input
             autoFocus
-            aria-label="Buscar na biblioteca"
+            aria-label={t('Buscar na biblioteca')}
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Buscar na sua biblioteca…"
+            placeholder={t('Buscar na sua biblioteca…')}
           />
         </label>
         <div className="picker-list">
@@ -69,18 +71,22 @@ export function AddItemsDialog({
                     variant={added ? 'ghost' : 'outline'}
                     disabled={added}
                     aria-label={
-                      added ? `${entry.title} já está na coleção` : `Adicionar ${entry.title}`
+                      added
+                        ? t('{title} já está na coleção', { title: entry.title })
+                        : t('Adicionar {title}', { title: entry.title })
                     }
                     onClick={() => onAdd(entry.id)}
                   >
                     {added ? <Check size={13} /> : <Plus size={13} />}
-                    {added ? 'Na coleção' : 'Adicionar'}
+                    {added ? t('Na coleção') : t('Adicionar')}
                   </Button>
                 </div>
               );
             })
           )}
-          {result.data?.items.length === 0 && <p className="muted">Nenhum título encontrado.</p>}
+          {result.data?.items.length === 0 && (
+            <p className="muted">{t('Nenhum título encontrado.')}</p>
+          )}
         </div>
       </DialogContent>
     </Dialog>

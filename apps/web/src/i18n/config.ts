@@ -61,4 +61,7 @@ export const numberLocales: Record<Locale, string> = { 'pt-BR': 'pt-BR', en: 'en
  * Marks Portuguese text that is translated later (module-level labels, option lists).
  * Returns the text untouched; render it with `t(label)`.
  */
-export const msg = <T extends string>(text: T): T => text;
+export const msg = (text: string): string => text;
+
+/** Translates outside React (helpers, toasts in plain functions) using the active language. */
+export const translate: Translate = (text, values) => translator(activeLocale)(text, values);

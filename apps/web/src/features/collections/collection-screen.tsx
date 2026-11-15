@@ -1,4 +1,5 @@
 'use client';
+import { useT } from '@/i18n/provider';
 import { useState } from 'react';
 import {
   DndContext,
@@ -56,6 +57,7 @@ function positionAt(items: CollectionItem[], index: number) {
 }
 
 export function CollectionScreen({ id }: { id: string }) {
+  const t = useT();
   const result = useCollection(id);
   const mutations = useCollectionMutations(id);
   const instance = useInstance();
@@ -73,9 +75,9 @@ export function CollectionScreen({ id }: { id: string }) {
   if (result.error)
     return (
       <div className="empty-state">
-        <h2>Coleção indisponível</h2>
+        <h2>{t('Coleção indisponível')}</h2>
         <p>{result.error.message}</p>
-        <Link href="/collections">Voltar às coleções</Link>
+        <Link href="/collections">{t('Voltar às coleções')}</Link>
       </div>
     );
   const collection = result.data;
@@ -95,9 +97,9 @@ export function CollectionScreen({ id }: { id: string }) {
           <div>
             <h1>{collection.name}</h1>
             <div className="breadcrumb">
-              <Link href="/collections">Coleções</Link>
+              <Link href="/collections">{t('Coleções')}</Link>
               <ChevronRight size={10} />
-              {collectionVisibilityLabels[collection.visibility]}
+              {t(collectionVisibilityLabels[collection.visibility])}
               {collection.ranked && ' · Ranking'}
             </div>
           </div>
@@ -106,7 +108,7 @@ export function CollectionScreen({ id }: { id: string }) {
           {instance.data?.uploadsEnabled && (
             <label className="toolbar-button">
               <ImageUp size={12} />
-              Enviar capa
+              {t('Enviar capa')}
               <input
                 type="file"
                 accept="image/jpeg,image/png,image/webp"
@@ -118,9 +120,9 @@ export function CollectionScreen({ id }: { id: string }) {
                   try {
                     await uploadImage(`/collections/${id}/cover`, file);
                     await result.refetch();
-                    toast.success('Capa atualizada');
+                    toast.success(t('Capa atualizada'));
                   } catch (error) {
-                    toast.error(error instanceof Error ? error.message : 'Tente novamente');
+                    toast.error(error instanceof Error ? error.message : t('Tente novamente'));
                   }
                 }}
               />
@@ -128,15 +130,15 @@ export function CollectionScreen({ id }: { id: string }) {
           )}
           <Button variant="ghost" size="sm" onClick={() => setEditing(true)}>
             <Pencil size={13} />
-            Editar
+            {t('Editar')}
           </Button>
           <Button variant="ghost" size="sm" onClick={() => setConfirmDelete(true)}>
             <Trash2 size={13} />
-            Excluir
+            {t('Excluir')}
           </Button>
           <Button size="sm" onClick={() => setAdding(true)}>
             <Plus size={14} />
-            Adicionar títulos
+            {t('Adicionar títulos')}
           </Button>
         </div>
       </header>
@@ -146,11 +148,11 @@ export function CollectionScreen({ id }: { id: string }) {
         )}
         {items.length === 0 ? (
           <div className="empty-state">
-            <h2>Uma coleção esperando por histórias</h2>
-            <p>Adicione títulos da sua biblioteca de qualquer categoria.</p>
+            <h2>{t('Uma coleção esperando por histórias')}</h2>
+            <p>{t('Adicione títulos da sua biblioteca de qualquer categoria.')}</p>
             <Button variant="outline" onClick={() => setAdding(true)}>
               <Plus size={14} />
-              Adicionar títulos
+              {t('Adicionar títulos')}
             </Button>
           </div>
         ) : (
@@ -172,7 +174,7 @@ export function CollectionScreen({ id }: { id: string }) {
           mutations.update.mutate(input, {
             onSuccess: () => {
               setEditing(false);
-              toast.success('Coleção atualizada');
+              toast.success(t('Coleção atualizada'));
             },
           })
         }
@@ -185,13 +187,15 @@ export function CollectionScreen({ id }: { id: string }) {
       />
       <Dialog open={confirmDelete} onOpenChange={setConfirmDelete}>
         <DialogContent>
-          <DialogTitle className="dialog-title">Excluir {collection.name}?</DialogTitle>
+          <DialogTitle className="dialog-title">
+            {t('Excluir')} {collection.name}?
+          </DialogTitle>
           <DialogDescription className="dialog-description">
-            A coleção será removida. Os títulos continuam na sua biblioteca.
+            {t('A coleção será removida. Os títulos continuam na sua biblioteca.')}
           </DialogDescription>
           <div className="dialog-footer">
             <Button variant="outline" onClick={() => setConfirmDelete(false)}>
-              Cancelar
+              {t('Cancelar')}
             </Button>
             <Button
               variant="destructive"
@@ -199,13 +203,13 @@ export function CollectionScreen({ id }: { id: string }) {
               onClick={() =>
                 mutations.remove.mutate(undefined, {
                   onSuccess: () => {
-                    toast.success('Coleção excluída');
+                    toast.success(t('Coleção excluída'));
                     router.replace('/collections');
                   },
                 })
               }
             >
-              Excluir coleção
+              {t('Excluir coleção')}
             </Button>
           </div>
         </DialogContent>
@@ -228,13 +232,14 @@ function CollectionItems({
   onOpen: (entryId: string) => void;
   onRemove: (entryId: string) => void;
 }) {
+  const t = useT();
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
   const ids = items.map((item) => item.entry.id);
   const titleOf = (id: string | number) =>
-    items.find((item) => item.entry.id === id)?.entry.title ?? 'Título';
+    items.find((item) => item.entry.id === id)?.entry.title ?? t('Título');
   const positionOf = (id: string | number) => ids.indexOf(String(id)) + 1;
   return (
     <DndContext
@@ -243,18 +248,31 @@ function CollectionItems({
       accessibility={{
         announcements: {
           onDragStart: ({ active }) =>
-            `${titleOf(active.id)} selecionado na posição ${positionOf(active.id)}.`,
+            t('{title} selecionado na posição {position}.', {
+              title: titleOf(active.id),
+              position: positionOf(active.id),
+            }),
           onDragOver: ({ active, over }) =>
-            over ? `${titleOf(active.id)} na posição ${positionOf(over.id)}.` : undefined,
+            over
+              ? t('{title} na posição {position}.', {
+                  title: titleOf(active.id),
+                  position: positionOf(over.id),
+                })
+              : undefined,
           onDragEnd: ({ active, over }) =>
             over
-              ? `${titleOf(active.id)} movido para a posição ${positionOf(over.id)}.`
+              ? t('{title} movido para a posição {position}.', {
+                  title: titleOf(active.id),
+                  position: positionOf(over.id),
+                })
               : 'Movimento cancelado.',
-          onDragCancel: ({ active }) => `Movimento de ${titleOf(active.id)} cancelado.`,
+          onDragCancel: ({ active }) =>
+            t('Movimento de {title} cancelado.', { title: titleOf(active.id) }),
         },
         screenReaderInstructions: {
-          draggable:
+          draggable: t(
             'Pressione espaço ou Enter para pegar o título, use as setas para reordenar e espaço para soltar. Esc cancela.',
+          ),
         },
       }}
       onDragEnd={({ active, over }) => {
@@ -299,6 +317,7 @@ function SortableCollectionItem({
   onOpen: (entryId: string) => void;
   onRemove: (entryId: string) => void;
 }) {
+  const t = useT();
   const { entry } = item;
   const {
     setNodeRef,
@@ -339,14 +358,14 @@ function SortableCollectionItem({
           {entry.title}
         </button>
         <small>
-          {categoryLabels[entry.mediaType]} · {progressSummary(entry)}
+          {t(categoryLabels[entry.mediaType])} · {progressSummary(entry)}
         </small>
       </span>
       <StatusBadge status={entry.status} />
       {entry.rating !== null ? (
         <StarRating value={entry.rating} size={11} />
       ) : (
-        <span className="muted collection-norating">Sem nota</span>
+        <span className="muted collection-norating">{t('Sem nota')}</span>
       )}
       <span className="collection-item-actions">
         <Button
@@ -370,7 +389,7 @@ function SortableCollectionItem({
         <Button
           variant="ghost"
           size="icon"
-          aria-label={`Remover ${entry.title} da coleção`}
+          aria-label={t('Remover {title} da coleção', { title: entry.title })}
           onClick={() => onRemove(entry.id)}
         >
           <X size={13} />

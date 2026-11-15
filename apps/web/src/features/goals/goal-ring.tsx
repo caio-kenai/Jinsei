@@ -1,5 +1,7 @@
+import { useT } from '@/i18n/provider';
 /** Circular progress of a goal; the number in the middle is the percentage reached. */
 export function GoalRing({ value, size = 56 }: { value: number; size?: number }) {
+  const t = useT();
   const stroke = 5;
   const radius = (size - stroke) / 2;
   const circumference = 2 * Math.PI * radius;
@@ -11,7 +13,7 @@ export function GoalRing({ value, size = 56 }: { value: number; size?: number })
       height={size}
       viewBox={`0 0 ${size} ${size}`}
       role="img"
-      aria-label={`${percent}% concluído`}
+      aria-label={t('{percent}% concluído', { percent })}
     >
       <circle
         className="goal-ring-track"

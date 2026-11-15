@@ -157,3 +157,13 @@
     flex-wrap: wrap;
   }
 }
+
+.legal-translation-note {
+  margin: -6px 0 22px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: rgb(127 127 127 / 0.08);
+  font-size: 14px !important;
+  color: inherit;
+  opacity: 0.8;
+}

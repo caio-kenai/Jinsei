@@ -1,4 +1,6 @@
 'use client';
+import { currentDateLocale, msg } from '@/i18n/config';
+import { useT } from '@/i18n/provider';
 import { useDeferredValue, useState, type CSSProperties } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { AnimatePresence, motion } from 'motion/react';
@@ -33,31 +35,33 @@ import { Button } from '@/components/ui/button';
 import { Input, Textarea } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import { useCurrentUser } from '@/features/auth/use-current-user';
+import { format, parseISO } from 'date-fns';
 import { CommunityEmpty, UserAvatar, relativeTime } from '@/features/community/community-ui';
 
 const base = '/admin/moderation';
 const targetLabels: Record<ModerationReport['targetType'], string> = {
-  user: 'Perfil',
-  message: 'Mensagem',
-  club: 'Clube',
-  club_post: 'Publicação em clube',
-  review: 'Review',
+  user: msg('Perfil'),
+  message: msg('Mensagem'),
+  club: msg('Clube'),
+  club_post: msg('Publicação em clube'),
+  review: msg('Review'),
 };
 const logLabels: Record<string, string> = {
-  dismiss: 'Arquivou uma denúncia',
-  remove_content: 'Removeu conteúdo',
-  suspend_user: 'Suspendeu uma conta',
-  unsuspend_user: 'Reativou uma conta',
-  grant_admin: 'Concedeu administração',
-  revoke_admin: 'Removeu administração',
+  dismiss: msg('Arquivou uma denúncia'),
+  remove_content: msg('Removeu conteúdo'),
+  suspend_user: msg('Suspendeu uma conta'),
+  unsuspend_user: msg('Reativou uma conta'),
+  grant_admin: msg('Concedeu administração'),
+  revoke_admin: msg('Removeu administração'),
 };
 const tabs = [
-  { id: 'reports', label: 'Denúncias', Icon: Flag, color: '#d93a50' },
-  { id: 'people', label: 'Pessoas', Icon: Users, color: '#2f7bff' },
-  { id: 'log', label: 'Registro', Icon: History, color: '#7050cf' },
+  { id: 'reports', label: msg('Denúncias'), Icon: Flag, color: '#d93a50' },
+  { id: 'people', label: msg('Pessoas'), Icon: Users, color: '#2f7bff' },
+  { id: 'log', label: msg('Registro'), Icon: History, color: '#7050cf' },
 ] as const;
 
 function useModeration() {
+  const t = useT();
   const client = useQueryClient();
   const refresh = () => void client.invalidateQueries({ queryKey: ['moderation'] });
   const onError = (error: Error) => toast.error(error.message);
@@ -66,7 +70,7 @@ function useModeration() {
       mutationFn: ({ id, input }: { id: string; input: ReportResolution }) =>
         api(`${base}/reports/${id}/resolve`, { method: 'POST', body: jsonBody(input) }),
       onSuccess: () => {
-        toast.success('Denúncia analisada');
+        toast.success(t('Denúncia analisada'));
         refresh();
       },
       onError,
@@ -75,7 +79,7 @@ function useModeration() {
       mutationFn: ({ id, reason }: { id: string; reason: string }) =>
         api(`${base}/users/${id}/suspend`, { method: 'POST', body: jsonBody({ reason }) }),
       onSuccess: () => {
-        toast.success('Conta suspensa');
+        toast.success(t('Conta suspensa'));
         refresh();
       },
       onError,
@@ -83,7 +87,7 @@ function useModeration() {
     unsuspend: useMutation({
       mutationFn: (id: string) => api(`${base}/users/${id}/unsuspend`, { method: 'POST' }),
       onSuccess: () => {
-        toast.success('Conta reativada');
+        toast.success(t('Conta reativada'));
         refresh();
       },
       onError,
@@ -92,7 +96,7 @@ function useModeration() {
       mutationFn: ({ id, role }: { id: string; role: 'user' | 'admin' }) =>
         api(`${base}/users/${id}/role`, { method: 'POST', body: jsonBody({ role }) }),
       onSuccess: () => {
-        toast.success('Papel atualizado');
+        toast.success(t('Papel atualizado'));
         refresh();
       },
       onError,
@@ -101,36 +105,37 @@ function useModeration() {
 }
 
 function UserBadges({ user }: { user: ModerationUser }) {
+  const t = useT();
   return (
     <span className="moderation-badges">
       {user.role === 'admin' && (
         <em className="is-admin">
           <Crown size={11} />
-          Admin
+          {t('Admin')}
         </em>
       )}
       {user.suspendedAt && (
         <em className="is-suspended">
           <Ban size={11} />
-          Suspensa
+          {t('Suspensa')}
         </em>
       )}
       {user.mfaEnabled && (
         <em className="is-safe">
           <ShieldCheck size={11} />
-          2FA
+          {t('2FA')}
         </em>
       )}
       {user.emailVerified && (
         <em>
           <MailCheck size={11} />
-          E-mail confirmado
+          {t('E-mail confirmado')}
         </em>
       )}
       {user.reports > 0 && (
         <em className="is-reported">
           <Flag size={11} />
-          {user.reports} {user.reports === 1 ? 'denúncia' : 'denúncias'}
+          {user.reports} {user.reports === 1 ? t('denúncia') : t('denúncias')}
         </em>
       )}
     </span>
@@ -138,6 +143,7 @@ function UserBadges({ user }: { user: ModerationUser }) {
 }
 
 function ReportCard({ report }: { report: ModerationReport }) {
+  const t = useT();
   const { resolve } = useModeration();
   const [note, setNote] = useState('');
   const act = (action: ReportResolution['action']) =>
@@ -151,15 +157,15 @@ function ReportCard({ report }: { report: ModerationReport }) {
       exit={{ opacity: 0, x: 40 }}
     >
       <header>
-        <span className="moderation-chip">{targetLabels[report.targetType]}</span>
-        <strong>{reportReasonLabels[report.reason]}</strong>
+        <span className="moderation-chip">{t(targetLabels[report.targetType])}</span>
+        <strong>{t(reportReasonLabels[report.reason])}</strong>
         <time dateTime={report.createdAt}>{relativeTime(report.createdAt)}</time>
       </header>
-      <blockquote>{report.snapshot || 'Sem texto.'}</blockquote>
+      <blockquote>{report.snapshot || t('Sem texto.')}</blockquote>
       {report.details && <p className="moderation-details">“{report.details}”</p>}
       <div className="moderation-people">
         <span>
-          Denunciado:{' '}
+          {t('Denunciado:')}{' '}
           {report.targetUser ? (
             <>
               <strong>{report.targetUser.displayName}</strong>
@@ -167,10 +173,12 @@ function ReportCard({ report }: { report: ModerationReport }) {
               {report.targetUser.email}
             </>
           ) : (
-            'conta excluída'
+            t('conta excluída')
           )}
         </span>
-        <span>Por: {report.reporter?.displayName ?? 'conta excluída'}</span>
+        <span>
+          {t('Por:')} {report.reporter?.displayName ?? t('conta excluída')}
+        </span>
       </div>
       {report.targetUser && <UserBadges user={report.targetUser} />}
       {report.status === 'open' ? (
@@ -180,8 +188,8 @@ function ReportCard({ report }: { report: ModerationReport }) {
             onChange={(event) => setNote(event.target.value)}
             rows={2}
             maxLength={500}
-            placeholder="Nota para o registro (opcional; vira o motivo da suspensão)"
-            aria-label="Nota da moderação"
+            placeholder={t('Nota para o registro (opcional; vira o motivo da suspensão)')}
+            aria-label={t('Nota da moderação')}
           />
           <div className="moderation-buttons">
             <Button
@@ -198,7 +206,7 @@ function ReportCard({ report }: { report: ModerationReport }) {
               variant="outline"
               onClick={() => act('remove_content')}
               disabled={resolve.isPending || !report.contentAvailable}
-              title={report.contentAvailable ? undefined : 'O conteúdo já não existe'}
+              title={report.contentAvailable ? undefined : t('O conteúdo já não existe')}
             >
               <Trash2 size={14} />
               {moderationActionLabels.remove_content}
@@ -218,7 +226,7 @@ function ReportCard({ report }: { report: ModerationReport }) {
         </div>
       ) : (
         <p className="moderation-resolution">
-          {report.status === 'dismissed' ? 'Arquivada' : 'Resolvida'}
+          {report.status === 'dismissed' ? t('Arquivada') : t('Resolvida')}
           {report.resolvedAt && ` ${relativeTime(report.resolvedAt)}`}
           {report.resolution && ` · ${report.resolution}`}
         </p>
@@ -228,6 +236,7 @@ function ReportCard({ report }: { report: ModerationReport }) {
 }
 
 function Reports() {
+  const t = useT();
   const [status, setStatus] = useState<'open' | 'resolved' | 'dismissed'>('open');
   const reports = useQuery({
     queryKey: ['moderation', 'reports', status],
@@ -235,12 +244,12 @@ function Reports() {
   });
   return (
     <>
-      <div className="community-segmented" role="group" aria-label="Situação das denúncias">
+      <div className="community-segmented" role="group" aria-label={t('Situação das denúncias')}>
         {(
           [
-            ['open', 'Abertas'],
-            ['resolved', 'Resolvidas'],
-            ['dismissed', 'Arquivadas'],
+            ['open', t('Abertas')],
+            ['resolved', t('Resolvidas')],
+            ['dismissed', t('Arquivadas')],
           ] as const
         ).map(([id, label]) => (
           <button key={id} className={cn(status === id && 'active')} onClick={() => setStatus(id)}>
@@ -253,8 +262,8 @@ function Reports() {
           <LoaderCircle className="spin" />
         </div>
       ) : !reports.data?.reports.length ? (
-        <CommunityEmpty icon={<ShieldCheck size={24} />} title="Tudo em ordem">
-          {status === 'open' ? 'Nenhuma denúncia esperando análise.' : 'Nada por aqui ainda.'}
+        <CommunityEmpty icon={<ShieldCheck size={24} />} title={t('Tudo em ordem')}>
+          {status === 'open' ? t('Nenhuma denúncia esperando análise.') : t('Nada por aqui ainda.')}
         </CommunityEmpty>
       ) : (
         <div className="moderation-list">
@@ -270,6 +279,7 @@ function Reports() {
 }
 
 function People() {
+  const t = useT();
   const me = useCurrentUser().data;
   const [query, setQuery] = useState('');
   const deferred = useDeferredValue(query);
@@ -288,8 +298,8 @@ function People() {
         <Input
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          placeholder="Buscar por nome, @usuário ou e-mail"
-          aria-label="Buscar contas"
+          placeholder={t('Buscar por nome, @usuário ou e-mail')}
+          aria-label={t('Buscar contas')}
         />
       </label>
       {users.isPending ? (
@@ -307,10 +317,17 @@ function People() {
                   {user.username && <small> @{user.username}</small>}
                 </strong>
                 <span>
-                  {user.email} · desde {relativeTime(user.createdAt).replace('há ', '')}
+                  {user.email} ·{' '}
+                  {t('desde {date}', {
+                    date: format(parseISO(user.createdAt), t('d MMM yyyy'), {
+                      locale: currentDateLocale(),
+                    }),
+                  })}
                 </span>
                 {user.suspensionReason && (
-                  <span className="moderation-reason">Motivo: {user.suspensionReason}</span>
+                  <span className="moderation-reason">
+                    {t('Motivo:')} {user.suspensionReason}
+                  </span>
                 )}
                 <UserBadges user={user} />
               </div>
@@ -322,7 +339,7 @@ function People() {
                       variant="ghost"
                       onClick={() => role.mutate({ id: user.id, role: 'user' })}
                     >
-                      Remover admin
+                      {t('Remover admin')}
                     </Button>
                   ) : (
                     !user.suspendedAt && (
@@ -332,20 +349,20 @@ function People() {
                         onClick={() => role.mutate({ id: user.id, role: 'admin' })}
                       >
                         <Crown size={14} />
-                        Tornar admin
+                        {t('Tornar admin')}
                       </Button>
                     )
                   )}
                   {user.suspendedAt ? (
                     <Button size="sm" variant="outline" onClick={() => unsuspend.mutate(user.id)}>
                       <UserCheck size={14} />
-                      Reativar
+                      {t('Reativar')}
                     </Button>
                   ) : (
                     user.role !== 'admin' && (
                       <Button size="sm" variant="destructive" onClick={() => setSuspending(user)}>
                         <Ban size={14} />
-                        Suspender
+                        {t('Suspender')}
                       </Button>
                     )
                   )}
@@ -357,10 +374,13 @@ function People() {
       )}
       <Dialog open={Boolean(suspending)} onOpenChange={(open) => !open && setSuspending(null)}>
         <DialogContent>
-          <DialogTitle className="dialog-title">Suspender {suspending?.displayName}?</DialogTitle>
+          <DialogTitle className="dialog-title">
+            {t('Suspender')} {suspending?.displayName}?
+          </DialogTitle>
           <DialogDescription className="dialog-description">
-            A pessoa perde todas as sessões, não consegue entrar e some da comunidade, do perfil
-            público e das reviews até ser reativada.
+            {t(
+              'A pessoa perde todas as sessões, não consegue entrar e some da comunidade, do perfil público e das reviews até ser reativada.',
+            )}
           </DialogDescription>
           <form
             className="mfa-form"
@@ -379,7 +399,7 @@ function People() {
             }}
           >
             <label className="field">
-              Motivo
+              {t('Motivo')}
               <Textarea
                 value={reason}
                 onChange={(event) => setReason(event.target.value)}
@@ -391,14 +411,14 @@ function People() {
             </label>
             <div className="dialog-footer">
               <Button type="button" variant="outline" onClick={() => setSuspending(null)}>
-                Cancelar
+                {t('Cancelar')}
               </Button>
               <Button
                 type="submit"
                 variant="destructive"
                 disabled={reason.trim().length < 3 || suspend.isPending}
               >
-                Suspender conta
+                {t('Suspender conta')}
               </Button>
             </div>
           </form>
@@ -409,6 +429,7 @@ function People() {
 }
 
 function Log() {
+  const t = useT();
   const log = useQuery({
     queryKey: ['moderation', 'log'],
     queryFn: () => api<{ entries: ModerationLogEntry[] }>(`${base}/log`),
@@ -421,8 +442,8 @@ function Log() {
     );
   if (!log.data?.entries.length)
     return (
-      <CommunityEmpty icon={<History size={24} />} title="Sem ações registradas">
-        Cada decisão da moderação aparece aqui.
+      <CommunityEmpty icon={<History size={24} />} title={t('Sem ações registradas')}>
+        {t('Cada decisão da moderação aparece aqui.')}
       </CommunityEmpty>
     );
   return (
@@ -431,8 +452,8 @@ function Log() {
         <li key={entry.id}>
           {entry.moderator && <UserAvatar user={entry.moderator} size={28} />}
           <div>
-            <strong>{entry.moderator?.displayName ?? 'Conta excluída'}</strong>{' '}
-            {(logLabels[entry.action] ?? entry.action).toLowerCase()}
+            <strong>{entry.moderator?.displayName ?? t('Conta excluída')}</strong>{' '}
+            {(t(logLabels[entry.action]) ?? entry.action).toLowerCase()}
             {entry.note && <span className="moderation-reason"> · {entry.note}</span>}
           </div>
           <time dateTime={entry.createdAt}>{relativeTime(entry.createdAt)}</time>
@@ -443,6 +464,7 @@ function Log() {
 }
 
 export function ModerationScreen() {
+  const t = useT();
   const me = useCurrentUser().data;
   const [tab, setTab] = useState<(typeof tabs)[number]['id']>('reports');
   const summary = useQuery({
@@ -452,15 +474,25 @@ export function ModerationScreen() {
   });
   if (me && !me.isAdmin)
     return (
-      <CommunityEmpty icon={<ShieldAlert size={24} />} title="Área da administração">
-        Somente quem administra esta instância pode moderar a comunidade.
+      <CommunityEmpty icon={<ShieldAlert size={24} />} title={t('Área da administração')}>
+        {t('Somente quem administra esta instância pode moderar a comunidade.')}
       </CommunityEmpty>
     );
   const cards = [
-    { label: 'Denúncias abertas', value: summary.data?.openReports, Icon: Flag, color: '#d93a50' },
-    { label: 'Contas suspensas', value: summary.data?.suspendedUsers, Icon: Ban, color: '#f7832b' },
-    { label: 'Pessoas', value: summary.data?.users, Icon: Users, color: '#2f7bff' },
-    { label: 'Administradores', value: summary.data?.admins, Icon: Crown, color: '#7050cf' },
+    {
+      label: t('Denúncias abertas'),
+      value: summary.data?.openReports,
+      Icon: Flag,
+      color: '#d93a50',
+    },
+    {
+      label: t('Contas suspensas'),
+      value: summary.data?.suspendedUsers,
+      Icon: Ban,
+      color: '#f7832b',
+    },
+    { label: t('Pessoas'), value: summary.data?.users, Icon: Users, color: '#2f7bff' },
+    { label: t('Administradores'), value: summary.data?.admins, Icon: Crown, color: '#7050cf' },
   ];
   return (
     <>
@@ -470,12 +502,12 @@ export function ModerationScreen() {
             <ShieldAlert size={14} />
           </span>
           <div>
-            <h1>Moderação</h1>
-            <div className="breadcrumb">Denúncias, contas e registro da instância</div>
+            <h1>{t('Moderação')}</h1>
+            <div className="breadcrumb">{t('Denúncias, contas e registro da instância')}</div>
           </div>
         </div>
       </header>
-      <nav className="view-tabs community-tabs" aria-label="Seções da moderação">
+      <nav className="view-tabs community-tabs" aria-label={t('Seções da moderação')}>
         {tabs.map(({ id, label, Icon, color }) => (
           <button
             key={id}
@@ -484,7 +516,7 @@ export function ModerationScreen() {
             onClick={() => setTab(id)}
           >
             <Icon size={15} />
-            {label}
+            {t(label)}
             {id === 'reports' && Boolean(summary.data?.openReports) && (
               <span className="community-badge">{summary.data?.openReports}</span>
             )}

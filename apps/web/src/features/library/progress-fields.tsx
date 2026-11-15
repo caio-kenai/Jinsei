@@ -1,4 +1,5 @@
 'use client';
+import { useT } from '@/i18n/provider';
 import type { UseFormRegister } from 'react-hook-form';
 import type { EntryPatchInput, LibraryEntry } from '@jinsei/contracts';
 import { Input } from '@/components/ui/input';
@@ -12,12 +13,13 @@ export function ProgressFields({
   entry: LibraryEntry;
   register: UseFormRegister<EntryPatchInput>;
 }) {
+  const t = useT();
   const { progress, metadata } = entry;
   if (progress.kind === 'game')
     return (
       <div className="form-grid">
         <label className="field">
-          Horas jogadas
+          {t('Horas jogadas')}
           <Input
             type="number"
             min={0}
@@ -27,7 +29,7 @@ export function ProgressFields({
           />
         </label>
         <label className="field">
-          Conclusão (%)
+          {t('Conclusão (%)')}
           <Input
             type="number"
             min={0}
@@ -43,7 +45,7 @@ export function ProgressFields({
     const position = episodePosition(entry);
     return (
       <label className="field">
-        Episódios assistidos
+        {t('Episódios assistidos')}
         <Input
           type="number"
           min={0}
@@ -56,7 +58,10 @@ export function ProgressFields({
           {...register('progress.episodesWatched', { valueAsNumber: true })}
         />
         <small>
-          {[total ? `De ${total} episódios` : 'Total de episódios não informado', position]
+          {[
+            total ? t('De {total} episódios', { total }) : t('Total de episódios não informado'),
+            position,
+          ]
             .filter(Boolean)
             .join(' · ')}
         </small>
@@ -68,7 +73,7 @@ export function ProgressFields({
     if (entry.mediaType === 'books')
       return (
         <label className="field">
-          Páginas lidas
+          {t('Páginas lidas')}
           <Input
             type="number"
             min={0}
@@ -78,15 +83,15 @@ export function ProgressFields({
           />
           <small>
             {totals?.totalPages
-              ? `De ${totals.totalPages} páginas`
-              : 'Total de páginas não informado'}
+              ? t('De {totalPages} páginas', { totalPages: totals.totalPages })
+              : t('Total de páginas não informado')}
           </small>
         </label>
       );
     return (
       <div className="form-grid">
         <label className="field">
-          Capítulos lidos
+          {t('Capítulos lidos')}
           <Input
             type="number"
             min={0}
@@ -94,10 +99,14 @@ export function ProgressFields({
             step={1}
             {...register('progress.chaptersRead', { valueAsNumber: true })}
           />
-          {totals?.totalChapters && <small>De {totals.totalChapters} capítulos</small>}
+          {totals?.totalChapters && (
+            <small>
+              {t('De')} {totals.totalChapters} {t('capítulos')}
+            </small>
+          )}
         </label>
         <label className="field">
-          Volumes lidos
+          {t('Volumes lidos')}
           <Input
             type="number"
             min={0}
@@ -105,7 +114,11 @@ export function ProgressFields({
             step={1}
             {...register('progress.volumesRead', { valueAsNumber: true })}
           />
-          {totals?.totalVolumes && <small>De {totals.totalVolumes} volumes</small>}
+          {totals?.totalVolumes && (
+            <small>
+              {t('De')} {totals.totalVolumes} {t('volumes')}
+            </small>
+          )}
         </label>
       </div>
     );

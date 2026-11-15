@@ -1,4 +1,5 @@
 'use client';
+import { useT } from '@/i18n/provider';
 import { Plus } from 'lucide-react';
 import type { EntryPatchInput, LibraryEntry } from '@jinsei/contracts';
 import { episodePosition, nextStep, progressPercent, progressSummary } from './progress-format';
@@ -12,6 +13,7 @@ export function ProgressCell({
   onOpen: (id: string) => void;
   onPatch: (id: string, changes: EntryPatchInput) => void;
 }) {
+  const t = useT();
   const percent = progressPercent(entry);
   const summary = progressSummary(entry);
   const position = episodePosition(entry);
@@ -21,7 +23,7 @@ export function ProgressCell({
       <button
         className="inline-control progress-summary"
         onClick={() => onOpen(entry.id)}
-        aria-label={`Progresso de ${entry.title}: ${summary}`}
+        aria-label={t('Progresso de {title}: {summary}', { title: entry.title, summary })}
         title={position ?? undefined}
       >
         {percent !== null && (
@@ -34,7 +36,7 @@ export function ProgressCell({
       {next && (
         <button
           className="progress-increment"
-          aria-label={`${next.label} em ${entry.title}`}
+          aria-label={t('{step} em {title}', { step: next.label, title: entry.title })}
           title={next.label}
           onClick={() => onPatch(entry.id, { progress: next.progress })}
         >

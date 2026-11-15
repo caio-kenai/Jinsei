@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { getT } from '@/i18n/server';
 import { notFound } from 'next/navigation';
 import { categoryLabels, type PublicWorkPage } from '@jinsei/contracts';
 import { absolute, serverApi, siteUrl } from '@/lib/server-api';
@@ -9,13 +10,16 @@ type Params = { params: Promise<{ id: string }> };
 const load = async (id: string) => serverApi<PublicWorkPage>(`/works/${encodeURIComponent(id)}`);
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
+  const t = await getT();
   const { id } = await params;
   const [work, origin] = await Promise.all([load(id), siteUrl()]);
-  if (!work) return { title: 'Obra não encontrada', robots: { index: false, follow: false } };
+  if (!work) return { title: t('Obra não encontrada'), robots: { index: false, follow: false } };
   const title = `${work.title}${work.releaseYear ? ` (${work.releaseYear})` : ''}`;
   const description =
     (work.detail.synopsis || work.description).slice(0, 180) ||
-    `${categoryLabels[work.mediaType]} no Jinsei: notas, reviews e rankings da comunidade.`;
+    t('{category} no Jinsei: notas, reviews e rankings da comunidade.', {
+      category: t(categoryLabels[work.mediaType]),
+    });
   const image = absolute(origin, work.coverUrl);
   return {
     title,

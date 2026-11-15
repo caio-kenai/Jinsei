@@ -1,3 +1,5 @@
+'use client';
+import { useT } from '@/i18n/provider';
 import Link from 'next/link';
 import { categoryLabels, type PublicWork } from '@jinsei/contracts';
 import { StarRating } from '@/components/shared/star-rating';
@@ -10,11 +12,12 @@ export function PublicWorkCard({
   work: PublicWork;
   children?: React.ReactNode;
 }) {
+  const t = useT();
   const body = (
     <>
       <MediaCover title={work.title} url={work.coverUrl} large />
       <h3>{work.title}</h3>
-      <p>{[categoryLabels[work.mediaType], work.releaseYear].filter(Boolean).join(' · ')}</p>
+      <p>{[t(categoryLabels[work.mediaType]), work.releaseYear].filter(Boolean).join(' · ')}</p>
       {work.rating !== null && <StarRating value={work.rating} size={11} />}
     </>
   );

@@ -1,7 +1,8 @@
 'use client';
+import { currentDateLocale, currentLocale } from '@/i18n/config';
+import { useT } from '@/i18n/provider';
 import { useQuery } from '@tanstack/react-query';
 import { format, parseISO } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 import {
   BookMarked,
   BookOpen,
@@ -24,9 +25,10 @@ import { categoryColors, chartPalette, ratingColor, statusColors } from '@/lib/p
 import { NumberTicker } from '@/components/motion/number-ticker';
 import { ActivityHeatmap, BarList, ColumnChart } from './charts';
 
-const number = (value: number) => value.toLocaleString('pt-BR');
+const number = (value: number) => value.toLocaleString(currentLocale());
 
 export function StatisticsScreen() {
+  const t = useT();
   const result = useQuery({
     queryKey: ['statistics'],
     queryFn: () => api<Statistics>('/library/statistics'),
@@ -39,8 +41,8 @@ export function StatisticsScreen() {
             <ChartColumn size={17} />
           </span>
           <div>
-            <h1>Estatísticas</h1>
-            <div className="breadcrumb">Sua jornada em números</div>
+            <h1>{t('Estatísticas')}</h1>
+            <div className="breadcrumb">{t('Sua jornada em números')}</div>
           </div>
         </div>
       </header>
@@ -52,7 +54,7 @@ export function StatisticsScreen() {
         ) : result.error ? (
           <div className="empty-state">
             <p>{result.error.message}</p>
-            <Button onClick={() => void result.refetch()}>Tentar novamente</Button>
+            <Button onClick={() => void result.refetch()}>{t('Tentar novamente')}</Button>
           </div>
         ) : (
           <StatisticsContent statistics={result.data} />
@@ -63,6 +65,7 @@ export function StatisticsScreen() {
 }
 
 function StatisticsContent({ statistics }: { statistics: Statistics }) {
+  const t = useT();
   const { totals } = statistics;
   const tiles: {
     label: string;
@@ -71,15 +74,15 @@ function StatisticsContent({ statistics }: { statistics: Statistics }) {
     suffix?: string;
     Icon: typeof Library;
   }[] = [
-    { label: 'Títulos', value: totals.entries, Icon: Library },
-    { label: 'Concluídos', value: totals.completed, Icon: CircleCheck },
-    { label: 'Favoritos', value: totals.favorites, Icon: Heart },
-    { label: 'Nota média', value: totals.averageRating, decimals: 2, suffix: ' ★', Icon: Star },
-    { label: 'Horas jogadas', value: Math.round(totals.hoursPlayed), Icon: Gamepad2 },
-    { label: 'Episódios', value: totals.episodesWatched, Icon: Tv },
-    { label: 'Capítulos', value: totals.chaptersRead, Icon: BookOpen },
-    { label: 'Páginas', value: totals.pagesRead, Icon: BookMarked },
-    { label: 'Sessões de filmes', value: totals.timesWatched, Icon: Film },
+    { label: t('Títulos'), value: totals.entries, Icon: Library },
+    { label: t('Concluídos'), value: totals.completed, Icon: CircleCheck },
+    { label: t('Favoritos'), value: totals.favorites, Icon: Heart },
+    { label: t('Nota média'), value: totals.averageRating, decimals: 2, suffix: ' ★', Icon: Star },
+    { label: t('Horas jogadas'), value: Math.round(totals.hoursPlayed), Icon: Gamepad2 },
+    { label: t('Episódios'), value: totals.episodesWatched, Icon: Tv },
+    { label: t('Capítulos'), value: totals.chaptersRead, Icon: BookOpen },
+    { label: t('Páginas'), value: totals.pagesRead, Icon: BookMarked },
+    { label: t('Sessões de filmes'), value: totals.timesWatched, Icon: Film },
   ];
   const completedThisYear = statistics.completionsByMonth.reduce((sum, row) => sum + row.count, 0);
   return (
@@ -112,26 +115,26 @@ function StatisticsContent({ statistics }: { statistics: Statistics }) {
       </div>
       <div className="statistics-grid">
         <section className="journey-card">
-          <h2 className="chart-title">Conclusões nos últimos 12 meses</h2>
+          <h2 className="chart-title">{t('Conclusões nos últimos 12 meses')}</h2>
           <p className="chart-subtitle">
-            {number(completedThisYear)} títulos concluídos no período
+            {number(completedThisYear)} {t('títulos concluídos no período')}
           </p>
           <ColumnChart
-            label="Títulos concluídos"
-            unit={['título', 'títulos']}
+            label={t('Títulos concluídos')}
+            unit={[t('título'), t('títulos')]}
             rows={statistics.completionsByMonth.map((row) => {
               const date = parseISO(`${row.month}-01`);
               return {
                 key: row.month,
-                label: format(date, 'MMM', { locale: ptBR }),
-                title: format(date, "MMMM 'de' yyyy", { locale: ptBR }),
+                label: format(date, 'MMM', { locale: currentDateLocale() }),
+                title: format(date, t("MMMM 'de' yyyy"), { locale: currentDateLocale() }),
                 value: row.count,
               };
             })}
           />
         </section>
         <section className="journey-card">
-          <h2 className="chart-title">Por status</h2>
+          <h2 className="chart-title">{t('Por status')}</h2>
           <BarList
             rows={statistics.byStatus.map((row) => ({
               key: row.status,
@@ -142,7 +145,7 @@ function StatisticsContent({ statistics }: { statistics: Statistics }) {
           />
         </section>
         <section className="journey-card">
-          <h2 className="chart-title">Por categoria</h2>
+          <h2 className="chart-title">{t('Por categoria')}</h2>
           {statistics.byCategory.length ? (
             <BarList
               rows={statistics.byCategory
@@ -154,28 +157,31 @@ function StatisticsContent({ statistics }: { statistics: Statistics }) {
                     label: (
                       <>
                         <Icon size={13} />
-                        {categoryLabels[row.mediaType]}
+                        {t(categoryLabels[row.mediaType])}
                       </>
                     ),
                     value: row.total,
                     color: categoryColors[row.mediaType],
-                    detail: `${number(row.total)} · ${number(row.completed)} concluídos`,
+                    detail: t('{number} · {number2} concluídos', {
+                      number: number(row.total),
+                      number2: number(row.completed),
+                    }),
                   };
                 })}
             />
           ) : (
-            <p className="muted">Adicione títulos para ver a distribuição.</p>
+            <p className="muted">{t('Adicione títulos para ver a distribuição.')}</p>
           )}
         </section>
         <section className="journey-card">
-          <h2 className="chart-title">Suas notas</h2>
+          <h2 className="chart-title">{t('Suas notas')}</h2>
           <ColumnChart
-            label="Títulos por nota"
-            unit={['título', 'títulos']}
+            label={t('Títulos por nota')}
+            unit={[t('título'), t('títulos')]}
             rows={statistics.ratings.map((row) => ({
               key: String(row.rating),
-              label: row.rating.toLocaleString('pt-BR'),
-              title: `${row.rating.toLocaleString('pt-BR')} estrelas`,
+              label: row.rating.toLocaleString(currentLocale()),
+              title: `${row.rating.toLocaleString(currentLocale())} estrelas`,
               value: row.count,
               color: ratingColor(row.rating),
             }))}
@@ -183,8 +189,10 @@ function StatisticsContent({ statistics }: { statistics: Statistics }) {
         </section>
       </div>
       <section className="journey-card activity-card">
-        <h2 className="chart-title">Atividade</h2>
-        <p className="chart-subtitle">Registros, avaliações e progresso dos últimos seis meses</p>
+        <h2 className="chart-title">{t('Atividade')}</h2>
+        <p className="chart-subtitle">
+          {t('Registros, avaliações e progresso dos últimos seis meses')}
+        </p>
         <ActivityHeatmap days={statistics.activity} />
       </section>
     </>

@@ -1,4 +1,5 @@
 'use client';
+import { useT } from '@/i18n/provider';
 import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Server, Save, LoaderCircle, ShieldCheck } from 'lucide-react';
@@ -11,6 +12,7 @@ import { useCurrentUser } from '@/features/auth/use-current-user';
 import { useInstance } from './use-instance';
 
 export function InstanceScreen() {
+  const t = useT();
   const { data: user } = useCurrentUser();
   const result = useInstance();
   const client = useQueryClient();
@@ -20,8 +22,8 @@ export function InstanceScreen() {
     return (
       <div className="empty-state">
         <ShieldCheck size={28} />
-        <h2>Administração da instância</h2>
-        <p>Somente o administrador deste servidor pode alterar estas configurações.</p>
+        <h2>{t('Administração da instância')}</h2>
+        <p>{t('Somente o administrador deste servidor pode alterar estas configurações.')}</p>
       </div>
     );
   if (result.isPending)
@@ -33,8 +35,8 @@ export function InstanceScreen() {
   if (!result.data)
     return (
       <div className="empty-state">
-        <p>Não foi possível carregar as configurações do servidor.</p>
-        <Button onClick={() => void result.refetch()}>Tentar novamente</Button>
+        <p>{t('Não foi possível carregar as configurações do servidor.')}</p>
+        <Button onClick={() => void result.refetch()}>{t('Tentar novamente')}</Button>
       </div>
     );
   const settings = result.data;
@@ -50,16 +52,16 @@ export function InstanceScreen() {
       externalCatalogEnabled: fields.get('externalCatalogEnabled') === 'on',
     });
     if (!parsed.success) {
-      setError(parsed.error.issues[0]?.message ?? 'Revise as configurações');
+      setError(parsed.error.issues[0]?.message ?? t('Revise as configurações'));
       return;
     }
     setBusy(true);
     try {
       const updated = await api('/instance', { method: 'PATCH', body: jsonBody(parsed.data) });
       client.setQueryData(['instance'], updated);
-      toast.success('Configurações da instância salvas');
+      toast.success(t('Configurações da instância salvas'));
     } catch (error) {
-      setError(error instanceof Error ? error.message : 'Tente novamente');
+      setError(error instanceof Error ? error.message : t('Tente novamente'));
     } finally {
       setBusy(false);
     }
@@ -69,45 +71,47 @@ export function InstanceScreen() {
       <header className="page-heading">
         <h1>
           <Server size={23} style={{ display: 'inline', marginRight: 9 }} />
-          Minha instância
+          {t('Minha instância')}
         </h1>
         <p>
-          Personalize o servidor que você administra. As alterações se aplicam a todos os usuários.
+          {t(
+            'Personalize o servidor que você administra. As alterações se aplicam a todos os usuários.',
+          )}
         </p>
       </header>
       <form key={result.dataUpdatedAt} onSubmit={save}>
         <section className="settings-section">
-          <h2>Identidade e contato</h2>
+          <h2>{t('Identidade e contato')}</h2>
           <div className="form-grid">
             <label className="field">
-              Nome da instância
+              {t('Nome da instância')}
               <Input name="name" required maxLength={80} defaultValue={settings.name} />
             </label>
             <label className="field">
-              Contato público do operador
+              {t('Contato público do operador')}
               <Input
                 name="contactEmail"
                 type="email"
                 defaultValue={settings.contactEmail}
-                placeholder="Opcional"
+                placeholder={t('Opcional')}
               />
-              <small>Esse e-mail ficará visível aos usuários do servidor.</small>
+              <small>{t('Esse e-mail ficará visível aos usuários do servidor.')}</small>
             </label>
           </div>
           <label className="field">
-            Descrição
+            {t('Descrição')}
             <Textarea name="description" maxLength={280} defaultValue={settings.description} />
           </label>
         </section>
         <section className="settings-section">
-          <h2>Acesso e serviços</h2>
+          <h2>{t('Acesso e serviços')}</h2>
           <label className="checkbox-field" style={{ marginBottom: 18 }}>
             <input
               name="registrationsEnabled"
               type="checkbox"
               defaultChecked={settings.registrationsEnabled}
             />
-            Permitir novos cadastros
+            {t('Permitir novos cadastros')}
           </label>
           <label className="checkbox-field">
             <input
@@ -115,21 +119,23 @@ export function InstanceScreen() {
               type="checkbox"
               defaultChecked={settings.externalCatalogEnabled}
             />
-            Permitir consultas aos catálogos externos
+            {t('Permitir consultas aos catálogos externos')}
           </label>
         </section>
         <section className="settings-section">
-          <h2>Servidor e versão</h2>
+          <h2>{t('Servidor e versão')}</h2>
           <p>
-            Jinsei {settings.version} · {settings.publicUrl}
+            {t('Jinsei')} {settings.version} · {settings.publicUrl}
           </p>
           <p>
-            Domínio, banco e chaves dos provedores são definidos pelo operador na configuração do
-            servidor.
+            {t(
+              'Domínio, banco e chaves dos provedores são definidos pelo operador na configuração do servidor.',
+            )}
           </p>
           <p>
-            O Buy Me a Monster direciona o apoio ao criador do Jinsei e permanece disponível em
-            todas as instalações, conforme os termos adicionais da licença.
+            {t(
+              'O Buy Me a Monster direciona o apoio ao criador do Jinsei e permanece disponível em todas as instalações, conforme os termos adicionais da licença.',
+            )}
           </p>
           <a
             href="https://github.com/caio-kenai/Jinsei/blob/main/docs/SELFHOST.md"
@@ -137,7 +143,7 @@ export function InstanceScreen() {
             rel="noreferrer"
             style={{ textDecoration: 'underline' }}
           >
-            Guia de self-host e atualizações
+            {t('Guia de self-host e atualizações')}
           </a>
         </section>
         {error && (
@@ -147,8 +153,8 @@ export function InstanceScreen() {
         )}
         <div className="settings-save">
           <Button type="submit" disabled={busy}>
-            {busy ? <LoaderCircle className="spin" size={15} /> : <Save size={15} />}Salvar
-            configurações
+            {busy ? <LoaderCircle className="spin" size={15} /> : <Save size={15} />}
+            {t('Salvar configurações')}
           </Button>
         </div>
       </form>

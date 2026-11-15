@@ -94,7 +94,7 @@ export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
         <p className="auth-switch">
           {registering ? t('Já tem uma conta?') : t('Ainda não tem uma conta?')}{' '}
           <Link href={registering ? '/login' : '/register'}>
-            {registering ? 'Entrar' : t('Cadastre-se gratuitamente')}
+            {registering ? t('Entrar') : t('Cadastre-se gratuitamente')}
           </Link>
         </p>
         {registering && instance.data?.registrationsEnabled === false && (
@@ -239,7 +239,7 @@ export function AuthForm({ mode }: { mode: 'login' | 'register' }) {
               ) : registering ? (
                 t('Cadastrar-se com e-mail')
               ) : (
-                'Entrar'
+                t('Entrar')
               )}
             </button>
           </form>

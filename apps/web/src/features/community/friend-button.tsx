@@ -1,4 +1,5 @@
 'use client';
+import { useT } from '@/i18n/provider';
 import Link from 'next/link';
 import { Check, Clock, MessageCircle, ShieldCheck, UserPlus } from 'lucide-react';
 import { useCurrentUser } from '@/features/auth/use-current-user';
@@ -7,6 +8,7 @@ import { UserSafetyMenu, useSafetyMutations } from './safety-actions';
 
 /** Friendship actions shown on a public profile, for signed-in visitors. */
 function FriendAction({ username }: { username: string }) {
+  const t = useT();
   const me = useCurrentUser();
   const signedIn = Boolean(me.data);
   const relationship = useRelationship(username, signedIn);
@@ -17,7 +19,7 @@ function FriendAction({ username }: { username: string }) {
     return (
       <Link href="/login" className="profile-action">
         <UserPlus size={15} />
-        Entrar para adicionar
+        {t('Entrar para adicionar')}
       </Link>
     );
   const data = relationship.data;
@@ -30,21 +32,21 @@ function FriendAction({ username }: { username: string }) {
         onClick={() => unblock.mutate(data.user.id)}
       >
         <ShieldCheck size={15} />
-        Desbloquear
+        {t('Desbloquear')}
       </button>
     );
   if (data.state === 'friends')
     return (
       <Link href={`/community/messages?com=${data.user.id}`} className="profile-action is-primary">
         <MessageCircle size={15} />
-        Enviar mensagem
+        {t('Enviar mensagem')}
       </Link>
     );
   if (data.state === 'outgoing')
     return (
       <span className="profile-action">
         <Clock size={15} />
-        Pedido enviado
+        {t('Pedido enviado')}
       </span>
     );
   return (
@@ -58,7 +60,7 @@ function FriendAction({ username }: { username: string }) {
       }
     >
       {data.state === 'incoming' ? <Check size={15} /> : <UserPlus size={15} />}
-      {data.state === 'incoming' ? 'Aceitar amizade' : 'Adicionar amigo'}
+      {data.state === 'incoming' ? t('Aceitar amizade') : t('Adicionar amigo')}
     </button>
   );
 }

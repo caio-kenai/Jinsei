@@ -1,10 +1,11 @@
 'use client';
+import { currentDateLocale, currentLocale } from '@/i18n/config';
+import { useT } from '@/i18n/provider';
 import { useState } from 'react';
 import { format, parseISO } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 import { Bar, BarChart, Cell, ResponsiveContainer, Tooltip, XAxis } from 'recharts';
 
-const number = (value: number) => value.toLocaleString('pt-BR');
+const number = (value: number) => value.toLocaleString(currentLocale());
 
 /** Horizontal bars of one hue; each row carries its own label, so color never identifies. */
 export function BarList({
@@ -45,18 +46,19 @@ export function ColumnChart({
   label: string;
   unit: [string, string];
 }) {
+  const t = useT();
   const [table, setTable] = useState(false);
   const describe = (value: number) => `${number(value)} ${value === 1 ? unit[0] : unit[1]}`;
   return (
     <figure className="column-chart">
       <button type="button" className="chart-toggle" onClick={() => setTable(!table)}>
-        {table ? 'Ver gráfico' : 'Ver tabela'}
+        {table ? t('Ver gráfico') : t('Ver tabela')}
       </button>
       {table ? (
         <table className="chart-table">
           <thead>
             <tr>
-              <th scope="col">Período</th>
+              <th scope="col">{t('Período')}</th>
               <th scope="col">{label}</th>
             </tr>
           </thead>
@@ -129,6 +131,7 @@ export function ColumnChart({
 
 /** Daily activity as a calendar heatmap: one hue, light to dark, weeks as columns. */
 export function ActivityHeatmap({ days }: { days: { day: string; count: number }[] }) {
+  const t = useT();
   const counts = new Map(days.map((item) => [item.day, item.count]));
   const max = Math.max(1, ...days.map((item) => item.count));
   const today = new Date();
@@ -153,7 +156,7 @@ export function ActivityHeatmap({ days }: { days: { day: string; count: number }
       <svg
         viewBox={`0 0 ${columns * step} ${7 * step}`}
         role="img"
-        aria-label="Atividade diária nos últimos seis meses"
+        aria-label={t('Atividade diária nos últimos seis meses')}
       >
         {cells.map((cell) => (
           <rect
@@ -165,18 +168,23 @@ export function ActivityHeatmap({ days }: { days: { day: string; count: number }
             height={size}
             rx={3}
           >
-            <title>{`${format(parseISO(cell.day), "d 'de' MMM yyyy", { locale: ptBR })}: ${number(
-              cell.count,
-            )} ${cell.count === 1 ? 'atividade' : 'atividades'}`}</title>
+            <title>
+              {t(cell.count === 1 ? '{day}: {count} atividade' : '{day}: {count} atividades', {
+                day: format(parseISO(cell.day), t("d 'de' MMM yyyy"), {
+                  locale: currentDateLocale(),
+                }),
+                count: number(cell.count),
+              })}
+            </title>
           </rect>
         ))}
       </svg>
       <figcaption className="heatmap-legend">
-        Menos
+        {t('Menos')}
         {[0, 1, 2, 3, 4].map((value) => (
           <span key={value} className={`heat-swatch heat-${value}`} />
         ))}
-        Mais
+        {t('Mais')}
       </figcaption>
     </figure>
   );

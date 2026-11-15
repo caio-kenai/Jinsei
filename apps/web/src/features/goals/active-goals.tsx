@@ -1,10 +1,12 @@
 'use client';
+import { useT } from '@/i18n/provider';
 import Link from 'next/link';
 import { useGoals } from './use-goals';
 import { GoalCard } from './goal-card';
 
 /** Home widget with the active goals closest to completion. */
 export function ActiveGoals() {
+  const t = useT();
   const result = useGoals();
   const goals = (result.data?.goals ?? [])
     .filter((goal) => goal.state === 'active')
@@ -14,9 +16,9 @@ export function ActiveGoals() {
   return (
     <section className="home-goals">
       <div className="section-title">
-        <h2>Metas ativas</h2>
+        <h2>{t('Metas ativas')}</h2>
         <Link href="/goals" className="section-link">
-          Ver todas
+          {t('Ver todas')}
         </Link>
       </div>
       <div className="goal-grid">

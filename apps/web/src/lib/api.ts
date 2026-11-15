@@ -1,3 +1,4 @@
+import { translate } from '@/i18n/config';
 export class ApiError extends Error {
   constructor(
     public readonly status: number,
@@ -17,7 +18,9 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
   if (!response.ok)
     throw new ApiError(
       response.status,
-      typeof result.message === 'string' ? result.message : 'Não foi possível concluir a operação',
+      typeof result.message === 'string'
+        ? result.message
+        : translate('Não foi possível concluir a operação'),
     );
   return result as T;
 }

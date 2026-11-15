@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { getT } from '@/i18n/server';
 import { notFound } from 'next/navigation';
 import type { PublicProfile } from '@jinsei/contracts';
 import { absolute, serverApi, siteUrl } from '@/lib/server-api';
@@ -10,13 +11,16 @@ const load = async (username: string) =>
   serverApi<PublicProfile>(`/profiles/${encodeURIComponent(username)}`);
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
+  const t = await getT();
   const { username } = await params;
   const [profile, origin] = await Promise.all([load(username), siteUrl()]);
   // Private and missing profiles share the same answer and are never indexed.
-  if (!profile) return { title: 'Perfil não encontrado', robots: { index: false, follow: false } };
+  if (!profile)
+    return { title: t('Perfil não encontrado'), robots: { index: false, follow: false } };
   const title = `${profile.displayName} (@${profile.username})`;
   const description =
-    profile.bio || `Jogos, filmes, séries, animes, mangás e livros de ${profile.displayName}.`;
+    profile.bio ||
+    t('Jogos, filmes, séries, animes, mangás e livros de {name}.', { name: profile.displayName });
   const image = absolute(origin, profile.bannerUrl ?? profile.avatarUrl);
   return {
     title,

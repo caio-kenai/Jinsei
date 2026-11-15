@@ -1,4 +1,5 @@
 'use client';
+import { currentLocale } from '@/i18n/config';
 import { useEffect, useRef } from 'react';
 import { useInView, useMotionValue, useReducedMotion, useSpring } from 'motion/react';
 
@@ -18,7 +19,7 @@ export function NumberTicker({
   const spring = useSpring(motionValue, { damping: 40, stiffness: 140 });
   const inView = useInView(ref, { once: true, margin: '0px' });
   const format = (current: number) =>
-    current.toLocaleString('pt-BR', {
+    current.toLocaleString(currentLocale(), {
       minimumFractionDigits: decimals,
       maximumFractionDigits: decimals,
     });

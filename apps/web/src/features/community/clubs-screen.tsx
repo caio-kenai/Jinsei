@@ -1,4 +1,5 @@
 'use client';
+import { useT } from '@/i18n/provider';
 import { useDeferredValue, useState, type CSSProperties } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -27,6 +28,7 @@ export function ClubFormDialog({
   onOpenChange: (open: boolean) => void;
   club?: Club;
 }) {
+  const t = useT();
   const router = useRouter();
   const { createClub, updateClub } = useCommunityMutations();
   const [name, setName] = useState(club?.name ?? '');
@@ -36,9 +38,9 @@ export function ClubFormDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="community-dialog">
-        <DialogTitle>{club ? 'Editar clube' : 'Novo clube'}</DialogTitle>
+        <DialogTitle>{club ? t('Editar clube') : t('Novo clube')}</DialogTitle>
         <DialogDescription>
-          Clubes reúnem pessoas em torno de uma categoria, franquia ou tema.
+          {t('Clubes reúnem pessoas em torno de uma categoria, franquia ou tema.')}
         </DialogDescription>
         <form
           className="community-form"
@@ -60,47 +62,47 @@ export function ClubFormDialog({
           }}
         >
           <label>
-            Nome
+            {t('Nome')}
             <Input
               value={name}
               onChange={(event) => setName(event.target.value)}
               minLength={2}
               maxLength={60}
               required
-              placeholder="Ex.: Clube dos RPGs japoneses"
+              placeholder={t('Ex.: Clube dos RPGs japoneses')}
             />
           </label>
           <label>
-            Descrição
+            {t('Descrição')}
             <Textarea
               value={description}
               onChange={(event) => setDescription(event.target.value)}
               maxLength={500}
               rows={3}
-              placeholder="Sobre o que o clube conversa?"
+              placeholder={t('Sobre o que o clube conversa?')}
             />
           </label>
           <label>
-            Categoria
+            {t('Categoria')}
             <Select
               value={mediaType}
               onChange={(event) => setMediaType(event.target.value as MediaType | '')}
             >
-              <option value="">Todas as categorias</option>
+              <option value="">{t('Todas as categorias')}</option>
               {mediaTypes.map((type) => (
                 <option key={type} value={type}>
-                  {categoryLabels[type]}
+                  {t(categoryLabels[type])}
                 </option>
               ))}
             </Select>
           </label>
           <div className="community-form-actions">
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
-              Cancelar
+              {t('Cancelar')}
             </Button>
             <Button type="submit" disabled={pending || name.trim().length < 2}>
               {pending && <LoaderCircle size={14} className="spin" />}
-              {club ? 'Salvar' : 'Criar clube'}
+              {club ? t('Salvar') : t('Criar clube')}
             </Button>
           </div>
         </form>
@@ -110,6 +112,7 @@ export function ClubFormDialog({
 }
 
 export function ClubsScreen() {
+  const t = useT();
   const [query, setQuery] = useState('');
   const [mine, setMine] = useState(false);
   const [creating, setCreating] = useState(false);
@@ -123,21 +126,21 @@ export function ClubsScreen() {
           <Input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Buscar clubes"
-            aria-label="Buscar clubes"
+            placeholder={t('Buscar clubes')}
+            aria-label={t('Buscar clubes')}
           />
         </label>
-        <div className="community-segmented" role="group" aria-label="Filtrar clubes">
+        <div className="community-segmented" role="group" aria-label={t('Filtrar clubes')}>
           <button className={cn(!mine && 'active')} onClick={() => setMine(false)}>
-            Todos
+            {t('Todos')}
           </button>
           <button className={cn(mine && 'active')} onClick={() => setMine(true)}>
-            Meus clubes
+            {t('Meus clubes')}
           </button>
         </div>
         <Button size="sm" onClick={() => setCreating(true)}>
           <Plus size={14} />
-          Novo clube
+          {t('Novo clube')}
         </Button>
       </div>
       {clubs.isPending ? (
@@ -147,15 +150,15 @@ export function ClubsScreen() {
       ) : !clubs.data?.clubs.length ? (
         <CommunityEmpty
           icon={<Tent size={24} />}
-          title={mine ? 'Você ainda não está em nenhum clube' : 'Nenhum clube encontrado'}
+          title={mine ? t('Você ainda não está em nenhum clube') : t('Nenhum clube encontrado')}
           action={
             <Button variant="outline" onClick={() => setCreating(true)}>
               <Plus size={14} />
-              Criar um clube
+              {t('Criar um clube')}
             </Button>
           }
         >
-          Crie um espaço para conversar sobre seus jogos, animes, livros e séries favoritos.
+          {t('Crie um espaço para conversar sobre seus jogos, animes, livros e séries favoritos.')}
         </CommunityEmpty>
       ) : (
         <div className="community-club-grid">
@@ -177,14 +180,14 @@ export function ClubsScreen() {
                     <Icon size={22} />
                     {club.role && (
                       <span className="community-pill">
-                        {club.role === 'owner' ? 'Criador' : 'Membro'}
+                        {club.role === 'owner' ? t('Criador') : t('Membro')}
                       </span>
                     )}
                   </span>
                   <span className="community-club-body">
                     <strong>{club.name}</strong>
                     <span className="community-club-description">
-                      {club.description || 'Sem descrição.'}
+                      {club.description || t('Sem descrição.')}
                     </span>
                     <span className="community-club-meta">
                       <span>
@@ -195,11 +198,11 @@ export function ClubsScreen() {
                         <MessageSquareText size={13} />
                         {club.postCount}
                       </span>
-                      <span>{club.mediaType ? categoryLabels[club.mediaType] : 'Geral'}</span>
+                      <span>{club.mediaType ? t(categoryLabels[club.mediaType]) : t('Geral')}</span>
                     </span>
                     <span className="community-club-owner">
                       <UserAvatar user={club.owner} size={20} />
-                      {club.owner.displayName} · ativo {relativeTime(club.lastActivityAt)}
+                      {club.owner.displayName} {t('· ativo')} {relativeTime(club.lastActivityAt)}
                     </span>
                   </span>
                 </Link>
