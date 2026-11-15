@@ -1,5 +1,11 @@
 # Histórico de versões
 
+## 0.1.6 — 2026-11-14
+
+- Interface em inglês e espanhol, além do português: menu, acesso, recuperação de senha, onboarding, início, configurações, verificação em duas etapas e apoio.
+- O idioma segue o navegador, pode ser trocado nas páginas públicas e nas configurações e fica salvo na conta.
+- Datas e números acompanham o idioma escolhido.
+
 ## 0.1.5 — 2026-11-14
 
 - Bloqueio de pessoas: desfaz a amizade e esconde as duas pessoas uma da outra na comunidade.
