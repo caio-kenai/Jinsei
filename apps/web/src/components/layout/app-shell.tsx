@@ -238,7 +238,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     }
   }
   function changeTheme(theme: CurrentUser['preferences']['theme'], origin: Element) {
-    transitionTheme(() => setTheme(theme), origin);
+    transitionTheme(() => setTheme(theme), origin, theme);
     preferences.mutate({ theme }, { onError: () => setTheme(user!.preferences.theme) });
   }
   return (

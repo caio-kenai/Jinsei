@@ -489,7 +489,7 @@ function SettingsForm({ user }: { user: CurrentUser }) {
                   className="mode-choice"
                   onClick={(event) => {
                     const target = event.currentTarget;
-                    transitionTheme(() => setTheme(mode.id), target);
+                    transitionTheme(() => setTheme(mode.id), target, mode.id);
                     save(
                       { theme: mode.id },
                       t('Modo {mode} ativado', { mode: t(mode.label).toLowerCase() }),
