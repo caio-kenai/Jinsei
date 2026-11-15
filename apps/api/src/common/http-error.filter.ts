@@ -13,11 +13,9 @@ export class HttpErrorFilter implements ExceptionFilter {
         : { message: 'Não foi possível concluir a operação' };
     if (status === 500)
       this.logger.error(`Erro interno: ${error instanceof Error ? error.name : 'UnknownError'}`);
-    response
-      .status(status)
-      .json({
-        statusCode: status,
-        ...(typeof details === 'string' ? { message: details } : details),
-      });
+    response.status(status).json({
+      statusCode: status,
+      ...(typeof details === 'string' ? { message: details } : details),
+    });
   }
 }
