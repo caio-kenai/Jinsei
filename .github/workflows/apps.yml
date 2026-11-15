@@ -133,7 +133,8 @@ jobs:
 
   publish:
     name: Anexa à release
-    if: github.event_name != 'pull_request'
+    # Desktop installers are attached even if the APK cannot be signed yet.
+    if: github.event_name != 'pull_request' && !cancelled() && needs.desktop.result == 'success'
     needs: [desktop, android]
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -151,6 +152,7 @@ jobs:
           REPOSITORY: ${{ github.repository }}
         run: |
           cd dist-apps
+          ls -l
           sha256sum Jinsei-* > SHA256SUMS-apps
           cat SHA256SUMS-apps
           gh release upload "$RELEASE_TAG" Jinsei-* SHA256SUMS-apps --clobber --repo "$REPOSITORY"
