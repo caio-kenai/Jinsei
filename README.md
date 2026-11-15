@@ -40,6 +40,8 @@ O projeto está em desenvolvimento ativo (série 0.1). Todas as categorias compa
 - Estatísticas com totais, distribuições, notas, conclusões mensais e mapa de atividade, além da paleta de comandos (Ctrl+K).
 - Perfil público opcional em `/u/<usuário>` com avatar, banner, links, abas por categoria, estatísticas, últimas atualizações, favoritos, resenhas, metas e coleções compartilháveis, com SEO e sitemap.
 - Páginas públicas das obras em `/obras/<id>` com ficha, sinopse, personagens, equipe, nota e distribuição da comunidade, além de reviews com recomendação e rankings por categoria em `/rankings`.
+- Segurança da conta: confirmação de e-mail, recuperação de senha por link e verificação em duas etapas com aplicativo autenticador.
+- Bloqueio, denúncias e área de moderação para administradores, com suspensão de contas e registro das ações.
 - Comunidade com pedidos de amizade, atividade recente dos amigos, conversas privadas entre amigos e clubes com publicações e moderação por quem os criou.
 - Avatar, banner e capas de coleção enviados pela aplicação, guardados num volume local ou em armazenamento compatível com S3, com validação do formato real.
 - Avaliações em cinco estrelas, com incrementos de ¼ (0,25), favoritos, tags, anotações privadas e edição em lote de status.
