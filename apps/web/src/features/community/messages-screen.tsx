@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { useDateFormat } from '@/lib/date-format';
+import { ReportButton, UserSafetyMenu } from './safety-actions';
 import { CommunityEmpty, UserAvatar, UserName, relativeTime } from './community-ui';
 import {
   useCommunityMutations,
@@ -54,6 +55,7 @@ function Thread({ userId }: { userId: string }) {
         </Link>
         <UserAvatar user={user} size={34} />
         <UserName user={user} />
+        <UserSafetyMenu userId={user.id} name={user.displayName} className="thread-safety" />
       </header>
       <div className="community-thread-messages" aria-live="polite">
         {messages.length === 0 && (
@@ -80,6 +82,13 @@ function Thread({ userId }: { userId: string }) {
                   </div>
                 )}
                 <div className={cn('community-message', message.mine && 'mine')}>
+                  {!message.mine && (
+                    <ReportButton
+                      target={{ targetType: 'message', targetId: message.id }}
+                      label="Denunciar mensagem"
+                      className="message-report"
+                    />
+                  )}
                   <p>{message.body}</p>
                   <time dateTime={message.createdAt}>
                     {formatTime(date)}

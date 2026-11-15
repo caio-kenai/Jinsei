@@ -1,4 +1,6 @@
 'use client';
+import { useCurrentUser } from '@/features/auth/use-current-user';
+import { ReportButton } from '@/features/community/safety-actions';
 import { useState } from 'react';
 import Link from 'next/link';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -117,6 +119,7 @@ function LibraryButton({ work }: { work: PublicWorkPage }) {
 
 function Review({ review }: { review: WorkReview }) {
   const [open, setOpen] = useState(false);
+  const signedIn = Boolean(useCurrentUser().data);
   const long = review.text.length > 420;
   const Icon = review.recommendation ? recommendationIcons[review.recommendation] : null;
   return (
@@ -141,6 +144,7 @@ function Review({ review }: { review: WorkReview }) {
         <time dateTime={review.updatedAt}>
           {format(parseISO(review.updatedAt), "d 'de' MMM yyyy", { locale: ptBR })}
         </time>
+        {signedIn && <ReportButton target={{ targetType: 'review', targetId: review.id }} />}
       </header>
       <div className="work-review-meta">
         {review.recommendation && Icon && (
