@@ -433,8 +433,8 @@ export const en: Record<string, string> = {
   'repositório do projeto': 'project repository',
   ', com': ', with',
   'termos adicionais de atribuição': 'additional attribution terms',
-  'que exigem preservar a autoria de Caio Pacifico e o Buy Me a Monster em todas as cópias e instalações. O texto integral da licença rege as permissões e condições aplicáveis. As imagens, marcas e dados de terceiros têm direitos próprios.':
-    "that require keeping Caio Pacifico's authorship and Buy Me a Monster in every copy and installation. The full license text governs the applicable permissions and conditions. Third-party images, trademarks and data have their own rights.",
+  'que exigem preservar a autoria de Caio Oliveira Pacifico e o Buy Me a Monster em todas as cópias e instalações. O texto integral da licença rege as permissões e condições aplicáveis. As imagens, marcas e dados de terceiros têm direitos próprios.':
+    "that require keeping Caio Oliveira Pacifico's authorship and Buy Me a Monster in every copy and installation. The full license text governs the applicable permissions and conditions. Third-party images, trademarks and data have their own rights.",
   'Metadados e imagens': 'Metadata and images',
   'Metadados estruturados do Wikidata são disponibilizados sob CC0. As imagens ligadas a esses registros não são automaticamente incorporadas por possuírem licenças próprias. A IGDB requer habilitação pelo operador após verificar suas condições de uso. As atribuições de origem acompanham os títulos importados.':
     "Structured metadata from Wikidata is available under CC0. Images linked to those records aren't embedded automatically because they have their own licenses. IGDB must be enabled by the operator after checking its terms of use. Source attributions travel with imported titles.",
@@ -1600,4 +1600,19 @@ export const en: Record<string, string> = {
   Apps: 'Apps',
   'Abrir {title}': 'Open {title}',
   'Baixar o app': 'Download the app',
+  'Categorias da biblioteca': 'Library categories',
+  'Escolha o que aparece no menu e na sua biblioteca. Desativar uma categoria só a esconde.':
+    'Choose what shows up in the menu and in your library. Turning a category off only hides it.',
+  'Ver amigos': 'See friends',
+  'Responder pedidos': 'Answer requests',
+  'Abrir conversas': 'Open messages',
+  'Baixar para {platform}': 'Download for {platform}',
+  '{percent}% da biblioteca': '{percent}% of the library',
+  'na biblioteca': 'in the library',
+  'de 5 estrelas': 'out of 5 stars',
+  'em jogos': 'in games',
+  'em animes e séries': 'in anime and series',
+  'em mangás': 'in manga',
+  'em livros': 'in books',
+  'em filmes': 'in movies',
 };

@@ -443,8 +443,8 @@ export const es: Record<string, string> = {
   'repositório do projeto': 'repositorio del proyecto',
   ', com': ', con',
   'termos adicionais de atribuição': 'términos adicionales de atribución',
-  'que exigem preservar a autoria de Caio Pacifico e o Buy Me a Monster em todas as cópias e instalações. O texto integral da licença rege as permissões e condições aplicáveis. As imagens, marcas e dados de terceiros têm direitos próprios.':
-    'que exigen conservar la autoría de Caio Pacifico y el Buy Me a Monster en todas las copias e instalaciones. El texto íntegro de la licencia rige los permisos y condiciones aplicables. Las imágenes, marcas y datos de terceros tienen derechos propios.',
+  'que exigem preservar a autoria de Caio Oliveira Pacifico e o Buy Me a Monster em todas as cópias e instalações. O texto integral da licença rege as permissões e condições aplicáveis. As imagens, marcas e dados de terceiros têm direitos próprios.':
+    'que exigen conservar la autoría de Caio Oliveira Pacifico y el Buy Me a Monster en todas las copias e instalaciones. El texto íntegro de la licencia rige los permisos y condiciones aplicables. Las imágenes, marcas y datos de terceros tienen derechos propios.',
   'Metadados e imagens': 'Metadatos e imágenes',
   'Metadados estruturados do Wikidata são disponibilizados sob CC0. As imagens ligadas a esses registros não são automaticamente incorporadas por possuírem licenças próprias. A IGDB requer habilitação pelo operador após verificar suas condições de uso. As atribuições de origem acompanham os títulos importados.':
     'Los metadatos estructurados de Wikidata están disponibles bajo CC0. Las imágenes vinculadas a esos registros no se incorporan automáticamente porque tienen licencias propias. IGDB debe habilitarla el operador tras verificar sus condiciones de uso. Las atribuciones de origen acompañan a los títulos importados.',
@@ -1619,4 +1619,19 @@ export const es: Record<string, string> = {
   Apps: 'Apps',
   'Abrir {title}': 'Abrir {title}',
   'Baixar o app': 'Descargar la app',
+  'Categorias da biblioteca': 'Categorías de la biblioteca',
+  'Escolha o que aparece no menu e na sua biblioteca. Desativar uma categoria só a esconde.':
+    'Elige qué aparece en el menú y en tu biblioteca. Desactivar una categoría solo la oculta.',
+  'Ver amigos': 'Ver amigos',
+  'Responder pedidos': 'Responder solicitudes',
+  'Abrir conversas': 'Abrir conversaciones',
+  'Baixar para {platform}': 'Descargar para {platform}',
+  '{percent}% da biblioteca': '{percent}% de la biblioteca',
+  'na biblioteca': 'en la biblioteca',
+  'de 5 estrelas': 'de 5 estrellas',
+  'em jogos': 'en juegos',
+  'em animes e séries': 'en animes y series',
+  'em mangás': 'en mangas',
+  'em livros': 'en libros',
+  'em filmes': 'en películas',
 };

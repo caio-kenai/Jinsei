@@ -142,7 +142,7 @@ export function InstanceScreen() {
             href="https://github.com/caio-kenai/Jinsei/blob/main/docs/SELFHOST.md"
             target="_blank"
             rel="noreferrer"
-            style={{ textDecoration: 'underline' }}
+            className="text-link"
           >
             {t('Guia de self-host e atualizações')}
           </a>

@@ -196,3 +196,341 @@
     padding-left: 0;
   }
 }
+
+/* Text links: an underline that grows from the left on hover. */
+a:not([class]),
+.text-link {
+  text-decoration: none;
+  background-image:
+    linear-gradient(currentColor, currentColor),
+    linear-gradient(
+      color-mix(in srgb, currentColor 32%, transparent),
+      color-mix(in srgb, currentColor 32%, transparent)
+    );
+  background-position:
+    0 100%,
+    0 100%;
+  background-repeat: no-repeat;
+  background-size:
+    0% 1.5px,
+    100% 1px;
+  transition:
+    background-size 260ms cubic-bezier(0.16, 1, 0.3, 1),
+    color 160ms ease,
+    opacity 160ms ease;
+}
+:where(nav, .legal-navigation, .marketing-footer, .about-links) a:not([class]) {
+  background-size:
+    0% 1.5px,
+    0% 1px;
+}
+a:not([class]):hover,
+a:not([class]):focus-visible,
+.text-link:hover,
+.text-link:focus-visible {
+  background-size:
+    100% 1.5px,
+    100% 1px;
+}
+@media (prefers-reduced-motion: reduce) {
+  a:not([class]),
+  .text-link {
+    transition: color 160ms ease;
+  }
+}
+
+/* Sidebar: library categories fold with motion; the customize button invites a click. */
+.sidebar-collapsible {
+  overflow: hidden;
+}
+.sidebar-section-chevron {
+  transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.sidebar-section-chevron.closed {
+  transform: rotate(-90deg);
+}
+.nav-customize {
+  position: relative;
+  width: 100%;
+  margin-top: 6px;
+  border: 1px dashed color-mix(in srgb, var(--foreground) 16%, transparent);
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+  transition:
+    border-color 180ms ease,
+    color 180ms ease,
+    background-color 180ms ease;
+}
+.nav-customize::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    100deg,
+    transparent 30%,
+    color-mix(in srgb, #e5306f 14%, transparent) 45%,
+    color-mix(in srgb, #7050cf 14%, transparent) 55%,
+    transparent 70%
+  );
+  transform: translateX(-100%);
+  animation: customize-shine 5.5s ease-in-out infinite;
+  pointer-events: none;
+}
+.nav-customize svg {
+  color: #7050cf;
+}
+.nav-customize:hover {
+  border-style: solid;
+  border-color: color-mix(in srgb, #7050cf 45%, transparent);
+  background: color-mix(in srgb, #7050cf 7%, transparent);
+  color: var(--foreground);
+}
+.nav-customize:hover svg {
+  transform: rotate(-12deg) scale(1.12);
+}
+@keyframes customize-shine {
+  0%,
+  62% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+.categories-dialog {
+  width: min(620px, calc(100vw - 32px));
+}
+.categories-dialog-grid {
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  margin-top: 6px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .nav-customize::before {
+    animation: none;
+    display: none;
+  }
+}
+
+/* Metric cards (statistics, community, moderation). */
+.stat-tiles {
+  grid-template-columns: repeat(auto-fill, minmax(176px, 1fr));
+  gap: 12px;
+}
+.kpi-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 118px;
+  padding: 14px 16px 13px;
+  overflow: hidden;
+  isolation: isolate;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--foreground);
+  text-decoration: none;
+  box-shadow:
+    0 1px 0 color-mix(in srgb, var(--foreground) 4%, transparent),
+    0 1px 2px color-mix(in srgb, var(--foreground) 5%, transparent);
+  transition:
+    transform 220ms cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 220ms ease,
+    box-shadow 220ms ease;
+}
+.kpi-card::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 3px;
+  background: linear-gradient(90deg, var(--kpi), color-mix(in srgb, var(--kpi) 30%, transparent));
+  opacity: 0.85;
+}
+.kpi-glow {
+  position: absolute;
+  z-index: -1;
+  top: -60px;
+  right: -50px;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--kpi) 22%, transparent),
+    transparent 70%
+  );
+  transition: transform 400ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.kpi-card:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--kpi) 40%, var(--border));
+  box-shadow: 0 14px 30px color-mix(in srgb, var(--kpi) 16%, transparent);
+}
+.kpi-card:hover .kpi-glow {
+  transform: scale(1.35);
+}
+.kpi-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.kpi-label {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+.kpi-icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--kpi) 14%, var(--surface));
+  color: var(--kpi);
+  transition: transform 260ms cubic-bezier(0.34, 1.36, 0.64, 1);
+}
+.kpi-card:hover .kpi-icon {
+  transform: scale(1.1) rotate(-6deg);
+}
+.kpi-value {
+  font-size: 28px;
+  font-weight: 750;
+  line-height: 1.05;
+  letter-spacing: -0.8px;
+  font-variant-numeric: tabular-nums;
+}
+.kpi-meter {
+  display: block;
+  height: 5px;
+  margin-top: 2px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--kpi) 12%, var(--hover));
+}
+.kpi-meter > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--kpi);
+  animation: kpi-fill 900ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  transform-origin: left;
+}
+.kpi-caption {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: auto;
+  color: var(--muted);
+  font-size: 12px;
+}
+.kpi-arrow {
+  opacity: 0;
+  transform: translate(-4px, 4px);
+  transition:
+    opacity 200ms ease,
+    transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.kpi-card.is-link:hover .kpi-caption {
+  color: var(--kpi);
+}
+.kpi-card.is-link:hover .kpi-arrow {
+  opacity: 1;
+  transform: none;
+}
+.kpi-card:focus-visible {
+  outline: 2px solid var(--kpi);
+  outline-offset: 2px;
+}
+.dark .kpi-card {
+  background: color-mix(in srgb, var(--kpi) 5%, var(--surface));
+}
+@keyframes kpi-fill {
+  from {
+    transform: scaleX(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .kpi-card,
+  .kpi-glow,
+  .kpi-icon,
+  .kpi-arrow {
+    transition: none;
+  }
+  .kpi-meter > span {
+    animation: none;
+  }
+}
+.community-stats > * > .kpi-card,
+.community-stats > .kpi-card {
+  height: 100%;
+}
+
+/* Hover states that were missing (found by the hover audit). */
+.demo-tabs button {
+  transition:
+    background-color 160ms ease,
+    color 160ms ease,
+    transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.demo-tabs button:not(.active):hover {
+  background: color-mix(in srgb, currentColor 8%, transparent);
+  color: #202027;
+}
+.demo-tabs button.active:hover {
+  transform: translateY(-1px);
+}
+.password-field button {
+  border-radius: 6px;
+  transition:
+    background-color 150ms ease,
+    color 150ms ease;
+}
+.password-field button:hover {
+  background: #f0f0f3;
+  color: #202020;
+}
+.rankings-sort a {
+  transition:
+    color 160ms ease,
+    border-color 160ms ease;
+}
+.rankings-sort a:hover {
+  color: #111;
+  border-color: #c8c8d0;
+}
+.rankings-sort a.active:hover {
+  border-color: #111;
+  color: #7050cf;
+}
+.email-banner button:not(.email-banner-close) {
+  transition:
+    background-color 160ms ease,
+    transform 180ms cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 160ms ease;
+}
+.email-banner button:not(.email-banner-close):hover {
+  background: #1f6be6;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px #2f7bff40;
+}
+.legal-navigation a[aria-current='page']:hover {
+  color: #7050cf;
+}
+.community-segmented button.active:hover,
+.view-tab.active:hover,
+.toolbar-button.selected:hover {
+  filter: brightness(0.97);
+}
+.dark .community-segmented button.active:hover,
+.dark .view-tab.active:hover,
+.dark .toolbar-button.selected:hover {
+  filter: brightness(1.15);
+}

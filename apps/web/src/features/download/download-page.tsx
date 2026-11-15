@@ -1,16 +1,7 @@
 'use client';
-import { useState, useSyncExternalStore } from 'react';
-import {
-  Check,
-  Copy,
-  Download,
-  Laptop,
-  Monitor,
-  ShieldCheck,
-  Smartphone,
-  Terminal,
-} from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
+import { useState, useSyncExternalStore, type ComponentType } from 'react';
+import { Check, Copy, Download, ShieldCheck, Smartphone } from 'lucide-react';
+import { FaAndroid, FaApple, FaLinux, FaWindows } from 'react-icons/fa6';
 import { toast } from 'sonner';
 import { PublicFooter, PublicHeader } from '@/features/presentation/public-navigation';
 import { useT } from '@/i18n/provider';
@@ -25,7 +16,7 @@ const platforms: {
   id: Platform;
   name: string;
   detail: string;
-  Icon: LucideIcon;
+  Icon: ComponentType<{ size?: number; 'aria-hidden'?: boolean }>;
   color: string;
   files: { label: string; file: string }[];
 }[] = [
@@ -33,24 +24,24 @@ const platforms: {
     id: 'windows',
     name: 'Windows',
     detail: msg('Windows 10 ou mais recente, 64 bits'),
-    Icon: Monitor,
-    color: '#2f7bff',
+    Icon: FaWindows,
+    color: '#0078d4',
     files: [{ label: msg('Instalador (.exe)'), file: 'Jinsei-windows-x64-setup.exe' }],
   },
   {
     id: 'macos',
     name: 'macOS',
     detail: msg('macOS 11 ou mais recente, Intel e Apple Silicon'),
-    Icon: Laptop,
-    color: '#7050cf',
+    Icon: FaApple,
+    color: 'var(--platform-apple)',
     files: [{ label: msg('Imagem de disco (.dmg)'), file: 'Jinsei-macos-universal.dmg' }],
   },
   {
     id: 'linux',
     name: 'Linux',
     detail: msg('64 bits, com WebKitGTK'),
-    Icon: Terminal,
-    color: '#f7832b',
+    Icon: FaLinux,
+    color: '#e8a400',
     files: [
       { label: 'AppImage', file: 'Jinsei-linux-x86_64.AppImage' },
       { label: msg('Pacote .deb'), file: 'Jinsei-linux-amd64.deb' },
@@ -60,8 +51,8 @@ const platforms: {
     id: 'android',
     name: 'Android',
     detail: msg('Android 8 ou mais recente'),
-    Icon: Smartphone,
-    color: '#15936a',
+    Icon: FaAndroid,
+    color: '#2fbf71',
     files: [{ label: msg('Aplicativo (.apk)'), file: 'Jinsei-android.apk' }],
   },
 ];
@@ -129,7 +120,7 @@ export function DownloadPage() {
               style={{ '--platform': color } as React.CSSProperties}
             >
               <span className="download-icon">
-                <Icon size={22} />
+                <Icon size={24} aria-hidden />
               </span>
               <div>
                 <h2>{name}</h2>
@@ -138,9 +129,13 @@ export function DownloadPage() {
               </div>
               <div className="download-files">
                 {files.map(({ label, file }) => (
-                  <a key={file} className="public-button" href={asset(file)} rel="noreferrer">
-                    <Download size={15} />
-                    {t(label)}
+                  <a key={file} className="download-button" href={asset(file)} rel="noreferrer">
+                    <Icon size={18} aria-hidden />
+                    <span>
+                      <small>{t('Baixar para {platform}', { platform: name })}</small>
+                      {t(label)}
+                    </span>
+                    <Download size={15} className="download-button-arrow" />
                   </a>
                 ))}
               </div>
