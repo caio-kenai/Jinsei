@@ -6,6 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import {
   ChevronRight,
   CupSoda,
+  Download,
   Heart,
   LoaderCircle,
   LogOut,
@@ -28,6 +29,7 @@ import {
 import { MediaCover } from '@/features/library/media-cover';
 import { useCommunitySummary } from '@/features/community/use-community';
 import { useT } from '@/i18n/provider';
+import { useAppClient } from '@/lib/app-client';
 
 function Avatar({ user, className }: { user: CurrentUser; className?: string }) {
   return (
@@ -52,6 +54,7 @@ export function UserMenu({
   onSupport?: () => void;
 }) {
   const t = useT();
+  const appClient = useAppClient();
   const [open, setOpen] = useState(false);
   const community = useCommunitySummary().data;
   const pending = (community?.pendingRequests ?? 0) + (community?.unreadMessages ?? 0);
@@ -100,7 +103,7 @@ export function UserMenu({
               <DropdownMenuItem key={entry.id} asChild className="user-menu-cover">
                 <Link
                   href={`/library?entry=${entry.id}`}
-                  aria-label={`Abrir ${entry.title}`}
+                  aria-label={t('Abrir {title}', { title: entry.title })}
                   title={entry.title}
                 >
                   <MediaCover
@@ -149,6 +152,14 @@ export function UserMenu({
             <Link href="/settings/instance">
               <Server size={16} />
               {t('Administrar instância')}
+            </Link>
+          </DropdownMenuItem>
+        )}
+        {!appClient && (
+          <DropdownMenuItem asChild>
+            <Link href="/download">
+              <Download size={16} />
+              {t('Baixar o app')}
             </Link>
           </DropdownMenuItem>
         )}

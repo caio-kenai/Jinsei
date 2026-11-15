@@ -1,0 +1,28 @@
+[package]
+name = "jinsei-desktop"
+version = "0.1.8"
+description = "Jinsei para Windows, macOS e Linux"
+authors = ["Caio Pacifico"]
+license = "AGPL-3.0-only"
+repository = "https://github.com/caio-kenai/Jinsei"
+edition = "2021"
+rust-version = "1.82"
+
+[lib]
+name = "jinsei_desktop_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2.12", features = [] }
+tauri-plugin-opener = "2"
+sys-locale = "0.3"
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = "s"
+panic = "abort"
+strip = true

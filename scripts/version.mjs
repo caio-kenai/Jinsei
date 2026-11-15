@@ -4,6 +4,7 @@ const packages = [
   'package.json',
   'apps/api/package.json',
   'apps/web/package.json',
+  'apps/desktop/package.json',
   'packages/contracts/package.json',
 ];
 const root = JSON.parse(await readFile(packages[0], 'utf8'));
@@ -12,6 +13,7 @@ if (!/^\d+\.\d+\.\d$/.test(version))
   throw new Error('Versão deve usar major.minor.patch, com patch de 0 a 9');
 const values = [
   ...packages.map((path) => ({ path, pattern: /"version": "([^"]+)"/ })),
+  { path: 'apps/desktop/src-tauri/Cargo.toml', pattern: /\nversion = "([^"]+)"/ },
   { path: 'packages/contracts/src/index.ts', pattern: /export const appVersion = '([^']+)'/ },
   { path: 'docker/app/Dockerfile', pattern: /org.opencontainers.image.version="([^"]+)"/ },
   { path: 'compose.selfhost.yml', pattern: /JINSEI_VERSION:-([\d.]+)/ },

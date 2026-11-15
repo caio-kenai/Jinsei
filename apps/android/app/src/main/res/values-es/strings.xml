@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="setup_intro">La app abre el Jinsei que usas en la web. Tus datos siguen en el servidor.</string>
+    <string name="server_label">Dirección del servidor</string>
+    <string name="server_hint">Usa la dirección de tu instancia si tienes una propia.</string>
+    <string name="insecure_address">Las direcciones http no están cifradas. Prefiere https.</string>
+    <string name="connect">Conectar</string>
+    <string name="connecting">Conectando…</string>
+    <string name="use_official">Usar el servidor oficial</string>
+    <string name="invalid_address">Indica una dirección válida, como https://jinsei.kenai.site.</string>
+    <string name="unreachable">No encontramos un Jinsei en esa dirección.</string>
+    <string name="offline_title">No se pudo conectar</string>
+    <string name="offline_text">Comprueba tu conexión a internet o si el servidor está en línea e inténtalo de nuevo.</string>
+    <string name="retry">Intentar de nuevo</string>
+    <string name="change_server">Cambiar servidor</string>
+    <string name="exit_title">¿Salir de Jinsei?</string>
+    <string name="exit_text">Estás conectado a %1$s.</string>
+    <string name="exit">Salir</string>
+    <string name="cancel">Cancelar</string>
+</resources>

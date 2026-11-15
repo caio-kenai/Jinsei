@@ -10,6 +10,8 @@ export default defineConfig([
     '.internal/**',
     'test-results/**',
     'playwright-report/**',
+    'apps/desktop/src-tauri/**',
+    'apps/android/**',
   ]),
   ...tseslint.configs.recommended,
   ...nextVitals.map((config) => ({ ...config, files: ['apps/web/**/*.{ts,tsx,js,mjs}'] })),

@@ -79,6 +79,7 @@ export function PublicFooter() {
             <button type="button" className="public-footer-link" onClick={() => setSupport(true)}>
               {t('Buy Me a Monster')}
             </button>
+            <Link href="/download">{t('Apps')}</Link>
             <Link href="/privacy">{t('Privacidade')}</Link>
             <Link href="/terms">{t('Termos')}</Link>
           </nav>

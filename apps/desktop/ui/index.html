@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Jinsei</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="card" aria-live="polite">
+      <img class="logo" src="icon.png" alt="" width="72" height="72" />
+      <h1>Jinsei</h1>
+
+      <section id="connecting" hidden>
+        <div class="spinner" aria-hidden="true"></div>
+        <p data-text="connecting"></p>
+        <p class="server" id="connecting-server"></p>
+      </section>
+
+      <section id="offline" hidden>
+        <h2 data-text="offlineTitle"></h2>
+        <p data-text="offlineText"></p>
+        <p class="server" id="offline-server"></p>
+        <div class="actions">
+          <button type="button" id="retry" class="primary" data-text="retry"></button>
+          <button type="button" id="change" data-text="change"></button>
+        </div>
+      </section>
+
+      <form id="setup" hidden novalidate>
+        <p class="intro" data-text="intro"></p>
+        <label for="server" data-text="serverLabel"></label>
+        <input
+          id="server"
+          name="server"
+          type="url"
+          inputmode="url"
+          autocomplete="url"
+          spellcheck="false"
+          placeholder="https://jinsei.kenai.site"
+          required
+        />
+        <p class="hint" data-text="serverHint"></p>
+        <p class="error" id="error" role="alert"></p>
+        <button type="submit" class="primary" data-text="connect"></button>
+        <button type="button" id="official" class="link" data-text="official"></button>
+      </form>
+    </main>
+    <footer data-text="footer"></footer>
+    <script src="app.js"></script>
+  </body>
+</html>

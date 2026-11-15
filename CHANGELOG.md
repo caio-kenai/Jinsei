@@ -1,5 +1,11 @@
 # Histórico de versões
 
+## 0.1.8 — 2026-11-15
+
+- Apps do Jinsei para Windows, macOS e Linux (Tauri) e para Android (APK), que se conectam à instância escolhida.
+- Página de downloads em `/download`, com link no menu da conta e no rodapé.
+- Instaladores e somas de verificação anexados a cada release.
+
 ## 0.1.7 — 2026-11-15
 
 - Todo o app em inglês e espanhol: biblioteca, coleções, metas, jornada, estatísticas, comunidade, obras, rankings, perfis públicos, moderação, apresentação e páginas legais.

@@ -1572,4 +1572,32 @@ export const en: Record<string, string> = {
   'PERGUNTAS FREQUENTES': 'FREQUENTLY ASKED QUESTIONS',
   'A gente responde.': "We've got answers.",
   'Posso levar meus dados embora?': 'Can I take my data with me?',
+  'Baixar o Jinsei': 'Download Jinsei',
+  'Jinsei para Windows, macOS, Linux e Android, conectado ao seu servidor.':
+    'Jinsei for Windows, macOS, Linux and Android, connected to your server.',
+  'Windows 10 ou mais recente, 64 bits': 'Windows 10 or later, 64-bit',
+  'Instalador (.exe)': 'Installer (.exe)',
+  'macOS 11 ou mais recente, Intel e Apple Silicon': 'macOS 11 or later, Intel and Apple Silicon',
+  'Imagem de disco (.dmg)': 'Disk image (.dmg)',
+  '64 bits, com WebKitGTK': '64-bit, with WebKitGTK',
+  'Pacote .deb': '.deb package',
+  'Android 8 ou mais recente': 'Android 8 or later',
+  'Aplicativo (.apk)': 'App (.apk)',
+  'APPS DO JINSEI': 'JINSEI APPS',
+  'Suas histórias no computador e no celular.': 'Your stories on your computer and phone.',
+  'Os apps abrem o mesmo Jinsei da web, com a sua conta e os seus dados no servidor. Basta entrar uma vez.':
+    'The apps open the same Jinsei as the web, with your account and data on the server. Just sign in once.',
+  'Ao abrir o app, use este servidor:': 'When you open the app, use this server:',
+  'Copiar endereço do servidor': 'Copy server address',
+  'Recomendado para este dispositivo': 'Recommended for this device',
+  'Os instaladores ainda não têm assinatura digital paga. Na primeira abertura, o Windows pode mostrar “O Windows protegeu o computador” (clique em Mais informações → Executar assim mesmo) e o macOS pode pedir para abrir pelo menu Ajustes → Privacidade e Segurança.':
+    "The installers don't have a paid digital signature yet. The first time you open them, Windows may show “Windows protected your PC” (click More info → Run anyway) and macOS may ask you to open it from System Settings → Privacy & Security.",
+  'No Android, permita a instalação pelo navegador quando o sistema pedir. O app não está na Play Store e é atualizado baixando o APK novo.':
+    "On Android, allow installing from your browser when the system asks. The app isn't on the Play Store; update it by downloading the new APK.",
+  'Notas da versão': 'Release notes',
+  'Somas de verificação (SHA-256)': 'Checksums (SHA-256)',
+  'Como compilar os apps': 'How to build the apps',
+  Apps: 'Apps',
+  'Abrir {title}': 'Open {title}',
+  'Baixar o app': 'Download the app',
 };
