@@ -4,6 +4,7 @@ O código do Jinsei usa GNU AGPL v3, conforme [LICENSE](LICENSE), com os [termos
 
 - Inter e Plus Jakarta Sans: SIL Open Font License 1.1. Cópias dos avisos são distribuídas em `apps/web/public/licenses/` junto da aplicação. As fontes são servidas localmente, sem consulta ao Google Fonts no navegador.
 - Ícones Lucide: ISC, distribuídos pelo pacote `lucide-react`.
+- Ícones das plataformas na página de downloads (Windows, Apple, Linux e Android): Font Awesome Free, ícones sob CC BY 4.0, distribuídos pelo pacote `react-icons` (MIT). As marcas pertencem aos respectivos titulares e indicam apenas para qual sistema cada instalador serve.
 - Animações, gráficos e interações da interface: `motion`, `recharts`, `@dnd-kit/*`, `sonner` e `date-fns`, todos sob licença MIT. Efeitos visuais inspirados em catálogos públicos de componentes foram reescritos no próprio projeto.
 - Logotipo Jinsei e arte Buy Me a Monster: arquivos fornecidos pelo proprietário do projeto, preservados sem redesenho. Não há declaração de cessão de marcas de terceiros ou licença independente desses assets nesta versão.
 - Metadados e capas dos catálogos: atribuição por obra e condições em [docs/INTEGRATIONS.md](docs/INTEGRATIONS.md). Não são licenciados automaticamente sob AGPL nem CC0.
