@@ -190,7 +190,7 @@ export class ProfilesService {
   /** Private profiles answer exactly like missing ones, so their existence is not revealed. */
   private async publicProfile(username: string) {
     const profile = await this.db.profile.findFirst({
-      where: { username, isPublic: true },
+      where: { username, isPublic: true, user: { suspendedAt: null } },
       include: { user: { select: { createdAt: true } }, links: { orderBy: { position: 'asc' } } },
     });
     if (!profile) throw new NotFoundException('Perfil não encontrado');

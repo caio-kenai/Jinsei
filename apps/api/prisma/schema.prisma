@@ -19,6 +19,9 @@ model User {
   mfaPendingSecret       String?
   mfaEnabledAt           DateTime?
   mfaLastStep            Int?
+  /// Set by moderation: suspended accounts cannot sign in.
+  suspendedAt            DateTime?
+  suspensionReason       String?
   createdAt              DateTime          @default(now())
   updatedAt              DateTime          @updatedAt
   profile                Profile?
@@ -48,6 +51,11 @@ model User {
   emailTokens            EmailToken[]
   recoveryCodes          MfaRecoveryCode[]
   loginChallenges        LoginChallenge[]
+  blocking               UserBlock[]       @relation("Blocker")
+  blockedBy              UserBlock[]       @relation("Blocked")
+  reportsMade            Report[]          @relation("Reporter")
+  reportsAbout           Report[]          @relation("ReportedUser")
+  moderationActions      ModerationLog[]
 }
 
 model Profile {
@@ -605,4 +613,50 @@ model LoginChallenge {
   createdAt DateTime @default(now())
 
   @@index([userId])
+}
+
+model UserBlock {
+  blockerId String
+  blocker   User     @relation("Blocker", fields: [blockerId], references: [id], onDelete: Cascade)
+  blockedId String
+  blocked   User     @relation("Blocked", fields: [blockedId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@id([blockerId, blockedId])
+  @@index([blockedId])
+}
+
+/// A report about a person or content, kept with a text snapshot for review.
+model Report {
+  id           String    @id @default(cuid())
+  reporterId   String?
+  reporter     User?     @relation("Reporter", fields: [reporterId], references: [id], onDelete: SetNull)
+  targetType   String
+  targetId     String
+  targetUserId String?
+  targetUser   User?     @relation("ReportedUser", fields: [targetUserId], references: [id], onDelete: SetNull)
+  reason       String
+  details      String    @default("")
+  snapshot     String    @default("")
+  status       String    @default("open")
+  resolution   String?
+  resolvedById String?
+  resolvedAt   DateTime?
+  createdAt    DateTime  @default(now())
+
+  @@index([status, createdAt])
+  @@index([reporterId, targetType, targetId])
+}
+
+model ModerationLog {
+  id          String   @id @default(cuid())
+  moderatorId String?
+  moderator   User?    @relation(fields: [moderatorId], references: [id], onDelete: SetNull)
+  action      String
+  targetType  String
+  targetId    String
+  note        String   @default("")
+  createdAt   DateTime @default(now())
+
+  @@index([createdAt])
 }

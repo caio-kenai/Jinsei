@@ -6,22 +6,28 @@ import {
   clubQuerySchema,
   friendRequestInputSchema,
   messageInputSchema,
+  reportInputSchema,
   userSearchQuerySchema,
   type ClubInput,
   type ClubPatch,
   type FriendRequestInput,
   type MessageInput,
+  type ReportInput,
 } from '@jinsei/contracts';
 import { CurrentUserId } from '../auth/session.guard';
 import { RateLimit } from '../../common/rate-limit';
 import { ApiZodBody, ZodPipe } from '../../common/zod.pipe';
 import { CommunityService } from './community.service';
+import { SafetyService } from './safety.service';
 
 @ApiTags('Comunidade')
 @ApiCookieAuth()
 @Controller('community')
 export class CommunityController {
-  constructor(@Inject(CommunityService) private readonly community: CommunityService) {}
+  constructor(
+    @Inject(CommunityService) private readonly community: CommunityService,
+    @Inject(SafetyService) private readonly safety: SafetyService,
+  ) {}
 
   @Get('summary') summary(@CurrentUserId() userId: string) {
     return this.community.summary(userId);
@@ -94,6 +100,30 @@ export class CommunityController {
     @Body(new ZodPipe(messageInputSchema)) input: MessageInput,
   ) {
     return this.community.send(userId, otherId, input.body);
+  }
+
+  @Get('blocks') blocks(@CurrentUserId() userId: string) {
+    return this.safety.blocked(userId);
+  }
+  @Post('blocks/:userId')
+  @RateLimit(30)
+  block(@CurrentUserId() userId: string, @Param('userId') otherId: string) {
+    return this.safety.block(userId, otherId);
+  }
+  @Delete('blocks/:userId') unblock(
+    @CurrentUserId() userId: string,
+    @Param('userId') otherId: string,
+  ) {
+    return this.safety.unblock(userId, otherId);
+  }
+  @Post('reports')
+  @RateLimit(20)
+  @ApiZodBody(reportInputSchema)
+  report(
+    @CurrentUserId() userId: string,
+    @Body(new ZodPipe(reportInputSchema)) input: ReportInput,
+  ) {
+    return this.safety.report(userId, input);
   }
 
   @Get('clubs') clubs(

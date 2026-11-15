@@ -28,6 +28,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { historySelect, progressOf, work } from '../profiles/profiles.service';
 import { mediaUrl } from '../uploads/uploads.service';
 import { AccountEmailService } from '../auth/account-email.service';
+import { SafetyService } from './safety.service';
 
 const PAGE = 50;
 const MAX_PENDING_REQUESTS = 100;
@@ -121,6 +122,7 @@ export class CommunityService {
   constructor(
     @Inject(PrismaService) private readonly db: PrismaService,
     @Inject(AccountEmailService) private readonly accountEmail: AccountEmailService,
+    @Inject(SafetyService) private readonly safety: SafetyService,
   ) {}
 
   async summary(userId: string): Promise<CommunitySummary> {
@@ -134,9 +136,11 @@ export class CommunityService {
   /** Public profiles are found by name or username; private ones only by the exact username. */
   async search(userId: string, query: string): Promise<{ users: CommunityUser[] }> {
     const term = query.toLowerCase();
+    const hidden = await this.safety.hiddenFrom(userId);
     const rows = await this.db.user.findMany({
       where: {
-        id: { not: userId },
+        id: { notIn: [userId, ...hidden] },
+        suspendedAt: null,
         profile: {
           is: {
             username: { not: null },
@@ -162,7 +166,7 @@ export class CommunityService {
 
   private async userByUsername(username: string) {
     const row = await this.db.user.findFirst({
-      where: { profile: { is: { username: username.toLowerCase() } } },
+      where: { suspendedAt: null, profile: { is: { username: username.toLowerCase() } } },
       select: userSelect,
     });
     if (!row) throw new NotFoundException('Pessoa não encontrada');
@@ -177,9 +181,24 @@ export class CommunityService {
     return (await this.friendship(a, b))?.status === 'accepted';
   }
 
+  /** Friends can talk unless one of them is blocked or suspended. */
+  private async canMessage(a: string, b: string) {
+    const [friends, blocks, other] = await Promise.all([
+      this.areFriends(a, b),
+      this.safety.blockState(a, b),
+      this.db.user.findUnique({ where: { id: b }, select: { suspendedAt: true } }),
+    ]);
+    return friends && !blocks.blockedByMe && !blocks.blockedMe && !other?.suspendedAt;
+  }
+
   async relationship(userId: string, username: string): Promise<Relationship> {
     const other = await this.userByUsername(username);
     if (other.id === userId) return { state: 'self', requestId: null, user: communityUser(other) };
+    const blocks = await this.safety.blockState(userId, other.id);
+    if (blocks.blockedByMe)
+      return { state: 'blocked', requestId: null, user: communityUser(other) };
+    // Someone who blocked you looks like a person you have no relationship with.
+    if (blocks.blockedMe) return { state: 'none', requestId: null, user: communityUser(other) };
     const row = await this.friendship(userId, other.id);
     const state = !row
       ? 'none'
@@ -225,6 +244,9 @@ export class CommunityService {
     await this.accountEmail.requireVerified(userId);
     const other = await this.userByUsername(username);
     if (other.id === userId) throw new BadRequestException('Você não pode adicionar a si mesmo');
+    const blocks = await this.safety.blockState(userId, other.id);
+    if (blocks.blockedByMe) throw new ConflictException('Desbloqueie esta pessoa para adicioná-la');
+    if (blocks.blockedMe) throw new ForbiddenException('Não é possível adicionar esta pessoa');
     const existing = await this.friendship(userId, other.id);
     if (existing?.status === 'accepted') throw new ConflictException('Vocês já são amigos');
     if (existing && existing.requesterId === other.id)
@@ -281,6 +303,8 @@ export class CommunityService {
     const ids = friendships.map((row) =>
       row.requesterId === userId ? row.addresseeId : row.requesterId,
     );
+    const hidden = await this.safety.hiddenFrom(userId);
+    ids.splice(0, ids.length, ...ids.filter((id) => !hidden.has(id)));
     if (!ids.length) return { items: [] };
     const [rows, enabled] = await Promise.all([
       this.db.userMediaEntry.findMany({
@@ -361,7 +385,7 @@ export class CommunityService {
     if (!other) throw new NotFoundException('Pessoa não encontrada');
     const until = cursor(before);
     const [canMessage, rows] = await Promise.all([
-      this.areFriends(userId, otherId),
+      this.canMessage(userId, otherId),
       this.db.directMessage.findMany({
         where: {
           OR: messagesBetween(userId, otherId),
@@ -390,7 +414,7 @@ export class CommunityService {
 
   async send(userId: string, otherId: string, body: string): Promise<DirectMessage> {
     await this.accountEmail.requireVerified(userId);
-    if (otherId === userId || !(await this.areFriends(userId, otherId)))
+    if (otherId === userId || !(await this.canMessage(userId, otherId)))
       throw new ForbiddenException('Vocês precisam ser amigos para conversar');
     const row = await this.db.directMessage.create({
       data: { senderId: userId, recipientId: otherId, body },
@@ -478,6 +502,7 @@ export class CommunityService {
   async club(userId: string, slug: string, before?: string): Promise<ClubDetail> {
     const row = await this.clubBySlug(userId, slug);
     const until = cursor(before);
+    const hidden = [...(await this.safety.hiddenFrom(userId))];
     const [members, posts] = await Promise.all([
       this.db.clubMember.findMany({
         where: { clubId: row.id },
@@ -486,7 +511,12 @@ export class CommunityService {
         take: 30,
       }),
       this.db.clubPost.findMany({
-        where: { clubId: row.id, ...(until ? { createdAt: { lt: until } } : {}) },
+        where: {
+          clubId: row.id,
+          authorId: { notIn: hidden },
+          author: { suspendedAt: null },
+          ...(until ? { createdAt: { lt: until } } : {}),
+        },
         include: { author: { select: userSelect } },
         orderBy: { createdAt: 'desc' },
         take: PAGE + 1,

@@ -159,6 +159,9 @@ export class MfaService {
       throw wrongCode();
     }
     await this.db.loginChallenge.delete({ where: { id: challenge.id } });
+    const user = await this.user(challenge.userId);
+    if (user.suspendedAt)
+      throw new UnauthorizedException('Sua conta está suspensa pela moderação desta instância');
     return { userId: challenge.userId, userAgent: challenge.userAgent };
   }
 }

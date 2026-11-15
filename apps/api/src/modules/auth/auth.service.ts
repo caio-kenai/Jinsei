@@ -67,6 +67,8 @@ export class AuthService {
     const user = await this.db.user.findUnique({ where: { email: input.email } });
     const valid = await verify(user?.passwordHash ?? (await this.dummyHash), input.password);
     if (!user || !valid) throw new UnauthorizedException('E-mail ou senha incorretos');
+    if (user.suspendedAt)
+      throw new ForbiddenException('Sua conta está suspensa pela moderação desta instância');
     if (user.mfaEnabledAt)
       return { challenge: await this.mfa.createChallenge(user.id, userAgent) } as const;
     return { session: await this.createSession(user.id, userAgent) } as const;
